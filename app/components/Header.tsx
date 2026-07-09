@@ -3,7 +3,7 @@
 
 import React from "react";
 import Link from "next/link"; // Importera Next.js Link
-import { Search, Headphones } from "lucide-react";
+import { Ticket, Search, Headphones } from "lucide-react";
 
 export default function Header() {
   return (
@@ -19,20 +19,22 @@ export default function Header() {
 
       {/* Main Header Row */}
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 shrink-0">
-          <div className="bg-indigo-900 text-white p-2 rounded-lg font-black tracking-tighter text-xl">
-            BF
-          </div>
-          <div>
-            <span className="font-black text-xl text-slate-900 tracking-tight block leading-none">
-              BILJETTERFOTBOLL<span className="text-indigo-600">.SE</span>
-            </span>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-              Sveriges ledande jämförelsesida
-            </span>
-          </div>
-        </Link>
+       {/* Logo / Brand Name */}
+      <Link 
+        href="/"
+        className="flex items-center gap-2.5 cursor-pointer group"
+        id="brand-logo"
+      >
+        <div className="w-9 h-9 bg-blue-900 rounded-lg flex items-center justify-center text-white transition-transform group-hover:scale-105 duration-200 shadow-md shadow-blue-950/20">
+          <Ticket className="w-5 h-5 rotate-12" />
+        </div>
+        <div>
+          <h1 className="font-black text-xl sm:text-2xl tracking-tighter text-blue-900 uppercase">
+            biljetterfotboll<span className="text-blue-500">.se</span>
+          </h1>
+          <p className="text-[9px] font-black tracking-[0.2em] text-slate-400 uppercase hidden sm:block">SVERIGES LEDANDE JÄMFÖRELSESIDA</p>
+        </div>
+      </Link> 
 
         {/* Search Bar */}
         <div className="relative flex-1 max-w-md hidden md:block">

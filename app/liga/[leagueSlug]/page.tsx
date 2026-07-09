@@ -1,14 +1,14 @@
 // @ts-nocheck
 "use client";
 
-import React, { useState } from "react"; // Uppdaterad med useState
+import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import MatchCard from "../../components/MatchCard";
-import ComparisonDrawer from "../../components/ComparisonDrawer"; // Importerad
-import BookingModal from "../../components/BookingModal"; // Importerad
+import ComparisonDrawer from "../../components/ComparisonDrawer";
+import BookingModal from "../../components/BookingModal";
 import { LEAGUES_DATA } from "../../data/leagues";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { MATCHES_DATA } from "../../data/matches";
@@ -21,7 +21,6 @@ export default function LeaguePage() {
   
   const leagueData = LEAGUES_DATA[leagueSlug];
 
-  // Skapa staterna högst upp så att de alltid laddas i rätt ordning
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [bookingQuantity, setBookingQuantity] = useState<number>(2);
@@ -79,6 +78,8 @@ export default function LeaguePage() {
       </div>
 
       <main className="max-w-6xl mx-auto px-4 py-12">
+        
+        {/* DENNA SEKTION VISAR ENBART LAGEN SOM TILLHÖR DENNA SPECIFIKA LIGA */}
         <section className="mb-14">
           <h2 className="text-2xl font-black tracking-tight text-slate-800 mb-6 flex items-center gap-2">
             <ShieldCheck className="text-indigo-600 h-6 w-6" />
@@ -86,26 +87,44 @@ export default function LeaguePage() {
           </h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {leagueData.teams.map((slug) => {
+            {leagueData.teams && leagueData.teams.map((slug) => {
               const teamData = TEAMS_SEO_DATA[slug];
               if (!teamData) return null;
               
+              const logoUrl = teamData.logo || teamData.image || teamData.crestUrl;
+
               return (
                 <Link 
                   key={slug} 
                   href={`/lag/${slug}`} 
-                  className="group bg-white p-5 rounded-xl border border-slate-200 hover:border-indigo-200 hover:shadow-md transition-all text-center"
+                  className="group bg-white p-5 rounded-xl border border-slate-200 hover:border-indigo-200 hover:shadow-md transition-all text-center flex flex-col items-center justify-between min-h-[160px]"
                 >
-                  <div className="bg-slate-100 rounded-full h-12 w-12 mx-auto mb-3 flex items-center justify-center font-bold text-indigo-600 group-hover:bg-indigo-50 transition-colors">
-                    {teamData.name.substring(0,2).toUpperCase()}
+                  <div className="mb-2 h-14 w-14 flex items-center justify-center">
+                    {logoUrl ? (
+                      <img 
+                        src={logoUrl} 
+                        alt={teamData.name || "Laglogo"} 
+                        className="h-12 w-12 object-contain transform group-hover:scale-110 transition-transform"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="bg-slate-100 rounded-full h-12 w-12 flex items-center justify-center font-bold text-indigo-600 text-sm">
+                        {teamData.name ? teamData.name.substring(0, 2).toUpperCase() : "FC"}
+                      </div>
+                    )}
                   </div>
-                  <h3 className="font-bold text-sm text-slate-800 group-hover:text-indigo-600 transition-colors">
-                    {teamData.name}
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-1 flex items-center gap-1 justify-center">
-                  <MapPin className="h-3 w-3" /> 
-                  {teamData ? teamData.stadiumName : "Data saknas för detta lag"}
-                  </p>
+
+                  <div className="w-full">
+                    <h3 className="font-bold text-sm text-slate-800 group-hover:text-indigo-600 transition-colors line-clamp-1">
+                      {teamData.name || slug}
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1 justify-center line-clamp-1">
+                      <MapPin className="h-3 w-3 shrink-0" /> 
+                      {teamData.stadiumName || "Arena"}
+                    </p>
+                  </div>
                 </Link>
               );
             })}
@@ -124,7 +143,7 @@ export default function LeaguePage() {
                 <MatchCard 
                   key={match.id} 
                   match={match} 
-                  onSelect={() => setSelectedMatch(match)} // Ändrad från () => {} till att sätta matchen!
+                  onSelect={() => setSelectedMatch(match)}
                 />
               ))}
             </div>
@@ -158,7 +177,6 @@ export default function LeaguePage() {
 
       <Footer />
 
-      {/* JÄMFÖRELSEFÖNSTER (Öppnas när man klickar på en match i listan) */}
       {selectedMatch && (
         <ComparisonDrawer 
           match={selectedMatch}
@@ -167,7 +185,6 @@ export default function LeaguePage() {
         />
       )}
 
-      {/* BOKNINGSFÖNSTER (Öppnas när man klickar vidare från ComparisonDrawer) */}
       {selectedOffer && (
         <BookingModal 
           match={selectedMatch}

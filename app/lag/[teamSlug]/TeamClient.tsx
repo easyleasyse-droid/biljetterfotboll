@@ -1,38 +1,65 @@
 // @ts-nocheck
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../../components/Header";
 import MatchList from "../../components/MatchList";
 import ComparisonDrawer from "../../components/ComparisonDrawer";
 import BookingModal from "../../components/BookingModal";
 import Footer from "../../components/Footer";
-import { MATCHES_DATA } from "../../data/matches";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { 
-  Calendar, MapPin, Trophy, ChevronDown, ChevronUp, Ticket, Building2, Map, Hotel, Info
+  Calendar, MapPin, Trophy, ChevronDown, ChevronUp, Ticket, Building2, Hotel, Info, Loader2
 } from "lucide-react";
+import Image from "next/image";
 
-// Vi tar emot teamSlug direkt som en prop från servern istället
 export default function TeamClient({ teamSlug }: { teamSlug: string }) {
+  const [matches, setMatches] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [bookingQuantity, setBookingQuantity] = useState<number>(2);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   const seoData = TEAMS_SEO_DATA[teamSlug];
-
-  const filteredMatches = MATCHES_DATA.filter((match: any) => {
-    const homeName = match.homeTeam?.name?.toLowerCase() || "";
-    const awayName = match.awayTeam?.name?.toLowerCase() || "";
-    const cleanSlug = teamSlug.replace("-", " ");
-    
-    return homeName.includes(cleanSlug) || awayName.includes(cleanSlug);
-  }).sort((a, b) => {
-    return new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime();
-  });
-
+  const cleanSlug = teamSlug.replace("-", " ");
   const teamName = seoData ? seoData.name : teamSlug.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  // Hämta matcher från API:et istället för den statiska filen
+  useEffect(() => {
+    async function fetchMatches() {
+      try {
+        const res = await fetch("/api/matches");
+        if (res.ok) {
+          const data = await res.json();
+          setMatches(data);
+        }
+      } catch (err) {
+        console.error("Kunde inte hämta matcher till lagsidan:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMatches();
+  }, []);
+
+// Filtrera matcherna dynamiskt baserat på lagets slug (hanterar även accenter som é)
+const filteredMatches = matches.filter((match: any) => {
+  const homeName = match.homeTeam?.name?.toLowerCase() || "";
+  const awayName = match.awayTeam?.name?.toLowerCase() || "";
+  
+  // Skapa en hjälpfunktion som tar bort accenter/diakritiska tecken (é -> e)
+  const removeAccents = (str: string) => 
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  const cleanSlugNormalized = removeAccents(cleanSlug);
+  const homeNameNormalized = removeAccents(homeName);
+  const awayNameNormalized = removeAccents(awayName);
+  
+  return homeNameNormalized.includes(cleanSlugNormalized) || awayNameNormalized.includes(cleanSlugNormalized);
+}).sort((a, b) => {
+  return new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime();
+});
 
   const handleBookOffer = (offer: any, quantity: number) => {
     setSelectedOffer(offer);
@@ -85,7 +112,7 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
           </div>
 
           <p className="text-slate-300 max-w-3xl text-base md:text-lg leading-relaxed font-normal">
-            {seoData?.aboutTickets || `Hitta och jämför de bästa biljettalternativen för att uppleva {teamName} live på arenan.`}
+            {seoData?.aboutTickets || `Hitta och jämför de bästa biljettalternativen för att uppleva ${teamName} live på arenan.`}
           </p>
         </div>
       </div>
@@ -108,12 +135,18 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
               <Calendar className="text-indigo-600 h-6 w-6" />
               Aktuella matcher & biljetter 2026
             </h2>
-            <span className="bg-indigo-50 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full border border-indigo-100">
-              {filteredMatches.length} st planerade
-            </span>
+            {!loading && (
+              <span className="bg-indigo-50 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full border border-indigo-100">
+                {filteredMatches.length} st planerade
+              </span>
+            )}
           </div>
 
-          {filteredMatches.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
+            </div>
+          ) : filteredMatches.length > 0 ? (
             <MatchList matches={filteredMatches} onSelectMatch={(match: any) => setSelectedMatch(match)} selectedLeague="" />
           ) : (
             <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm text-slate-500">
@@ -151,39 +184,56 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
               <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
                 <div className="md:col-span-2">
                   <h3 className="text-xl font-extrabold mb-3 flex items-center gap-2 text-slate-800">
-                    <Trophy className="text-amber-500 h-5 w-5" /> Klubbens historia
+               <Trophy className="text-amber-500 h-5 w-5" /> Klubbens historia
                   </h3>
                   <p className="text-slate-600 leading-relaxed text-sm md:text-base">{seoData.history}</p>
                 </div>
-                {seoData.contentImage && (
-                  <div className="rounded-xl overflow-hidden shadow-sm border border-slate-100 h-44 w-full">
-                    <img src={seoData.contentImage} alt={`${teamName} matchatmosfär`} className="w-full h-full object-cover" />
-                  </div>
-                )}
+                <div className="rounded-xl overflow-hidden shadow-sm border border-slate-100 h-44 w-full">
+                  <img 
+                    src="/stadiums/default-match.jpg" 
+                    alt={`${teamName} matchatmosfär`} 
+                    className="w-full h-full object-cover" 
+                  />
+                </div>
               </div>
-            </div>
+            </div>     
 
             {/* Högerbox (Arena) */}
             <div id="arenaguide" className="space-y-6 lg:sticky lg:top-20 scroll-mt-20">
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="bg-slate-900 text-white p-4 font-bold flex items-center gap-2 text-sm md:text-base">
-                  <Map className="h-4 w-4 text-indigo-400" /> Arenaguide: {seoData.stadiumName}
+                {/* Stor Arenabild i toppen av boxen */}
+              <div className="h-48 w-full bg-slate-100 group overflow-hidden border-b border-slate-200 relative"> {/* lade till relative här */}
+                <img 
+                  src={seoData?.stadiumLayoutImage || "/stadiums/default-stadium.jpg"} 
+                  alt={`Arenabild över ${seoData?.stadiumName || teamName}`} 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                />
+                {/* Texten ligger nu i TOPPEN av bilden med en snygg toning nedåt */}
+                <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-slate-900/80 via-slate-900/40 to-transparent p-4 pb-12">
+                  <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-0.5">Hemmaborg</p>
+                  <h3 className="text-base font-black text-white tracking-tight">{seoData?.stadiumName}</h3>
                 </div>
+              </div>
+
                 <div className="p-6">
+                  {/* Beskrivning av arenan */}
                   <p className="text-slate-600 text-sm leading-relaxed mb-6">{seoData.stadiumDescription}</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                    {seoData.googleMapsEmbedUrl && (
-                      <div className="w-full h-48 rounded-xl overflow-hidden border border-slate-200 shadow-inner">
-                        <iframe src={seoData.googleMapsEmbedUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen={false} loading="lazy" referrerPolicy="no-referrer-when-downgrade" title={`Karta över ${seoData.stadiumName}`}></iframe>
-                      </div>
-                    )}
-                    {seoData.stadiumLayoutImage && (
-                      <div className="w-full h-48 rounded-xl overflow-hidden border border-slate-200 relative group shadow-sm">
-                        <img src={seoData.stadiumLayoutImage} alt={`Layoutritning över ${seoData.stadiumName}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                        <div className="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur-sm text-[10px] font-bold tracking-wide uppercase px-2 py-0.5 rounded text-slate-200 border border-slate-700">Matchatmosfär</div>
-                      </div>
-                    )}
-                  </div>
+                  
+                  {/* Google Maps karta */}
+                  {seoData.googleMapsEmbedUrl && (
+                    <div className="w-full h-44 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                      <iframe 
+                        src={seoData.googleMapsEmbedUrl} 
+                        width="100%" 
+                        height="100%" 
+                        style={{ border: 0 }} 
+                        allowFullScreen={false} 
+                        loading="lazy" 
+                        referrerPolicy="no-referrer-when-downgrade" 
+                        title={`Karta över ${seoData.stadiumName}`}
+                      ></iframe>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

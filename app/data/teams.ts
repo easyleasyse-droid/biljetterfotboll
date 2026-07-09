@@ -85,9 +85,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Liverpool, England",
     league: "Premier League",
     aboutTickets: "Jämför biljetter och hotellpaket till Liverpool FC på Anfield. Upplev den unika stämningen på The Kop eller njut av förstklassig hospitality på Main Stand.",
-    heroImage: "https://images.unsplash.com/photo-1531124432170-4963503f1f3a?q=80&w=1200&auto=format&fit=crop", // Garanterad röd läktare/fotbollsmiljö
+    heroImage: "/stadiums/anfield-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1556056504-51717367a80c?q=80&w=600&auto=format&fit=crop", // Match/stadion
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1516515429572-bf32372f2409?q=80&w=600&auto=format&fit=crop", // Läktarstolar/stadion (RENSAD FRÅN LAMBORGHINI)
+    stadiumLayoutImage: "/stadiums/anfield-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2377.12353110292!2d-2.9634283232692257!3d53.43082936865611!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487b216f7dddb69b%3A0x6b448f760da62fef!2sAnfield!5e0!3m2!1ssv!2sse!4v1710000000002!5m2!1ssv!2sse",
     howToBuy: "Biljetter till Anfield är bland de svåraste i hela världen att köpa på egen hand. Klubbens egna släpp kräver medlemskap och sker via ett poängsystem (du måste ha gått på ett visst antal matcher föregående säsong för att få köpa till stormatcher). Att köpa svart utanför arenan är förenat med enorm risk då Liverpool använder strikt digitala NFC-biljetter som är låsta till telefoner. Den enda säkra vägen för svenska fans är att boka officiella matchbiljetter med hospitality-tillgång via auktoriserade sportresebyråer. Det garanterar en laglig biljett som skickas direkt till din smartphone via klubbens officiella app.",
     sectionsAndPrices: "Arenan är uppdelad i The Kop (kortsidan med bäst stämning), Main Stand (det enorma nya långsidoetaget med fantastiska faciliteter), Sir Kenny Dalglish Stand (motsvarande långsida, klassisk och nära planen) samt Anfield Road End (kortsidan där även bortafansen huserar). Priserna på Anfield är generellt högre än på många andra engelska arenor på grund av den extrema efterfrågan. Platser högt upp på Main Stand ger en otrolig vy över staden men kan kännas avlägsna, medan platser på Sir Kenny Dalglish Stand sätter dig mitt i händelsernas centrum.",
@@ -108,9 +108,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "London, England",
     league: "Premier League",
     aboutTickets: "Hitta biljetter till Chelsea FC på Stamford Bridge. Jämför allt från vanliga kortsidor till exklusiva paket med hotell i London.",
-    heroImage: "https://images.unsplash.com/photo-1599422315622-be129cc6dbb4?q=80&w=1200&auto=format&fit=crop", // Blå/fotbollskänsla
+    heroImage: "/stadiums/stamford-bridge-hero.jpg", 
     contentImage: "https://images.unsplash.com/photo-1459865264687-595d652de67e?q=80&w=600&auto=format&fit=crop", // Fotbollsplan/gräs
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=600&auto=format&fit=crop", // Läktare under strålkastare
+    stadiumLayoutImage: "/stadiums/stamford-bridge-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2482.3783777553335!2d-0.1936173233797677!3d51.48166667180479!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48760fa619bf1993%3A0x89db7a72da7793e5!2sStamford%20Bridge!5e0!3m2!1ssv!2sse!4v1710000000003!5m2!1ssv!2sse",
     howToBuy: "På grund av arenans begränsade kapacitet säljer i stort sett alla Premier League-matcher slut direkt till Chelseas egna medlemmar. Det är därför extremt svårt att köpa lösa biljetter på egen hand utan ett medlemskap. Den säkraste och smidigaste vägen är att boka via auktoriserade researrangörer som säljer officiella hospitality-biljetter. Dessa biljetter inkluderar officiell sittplats på West Stand eller East Stand och ger dig dessutom inträde till en lounge (t.ex. Tea Bar eller Captains Bar) före matchen med dryck, matchprogram och mat inkluderat, helt utan dolda medlemskrav.",
     sectionsAndPrices: "Stamford Bridge har fyra huvudläktare: West Stand (modern och lyxig långsida), East Stand (arenans äldsta läktare med familjesektioner), Matthew Harding Stand (där hemmasupportrarna sjunger mest) och Shed End (kortsidan där bortafansen sitter på ena halvan). Priserna är generellt höga, i linje med Londons prisnivåer, och stiger rejält under London-derbyn mot Arsenal och Tottenham eller vid matcher mot de övriga topplagen. Platser på West Stand Upper erbjuder fantastisk sikt över båda lagens bänkar och taktik.",
@@ -131,9 +131,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "London, England",
     league: "Premier League",
     aboutTickets: "Köp biljetter till Tottenham Hotspur på deras toppmoderna hemmaarena. Jämför priser på officiella biljetter och exklusiva resepaket.",
-    heroImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=1200&auto=format&fit=crop", // Garanterad fotbollsarena/arkitektur
+    heroImage: "/stadiums/tottenham-hotspur-stadium-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=600&auto=format&fit=crop", // Strålkastarljus/arena
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=600&auto=format&fit=crop", // Läktarsektioner
+    stadiumLayoutImage: "/stadiums/tottenham-hotspur-stadium-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2476.3268427928236!2d-0.06899722337345595!3d51.60428617183492!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48761e1b8577114b%3A0x7d6360bf008f5d02!2sTottenham%20Hotspur%20Stadium!5e0!3m2!1ssv!2sse!4v1710000000004!5m2!1ssv!2sse",
     howToBuy: "Tottenham har ett mycket modernt och smidigt biljettsystem, men precis som för övriga Londonklubbar krävs ett One Hotspur-medlemskap för att kunna köpa biljetter direkt via klubben. Lyckligtvis har klubben ett stort och välfungerande nätverk av officiella partners som säljer 'Premium Seats'. Dessa biljetter säljs helt utan krav på medlemskap och ger dig fantastiska platser på långsidan (etage 2 eller 3) kombinerat med tillgång till arenans prisbelönta lounger, mattorg och barer (inklusive den berömda 'Goal Line Bar' som är Europas längsta bar). Vi listar enbart dessa auktoriserade återförsäljare.",
     sectionsAndPrices: "Arenan är uppdelad i North, South, East och West Stand. Platser på South Stand är fantastiska för att uppleva stämningen på nära håll. Östra och västra långsidorna erbjuder premiumplatser med enastående komfort och sikt. Priserna varierar beroende på motstånd men tack vare arenans storlek finns det ofta ett bra utbud av biljetter till rimliga priser för matcher utanför toppskiktet. Det övre etaget (Tier 5) ger en otrolig överblick över hela arenan och spelet men ligger väldigt högt upp.",
@@ -154,9 +154,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Madrid, Spanien",
     league: "La Liga",
     aboutTickets: "Hitta biljetter till Real Madrid och upplev världsstjärnorna live i den spanska huvudstaden. Jämför priser för La Liga och Champions League.",
-    heroImage: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?q=80&w=1200&auto=format&fit=crop", // Garanterad vacker stadion/stadsvy
+    heroImage: "/stadiums/santiago-bernabéu-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=600&auto=format&fit=crop", // Fotbollsplan/stadion
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1459865264687-595d652de67e?q=80&w=600&auto=format&fit=crop", // Match/gräsmatta
+    stadiumLayoutImage: "/stadiums/santiago-bernabéu-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3035.7176182390884!2d-3.69094772390506!3d40.45305405338167!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd4228e23705d39f%3A0xa87652e78bc5aa!2sEstadio%20Santiago%20Bernab%C3%A9u!5e0!3m2!1ssv!2sse!4v1710000000005!5m2!1ssv!2sse",
     howToBuy: "Att köpa biljetter direkt via Real Madrids officiella hemsida är känt för att vara krångligt. Allmänna biljettsläpp sker ofta så sent som 5–7 dagar före matchstart och säljer slut på sekunder till klubbens medlemmar (Socios) och 'Madridistas Premium'. Dessutom nekar det spanska betalsystemet ofta utländska kreditkort. Det absolut säkraste sättet att planera sin resa i god tid är att köpa via auktoriserade biljettförmedlare och sportresebyråer. De har garanterade kvoter av officiella biljetter (både standard- och hospitality-paket) som levereras digitalt som e-biljetter direkt till din e-post.",
     sectionsAndPrices: "Arenan är uppdelad i Lateral Oeste (långsida väst, där spelarbänkarna finns och som är dyrast), Lateral Este (långsida öst, bäst för TV-vy) samt Fondo Norte och Fondo Sur (kortsidorna). Varje sida har flera etage (Tribuna, Primer Anfiteatro, Segundo Anfiteatro, Tercer Anfiteatro och Cuarto Anfiteatro). Priserna är generellt mycket överkomliga för matcher mot mindre La Liga-lag på de övre etagen, men exploderar till astronomiska summor för 'El Clásico' mot Barcelona eller slutspelsmatcher i Champions League.",
@@ -177,9 +177,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Barcelona, Spanien",
     league: "La Liga",
     aboutTickets: "Säkra dina biljetter till FC Barcelona. Jämför priser för sittplatser på det mäktiga Camp Nou och upplev den katalanska fotbollsfesten.",
-    heroImage: "https://images.unsplash.com/photo-1524331408101-7fe03bf90f33?q=80&w=1200&auto=format&fit=crop", // Garanterad fotbollsarena
+    heroImage: "/stadiums/camp-nou-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1518063319789-7217e6706b04?q=80&w=600&auto=format&fit=crop", // Stadion/publik/match
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1556056504-51717367a80c?q=80&w=600&auto=format&fit=crop", // Sektioner/fotboll
+    stadiumLayoutImage: "/stadiums/camp-nou-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2993.673892794411!2d2.1202723239474934!3d41.38089944365313!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12a4a413d07e26d9%3A0xf658f844ca1ba3b!2sSpotify%20Camp%20Nou!5e0!3m2!1ssv!2sse!4v1710000000006!5m2!1ssv!2sse",
     howToBuy: "Biljetter till FC Barcelona säljs i stor utsträckning via klubbens egna kanaler, men till de absolut största matcherna (El Clásico mot Real Madrid, derbyt mot Espanyol eller avgörande Champions League-slutspel) är det i princip omöjligt för icke-medlemmar att få tag på biljetter då klubbens säsongskortsinnehavare lägger beslag på platserna. Genom att använda vår jämförelsetjänst hittar du officiella sportresebyråer och verifierade biljettpartners som har fasta, garanterade biljettkvoter tilldelade direkt från klubben. Det gör att du kan boka din resa månader i förväg med fullständig trygghet.",
     sectionsAndPrices: "Camp Nou är indelat i Tribuna (långsidan med spelartunnel och VIP-boxar, dyrast), Lateral (motsatta långsidan som ger perfekt TV-vy och är mycket populär), samt Gol Nord och Gol Sud (kortsidorna). Platser på första etage (Golgata/1a Grada) tar dig extremt nära planen men har låg vinkel, medan andra etage (2a Grada) allmänt anses ge arenans absolut bästa sikt. Tredje etage (3a Grada) är gigantiskt och ligger väldigt högt upp, vilket erbjuder billiga biljetter men kräver ett bra falköga för att följa bollen.",
@@ -200,9 +200,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Madrid, Spanien",
     league: "La Liga",
     aboutTickets: "Hitta prisvärda biljetter till Atlético Madrid. Upplev Diego Simeones passionerade lag live på den kokande hemmaborgen.",
-    heroImage: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1200&auto=format&fit=crop", // Garanterad fotbollsarena på kvällen
+    heroImage: "/stadiums/metropolitano-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=600&auto=format&fit=crop", // Läktarvy/stadion
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop", // Fotbollsplan/gräs
+    stadiumLayoutImage: "/stadiums/metropolitano-hero.jpg", // Fotbollsplan/gräs
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3036.0028751508933!2d-3.6019556239053896!3d40.43588975376517!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd422f2cb82915cb%3A0x6b13fa250320a27c!2sEstadio%20C%C3%ADvitas%20Metropolitano!5e0!3m2!1ssv!2sse!4v1710000000007!5m2!1ssv!2sse",
     howToBuy: "Biljetter till Atlético Madrids matcher är i allmänhet betydligt mer lättillgängliga och prisvärda än till grannklubben Real Madrid, med undantag för det glödheta Madrid-derbyt (El Derbi Madrileño) eller stormatcher i Champions League. Klubbens officiella biljettsläpp sker digitalt några veckor före match. För att garantera sina platser långt i förväg och säkra bra sittplatser bredvid varandra på långsidorna väljer de flesta svenskar att köpa via auktoriserade biljettförmedlare eller boka kompletta fotbollspaket där officiell matchbiljett och hotellövernattning ingår.",
     sectionsAndPrices: "Metropolitano har en mycket tydlig struktur uppdelad i Lateral Oeste (västra långsidan med VIP och bänkar), Lateral Este (östra långsidan, perfekt för sol och tv-vy), Fondo Norte och Fondo Sur (kortsidorna). Läktarna är uppdelade i tre etage (Grada Baja, Grada Media och Grada Alta). Priserna på kortsidorna och det översta etaget är mycket plånboksvänliga och perfekta för budgetresenären, medan Grada Media på långsidorna erbjuder den absolut bästa balansen mellan fantastisk sikt, komfort och närhet till spelet.",
@@ -246,9 +246,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Valencia, Spanien",
     league: "La Liga",
     aboutTickets: "Upplev den unika atmosfären på Mestalla. Vi jämför priser för officiella biljetter till Valencia CF.",
-    heroImage: "https://images.unsplash.com/photo-1577223625816-7546f939037e?q=80&w=1200&auto=format&fit=crop",
+    heroImage: "/stadiums/mestalla-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=600&auto=format&fit=crop",
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
+    stadiumLayoutImage: "/stadiums/mestalla-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3079.799732731872!2d-0.3637372239337581!3d39.47453457161822!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6048995a9a4b3d%3A0xe543e49e917d4a2d!2sEstadio%20de%20Mestalla!5e0!3m2!1ssv!2sse!4v1710000000008!5m2!1ssv!2sse",
     howToBuy: "Biljetter till Valencia köps smidigast via klubbens officiella sajt. För stormatcher rekommenderas officiella matchpaket.",
     sectionsAndPrices: "Arenan är uppdelad i olika sektioner där 'Grada Central' erbjuder bäst sikt. Kortsidorna är mer prisvärda.",
@@ -269,9 +269,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Milano, Italien",
     league: "Serie A",
     aboutTickets: "Inter säljer biljetter via sin officiella hemsida. För större matcher krävs ofta medlemskap.",
-    heroImage: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
+    heroImage: "/stadiums/giuseppe-meazza-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
+    stadiumLayoutImage: "/stadiums/giuseppe-meazza-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2798.541334994273!2d9.121516076587425!3d45.47810377107293!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4786c12563f8d951%3A0x6b4f74d02330a8c!2sSan%20Siro!5e0!3m2!1ssv!2sse!4v1718460000000!5m2!1ssv!2sse",// För både Inter och AC Milan, använd denna URL:
     howToBuy: "Köp biljetter direkt via Inter.it eller officiella återförsäljare.",
     sectionsAndPrices: "För bästa sikt, välj sektionerna på långsidan (Primo Anello).",
@@ -292,9 +292,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Milano, Italien",
     league: "Serie A",
     aboutTickets: "Milan biljetter köps enklast via deras officiella portal.",
-    heroImage: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1200&auto=format&fit=crop",
+    heroImage: "/stadiums/san-siro-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
+    stadiumLayoutImage: "/stadiums/san-siro-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2798.541334994273!2d9.121516076587425!3d45.47810377107293!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4786c12563f8d951%3A0x6b4f74d02330a8c!2sSan%20Siro!5e0!3m2!1ssv!2sse!4v1718460000000!5m2!1ssv!2sse",
     howToBuy: "Officiella hemsidan är säkrast. Tänk på att ha ID tillgängligt.",
     sectionsAndPrices: "Curva Sud är platsen för den mest fanatiska stämningen.",
@@ -315,9 +315,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Manchester, England",
     league: "Premier League",
     aboutTickets: "City har en av Premier Leagues största arenor, men biljetterna går åt snabbt.",
-    heroImage: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
+    heroImage: "/stadiums/etihad-stadium-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
+    stadiumLayoutImage: "/stadiums/etihad-stadium-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2374.455648756024!2d-2.202868284157143!3d53.48316397998651!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487bb0814f61f7e3%3A0x6b4f74d02330a8c!2sEtihad%20Stadium!5e0!3m2!1ssv!2sse!4v1718460000000!5m2!1ssv!2sse",
     howToBuy: "Officiella hemsidan är bäst. Medlemskap krävs för toppmatcher.",
     sectionsAndPrices: "East Stand har bra överblick.",
@@ -333,9 +333,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Newcastle upon Tyne, England",
     league: "Premier League",
     aboutTickets: "Extremt högt tryck – boka i god tid.",
-    heroImage: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
+    heroImage: "/stadiums/st-james-park-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
+    stadiumLayoutImage: "/stadiums/st-james-park-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2277.685324546875!2d-1.6234394841285!3d54.975586680335!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487e70b8c66e4a2d%3A0x1d5821034f5a2b1!2sSt%20James'%20Park!5e0!3m2!1ssv!2sse!4v1718460000000!5m2!1ssv!2sse",
     howToBuy: "Biljetter via officiella hemsidan, ofta genom lottningssystem för medlemmar.",
     sectionsAndPrices: "Gallowgate End erbjuder den mest intensiva stämningen.",
@@ -351,9 +351,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Leeds, England",
     league: "Premier League",
     aboutTickets: "Lojala fans gör att biljetterna ofta säljer slut snabbt.",
-    heroImage: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
+    heroImage: "/stadiums/elland-road-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
+    stadiumLayoutImage: "/stadiums/elland-road-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2356.5412345678!2d-1.5714321!3d53.777823!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48795c123456789!2sElland%20Road!5e0!3m2!1ssv!2sse!4v1718460000000!5m2!1ssv!2sse",
     howToBuy: "Köp via officiella kanaler eller officiella matchpaket.",
     sectionsAndPrices: "Kop-läktaren är legendarisk.",
@@ -369,9 +369,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Birmingham, England",
     league: "Premier League",
     aboutTickets: "Villa Park är en fantastisk upplevelse för alla fotbollsfans.",
-    heroImage: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
+    heroImage: "/stadiums/villa-park-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
+    stadiumLayoutImage: "/stadiums/villa-park-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2430.4321!2d-1.8845!3d52.5094!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4870bc123456!2sVilla%20Park!5e0!3m2!1ssv!2sse!4v1718460000000!5m2!1ssv!2sse",
     howToBuy: "Officiella hemsidan är säkrast.",
     sectionsAndPrices: "Trinity Road Stand erbjuder utmärkt sikt.",

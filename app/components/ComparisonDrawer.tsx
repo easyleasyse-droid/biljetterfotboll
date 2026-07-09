@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Match, TicketOffer } from "../types";
 import StadiumMap from "./StadiumMap";
-import { X, Calendar, MapPin, Shield, Star, Info, Zap, Mail, Trash2, ArrowRight } from "lucide-react";
+import { X, Calendar, MapPin, Shield, Star, Info, Zap, Mail, Trash2, ArrowRight, Ticket, Hotel, Plane } from "lucide-react";
 
 interface ComparisonDrawerProps {
   match: Match | null;
@@ -15,6 +15,16 @@ export default function ComparisonDrawer({ match, onClose, onBookOffer }: Compar
 
   const [quantity, setQuantity] = useState<number>(2);
   const [selectedCategory, setSelectedCategory] = useState<"VIP" | "Långsida" | "Kortsida" | "Borta" | "Alla">("Alla");
+  
+  // Nytt state för Paket-filtreringen (Matchar din referensbild)
+  const [packageFilter, setPackageFilter] = useState<"all" | "ticket" | "hotel" | "flight">("all");
+
+  const packageFilters = [
+    { id: "all", label: "Visa alla", icon: Zap },
+    { id: "ticket", label: "Endast biljett", icon: Ticket },
+    { id: "hotel", label: "Paket med hotell", icon: Hotel },
+    { id: "flight", label: "Paket med hotell & flyg", icon: Plane },
+  ];
 
   // Determine cheapest price for each category to feed into the stadium map
   const getCheapestForCategory = (cat: "VIP" | "Långsida" | "Kortsida" | "Borta") => {
@@ -30,13 +40,16 @@ export default function ComparisonDrawer({ match, onClose, onBookOffer }: Compar
     Borta: getCheapestForCategory("Borta")
   };
 
-  // Filter offers based on active filters
+  // Filter offers based on both active filters (Seating Category & Package Type)
   const filteredOffers = match.offers.filter((offer) => {
     // 1. Check Seating Category match
     if (selectedCategory !== "Alla" && offer.category !== selectedCategory) {
       return false;
     }
-    // 2. We can show matches even if quantity listed is less, but we'll show warning badge
+    // 2. Check Package Type match (ticket / hotel / flight)
+    if (packageFilter !== "all" && offer.type !== packageFilter) {
+      return false;
+    }
     return true;
   });
 
@@ -168,6 +181,33 @@ export default function ComparisonDrawer({ match, onClose, onBookOffer }: Compar
             </div>
           </div>
 
+          {/* Paket och Resetyp Jämförelse-pills (Referens från bilden du visade) */}
+          <div className="bg-slate-50 p-4 border border-slate-200 rounded-2xl">
+            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">
+              VÄLJ PRODUKTTYP
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {packageFilters.map((filter) => {
+                const Icon = filter.icon;
+                const isActive = packageFilter === filter.id;
+                return (
+                  <button
+                    key={filter.id}
+                    onClick={() => setPackageFilter(filter.id as any)}
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border cursor-pointer ${
+                      isActive
+                        ? "bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-900/20"
+                        : "bg-white border-slate-250 text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+                    }`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-slate-400"}`} />
+                    <span>{filter.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Table list of available comparative offers */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between text-slate-500 text-xs px-1">
@@ -218,6 +258,13 @@ export default function ComparisonDrawer({ match, onClose, onBookOffer }: Compar
                           </p>
                           <p className="text-[11px] text-slate-500 mt-0.5">
                             Kategori: <span className="font-semibold text-slate-700">{offer.category}</span>
+                            {offer.type && (
+                              <span className="ml-2 bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider">
+                                {offer.type === "ticket" && "Endast biljett"}
+                                {offer.type === "hotel" && "Biljett + Hotell"}
+                                {offer.type === "flight" && "Biljett + Hotell + Flyg"}
+                              </span>
+                            )}
                           </p>
                         </div>
 
@@ -275,13 +322,16 @@ export default function ComparisonDrawer({ match, onClose, onBookOffer }: Compar
             ) : (
               <div className="bg-slate-50 border border-slate-200 border-dashed rounded-2xl p-8 text-center text-slate-500">
                 <Info className="w-6 h-6 text-slate-400 mx-auto mb-2" />
-                <p className="font-bold text-slate-700 text-xs">Inga biljetter i den här kategorin</p>
-                <p className="text-[11px] mt-0.5">Prova att välja en annan sittplatskategori eller rensa filter.</p>
+                <p className="font-bold text-slate-700 text-xs">Inga biljetter eller paket i den här kategorin</p>
+                <p className="text-[11px] mt-0.5">Prova att välja en annan produktform eller nollställ dina filter.</p>
                 <button
-                  onClick={() => setSelectedCategory("Alla")}
+                  onClick={() => {
+                    setSelectedCategory("Alla");
+                    setPackageFilter("all");
+                  }}
                   className="mt-3 text-xs bg-slate-900 text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  Visa alla kategorier
+                  Återställ alla filter
                 </button>
               </div>
             )}

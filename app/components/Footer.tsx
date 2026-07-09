@@ -1,5 +1,6 @@
 import React from "react";
 import { Ticket, ArrowRight, ShieldAlert, Heart } from "lucide-react";
+import Link from "next/link";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -8,7 +9,7 @@ export default function Footer() {
     <footer className="bg-slate-900 text-slate-400 text-xs py-16 px-6 sm:px-10 border-t border-slate-950 font-sans" id="main-footer">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
         
-        {/* Brand presentation Column */}
+        {/* Kolumn 1 & 2: Varumärkespresentation och Ansvarsfriskrivning */}
         <div className="md:col-span-2 space-y-5">
           <div className="flex items-center gap-2.5">
             <div className="bg-blue-600 p-2.5 rounded-lg text-white">
@@ -29,40 +30,61 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Quick jump league links Column */}
+        {/* Kolumn 3: Populära ligor */}
         <div>
           <h4 className="text-white font-black uppercase tracking-widest mb-5 text-[11px]">Populära Ligobiljetter</h4>
           <ul className="space-y-3 font-semibold">
-            {["Premier League biljetter", "La Liga biljetter", "Champions League biljetter", "Serie A biljetter", "Allsvenskan biljetter"].map((link) => (
-              <li key={link}>
-                <span className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 group">
+            {[
+              { name: "Premier League biljetter", slug: "premier-league" },
+              { name: "La Liga biljetter", slug: "la-liga" },
+              { name: "Champions League biljetter", slug: "champions-league" },
+              { name: "Serie A biljetter", slug: "serie-a" },
+              { name: "Allsvenskan biljetter", slug: "allsvenskan" }
+            ].map((item) => (
+              <li key={item.slug}>
+                <Link 
+                  href={`/liga/${item.slug}`}
+                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 group text-slate-400"
+                >
                   <ArrowRight className="w-3.5 h-3.5 text-blue-500 transition-transform group-hover:translate-x-0.5" />
-                  <span>{link}</span>
-                </span>
+                  <span>{item.name}</span>
+                </Link>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Value support Column */}
+        {/* Kolumn 4: Vår Policy */}
         <div>
           <h4 className="text-white font-black uppercase tracking-widest mb-5 text-[11px]">Vår Policy</h4>
           <ul className="space-y-3 font-semibold">
-            <li><span className="hover:text-white transition-colors cursor-pointer">Integritetspolicy</span></li>
-            <li><span className="hover:text-white transition-colors cursor-pointer">Användarvillkor</span></li>
-            <li><span className="hover:text-white transition-colors cursor-pointer">Cookies-inställningar</span></li>
-            <li><span className="hover:text-white transition-colors cursor-pointer">Kontakta Redaktionen</span></li>
-            <li><span className="hover:text-white transition-colors cursor-pointer">Jobba hos oss</span></li>
+            {[
+              { name: "Integritetspolicy", slug: "integritetspolicy" },
+              { name: "Användarvillkor", slug: "anvandarvillkor" },
+              { name: "Cookies-inställningar", slug: "cookies" },
+              { name: "Kontakta oss", slug: "kontakt" },
+              { name: "Jobba hos oss", slug: "jobb" }
+            ].map((item) => (
+              <li key={item.slug}>
+                <Link 
+                  href={`/${item.slug}`}
+                  className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 group text-slate-400"
+                >
+                  <ArrowRight className="w-3.5 h-3.5 text-blue-500 transition-transform group-hover:translate-x-0.5" />
+                  <span>{item.name}</span>
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
+
       </div>
 
-      {/* Under copyright bar */}
-      <div className="max-w-7xl mx-auto pt-10 border-t border-slate-800/65 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 text-[11px] font-bold">
+      {/* Copyright-raden längst ner */}
+      <div className="max-w-7xl mx-auto pt-10 border-t border-slate-800/65 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p>© {currentYear} Biljetterfotboll.se. Marknadens ledande jämförelsetjänst för fotbollsresor och biljetter.</p>
         <p className="flex items-center gap-1.5">
-          <span>Byggd med precision &amp; omsorg för fotbollsfans</span>
-          <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 animate-pulse" />
+          Byggd med precision & omsorg för fotbollsfans <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" />
         </p>
       </div>
     </footer>
