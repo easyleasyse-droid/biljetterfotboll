@@ -33,6 +33,9 @@ export default function BookingModal({ match, offer, quantity, onClose }: Bookin
 
   const totalCost = offer.priceSEK * quantity;
 
+  // Hämta den dynamiska url:en som vi skapade i API:et, med en fallback om den saknas
+  const destinationUrl = (offer as any).url || "https://www.google.com";
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" id="booking-modal-overlay">
       <div 
@@ -143,7 +146,7 @@ export default function BookingModal({ match, offer, quantity, onClose }: Bookin
               {/* Action Buttons */}
               <div className="flex flex-col gap-2.5">
                 <a 
-                  href="https://stubhub.se" 
+                  href={destinationUrl} 
                   target="_blank" 
                   rel="noreferrer"
                   className="bg-blue-900 hover:bg-blue-800 active:bg-blue-950 text-white font-black text-xs uppercase tracking-widest py-4 px-4 rounded-xl transition-all shadow-lg shadow-blue-900/10 text-center flex items-center justify-center gap-2 cursor-pointer"

@@ -4,253 +4,6 @@ export const MATCHES_DATA: Match[] = [
   {
     id: "m1",
     homeTeam: {
-      name: "Real Madrid",
-      shortName: "RMA",
-      primaryColor: "#00529F",
-      secondaryColor: "#FFFFFF",
-      emoji: "🇪🇸"
-    },
-    awayTeam: {
-      name: "FC Barcelona",
-      shortName: "BAR",
-      primaryColor: "#004D98",
-      secondaryColor: "#A50044",
-      emoji: "🔴"
-    },
-    league: "La Liga",
-    date: "2026-06-28",
-    time: "21:00",
-    stadium: "Santiago Bernabéu",
-    city: "Madrid",
-    priceFrom: 1250,
-    totalTicketsCount: 412,
-    offers: [
-      {
-        id: "o1-1",
-        merchantName: "StubHub",
-        rating: 4.8,
-        reviewsCount: 3102,
-        section: "Kortsida – Övre sektion",
-        category: "Kortsida",
-        priceSEK: 1250,
-        availableQuantity: 4,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true
-      },
-      {
-        id: "o1-2",
-        merchantName: "Viagogo",
-        rating: 4.4,
-        reviewsCount: 1980,
-        section: "Långsida – Kategori 2",
-        category: "Långsida",
-        priceSEK: 2100,
-        availableQuantity: 2,
-        deliveryType: "Mobilbiljett",
-        isVerified: true
-      },
-      {
-        id: "o1-3",
-        merchantName: "Sports Events 365",
-        rating: 4.9,
-        reviewsCount: 890,
-        section: "Långsida – Kategori 1 (Nedre)",
-        category: "Långsida",
-        priceSEK: 3500,
-        availableQuantity: 6,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true
-      },
-      {
-        id: "o1-4",
-        merchantName: "FootballTicketNet",
-        rating: 4.3,
-        reviewsCount: 1240,
-        section: "VIP Box – Silver Hospitality",
-        category: "VIP",
-        priceSEK: 7500,
-        availableQuantity: 8,
-        deliveryType: "Pappersbiljett",
-        isVerified: true
-      },
-      {
-        id: "o1-5",
-        merchantName: "Ticombo",
-        rating: 4.7,
-        reviewsCount: 1540,
-        section: "Bortasektion",
-        category: "Borta",
-        priceSEK: 1800,
-        availableQuantity: 2,
-        deliveryType: "Mobilbiljett",
-        isVerified: true
-      }
-    ]
-  },
-  {
-    id: "m2",
-    homeTeam: {
-      name: "Manchester United",
-      shortName: "MUN",
-      primaryColor: "#DA291C",
-      secondaryColor: "#000000",
-      logo: "/logos/manchester-united.png" ,
-      emoji: "🇬🇧"
-    },
-    awayTeam: {
-      name: "Liverpool FC",
-      shortName: "LIV",
-      primaryColor: "#C8102E",
-      secondaryColor: "#F6EB61",
-      emoji: "🔴"
-    },
-    league: "Premier League",
-    date: "2026-07-04",
-    time: "13:30",
-    stadium: "Old Trafford",
-    city: "Manchester",
-    priceFrom: 1450,
-    totalTicketsCount: 328,
-    offers: [
-      {
-        id: "o2-1",
-        merchantName: "Ticombo",
-        rating: 4.7,
-        reviewsCount: 1540,
-        section: "North Stand Tier 3",
-        category: "Kortsida",
-        priceSEK: 1450,
-        availableQuantity: 2,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true
-      },
-      {
-        id: "o2-2",
-        merchantName: "StubHub",
-        rating: 4.8,
-        reviewsCount: 3102,
-        section: "Sir Alex Ferguson Stand (Långsida)",
-        category: "Långsida",
-        priceSEK: 1950,
-        availableQuantity: 4,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true
-      },
-      {
-        id: "o2-3",
-        merchantName: "Viagogo",
-        rating: 4.4,
-        reviewsCount: 1980,
-        section: "East Stand (Kortsida nedre)",
-        category: "Kortsida",
-        priceSEK: 1600,
-        availableQuantity: 4,
-        deliveryType: "Mobilbiljett",
-        isVerified: true
-      },
-      {
-        id: "o2-4",
-        merchantName: "Sports Events 365",
-        rating: 4.9,
-        reviewsCount: 890,
-        section: "Sir Bobby Charlton Stand Centrerad",
-        category: "Långsida",
-        priceSEK: 2800,
-        availableQuantity: 2,
-        deliveryType: "Mobilbiljett",
-        isVerified: true
-      },
-      {
-        id: "o2-5",
-        merchantName: "Ticketbande",
-        rating: 4.2,
-        reviewsCount: 450,
-        section: "Centenary Club VIP (Inkl. Mat)",
-        category: "VIP",
-        priceSEK: 6200,
-        availableQuantity: 4,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true
-      }
-    ]
-  },
-  {
-    id: "m3",
-    homeTeam: {
-      name: "Hammarby IF",
-      shortName: "HAM",
-      primaryColor: "#008751",
-      secondaryColor: "#FFFFFF",
-      emoji: "🇸🇪"
-    },
-    awayTeam: {
-      name: "AIK",
-      shortName: "AIK",
-      primaryColor: "#222222",
-      secondaryColor: "#F6EB61",
-      emoji: "✊"
-    },
-    league: "Allsvenskan",
-    date: "2026-06-25",
-    time: "19:00",
-    stadium: "Tele2 Arena",
-    city: "Stockholm",
-    priceFrom: 390,
-    totalTicketsCount: 184,
-    offers: [
-      {
-        id: "o3-1",
-        merchantName: "Biljett Nu",
-        rating: 4.5,
-        reviewsCount: 340,
-        section: "Södra Ståplats (Kortsida)",
-        category: "Kortsida",
-        priceSEK: 390,
-        availableQuantity: 4,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true
-      },
-      {
-        id: "o3-2",
-        merchantName: "StubHub",
-        rating: 4.8,
-        reviewsCount: 3102,
-        section: "Östra Långsida (Sektion 124)",
-        category: "Långsida",
-        priceSEK: 550,
-        availableQuantity: 2,
-        deliveryType: "Mobilbiljett",
-        isVerified: true
-      },
-      {
-        id: "o3-3",
-        merchantName: "Viagogo",
-        rating: 4.4,
-        reviewsCount: 1980,
-        section: "Västra Långsida Premium",
-        category: "Långsida",
-        priceSEK: 790,
-        availableQuantity: 4,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true
-      },
-      {
-        id: "o3-4",
-        merchantName: "Ticombo",
-        rating: 4.7,
-        reviewsCount: 1540,
-        section: "Bortasekt. Norra Stå (AIK)",
-        category: "Borta",
-        priceSEK: 450,
-        availableQuantity: 4,
-        deliveryType: "Mobilbiljett",
-        isVerified: true
-      }
-    ]
-  },
-  {
-    id: "m4",
-    homeTeam: {
       name: "Arsenal FC",
       shortName: "ARS",
       primaryColor: "#EF0107",
@@ -265,47 +18,197 @@ export const MATCHES_DATA: Match[] = [
       emoji: "🔵"
     },
     league: "Premier League",
-    date: "2026-07-12",
-    time: "17:30",
+    date: "2026-08-22",
+    time: "16:00",
     stadium: "Emirates Stadium",
     city: "London",
-    priceFrom: 1150,
-    totalTicketsCount: 226,
+    priceFrom: 1250,
+    totalTicketsCount: 420,
     offers: [
       {
-        id: "o4-1",
+        id: "o1-1",
         merchantName: "StubHub",
         rating: 4.8,
         reviewsCount: 3102,
-        section: "Clock End Upper Tier",
+        section: "Lower Tier - Sektion 12",
         category: "Kortsida",
-        priceSEK: 1150,
-        availableQuantity: 6,
+        priceSEK: 1250,
+        availableQuantity: 4,
         deliveryType: "E-biljett (Direkt)",
         isVerified: true
       },
       {
-        id: "o4-2",
+        id: "o1-2",
         merchantName: "Ticombo",
         rating: 4.7,
         reviewsCount: 1540,
-        section: "East Stand Lower Tier (Långsida)",
+        section: "Club Level - Långsida",
         category: "Långsida",
-        priceSEK: 1650,
+        priceSEK: 2100,
         availableQuantity: 2,
         deliveryType: "Mobilbiljett",
         isVerified: true
       },
       {
-        id: "o4-3",
-        merchantName: "Sports Events 365",
-        rating: 4.9,
+        id: "o1-3",
+        merchantName: "Viagogo",
+        rating: 4.4,
+        reviewsCount: 1980,
+        section: "Upper Tier - Långsida",
+        category: "Långsida",
+        priceSEK: 1650,
+        availableQuantity: 4,
+        deliveryType: "Mobilbiljett",
+        isVerified: true
+      }
+    ]
+  },
+  {
+    id: "m2",
+    homeTeam: {
+      name: "Real Madrid",
+      shortName: "RMA",
+      primaryColor: "#FFFFFF",
+      secondaryColor: "#FEBE10",
+      emoji: "🇪🇸"
+    },
+    awayTeam: {
+      name: "Atlético Madrid",
+      shortName: "ATM",
+      primaryColor: "#CB3524",
+      secondaryColor: "#FFFFFF",
+      emoji: "🔴"
+    },
+    league: "La Liga",
+    date: "2026-08-30",
+    time: "21:00",
+    stadium: "Santiago Bernabéu",
+    city: "Madrid",
+    priceFrom: 1450,
+    totalTicketsCount: 310,
+    offers: [
+      {
+        id: "o2-1",
+        merchantName: "Ticombo",
+        rating: 4.7,
+        reviewsCount: 1540,
+        section: "Fondo Sur - Kortsida",
+        category: "Kortsida",
+        priceSEK: 1450,
+        availableQuantity: 2,
+        deliveryType: "E-biljett (Direkt)",
+        isVerified: true
+      },
+      {
+        id: "o2-2",
+        merchantName: "Viagogo",
+        rating: 4.4,
+        reviewsCount: 1980,
+        section: "Lateral Alta - Långsida",
+        category: "Långsida",
+        priceSEK: 1980,
+        availableQuantity: 4,
+        deliveryType: "Mobilbiljett",
+        isVerified: true
+      }
+    ]
+  },
+  {
+    id: "m3",
+    homeTeam: {
+      name: "Manchester United",
+      shortName: "MUN",
+      primaryColor: "#DA291C",
+      secondaryColor: "#000000",
+      emoji: "🇬🇧"
+    },
+    awayTeam: {
+      name: "Liverpool FC",
+      shortName: "LIV",
+      primaryColor: "#C8102E",
+      secondaryColor: "#F6EB61",
+      emoji: "🔴"
+    },
+    league: "Premier League",
+    date: "2026-09-12",
+    time: "13:30",
+    stadium: "Old Trafford",
+    city: "Manchester",
+    priceFrom: 1850,
+    totalTicketsCount: 512,
+    offers: [
+      {
+        id: "o3-1",
+        merchantName: "StubHub",
+        rating: 4.8,
+        reviewsCount: 3102,
+        section: "Sir Alex Ferguson Stand",
+        category: "Långsida",
+        priceSEK: 2400,
+        availableQuantity: 2,
+        deliveryType: "Mobilbiljett",
+        isVerified: true
+      },
+      {
+        id: "o3-2",
+        merchantName: "FootballTicketNet",
+        rating: 4.2,
         reviewsCount: 890,
-        section: "Club Level VIP Hospitality (Inkl. dryck)",
-        category: "VIP",
-        priceSEK: 4200,
+        section: "Stretford End - Kortsida",
+        category: "Kortsida",
+        priceSEK: 1850,
+        availableQuantity: 6,
+        deliveryType: "E-biljett (Direkt)",
+        isVerified: true
+      }
+    ]
+  },
+  {
+    id: "m4",
+    homeTeam: {
+      name: "AC Milan",
+      shortName: "MIL",
+      primaryColor: "#E32119",
+      secondaryColor: "#000000",
+      emoji: "🇮🇹"
+    },
+    awayTeam: {
+      name: "Inter Milan",
+      shortName: "INT",
+      primaryColor: "#0053A0",
+      secondaryColor: "#000000",
+      emoji: "🔵"
+    },
+    league: "Serie A",
+    date: "2026-09-20",
+    time: "20:45",
+    stadium: "San Siro",
+    city: "Milano",
+    priceFrom: 950,
+    totalTicketsCount: 280,
+    offers: [
+      {
+        id: "o4-1",
+        merchantName: "Ticombo",
+        rating: 4.7,
+        reviewsCount: 1540,
+        section: "Secondo Anello Blu",
+        category: "Kortsida",
+        priceSEK: 950,
         availableQuantity: 4,
         deliveryType: "E-biljett (Direkt)",
+        isVerified: true
+      },
+      {
+        id: "o4-2",
+        merchantName: "Viagogo",
+        rating: 4.4,
+        reviewsCount: 1980,
+        section: "Primo Anello Rosso",
+        category: "Långsida",
+        priceSEK: 1750,
+        availableQuantity: 2,
+        deliveryType: "Mobilbiljett",
         isVerified: true
       }
     ]
@@ -313,35 +216,35 @@ export const MATCHES_DATA: Match[] = [
   {
     id: "m5",
     homeTeam: {
-      name: "AC Milan",
-      shortName: "MIL",
-      primaryColor: "#E31B23",
-      secondaryColor: "#000000",
-      emoji: "🇮🇹"
+      name: "FC Barcelona",
+      shortName: "BAR",
+      primaryColor: "#004D98",
+      secondaryColor: "#A50044",
+      emoji: "🇪🇸"
     },
     awayTeam: {
-      name: "Inter Milan",
-      shortName: "INT",
-      primaryColor: "#0066B2",
-      secondaryColor: "#000000",
-      emoji: "🔵"
+      name: "Bayern München",
+      shortName: "FCB",
+      primaryColor: "#DC052D",
+      secondaryColor: "#0066B2",
+      emoji: "🇩🇪"
     },
-    league: "Serie A",
-    date: "2026-07-19",
-    time: "20:45",
-    stadium: "San Siro",
-    city: "Milano",
-    priceFrom: 850,
-    totalTicketsCount: 195,
+    league: "Champions League",
+    date: "2026-09-29",
+    time: "21:00",
+    stadium: "Camp Nou",
+    city: "Barcelona",
+    priceFrom: 1600,
+    totalTicketsCount: 340,
     offers: [
       {
         id: "o5-1",
-        merchantName: "Ticombo",
-        rating: 4.7,
-        reviewsCount: 1540,
-        section: "Curva Sud (Kortsida)",
+        merchantName: "Sports Events 365",
+        rating: 4.6,
+        reviewsCount: 420,
+        section: "General Admission",
         category: "Kortsida",
-        priceSEK: 850,
+        priceSEK: 1600,
         availableQuantity: 4,
         deliveryType: "E-biljett (Direkt)",
         isVerified: true
@@ -351,196 +254,10 @@ export const MATCHES_DATA: Match[] = [
         merchantName: "StubHub",
         rating: 4.8,
         reviewsCount: 3102,
-        section: "Rosso Långsida – Kategori 1",
+        section: "Tribuna Nedre",
         category: "Långsida",
-        priceSEK: 1450,
-        availableQuantity: 4,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true
-      },
-      {
-        id: "o5-3",
-        merchantName: "Viagogo",
-        rating: 4.4,
-        reviewsCount: 1980,
-        section: "Curva Nord Bortasektion",
-        category: "Borta",
-        priceSEK: 980,
+        priceSEK: 2900,
         availableQuantity: 2,
-        deliveryType: "Mobilbiljett",
-        isVerified: true
-      }
-    ]
-  },
-  {
-    id: "m6",
-    homeTeam: {
-      name: "Paris Saint-Germain",
-      shortName: "PSG",
-      primaryColor: "#002F6C",
-      secondaryColor: "#DA291C",
-      emoji: "🇫🇷"
-    },
-    awayTeam: {
-      name: "Bayern München",
-      shortName: "FCB",
-      primaryColor: "#DC052D",
-      secondaryColor: "#0066B2",
-      emoji: "🔴"
-    },
-    league: "Champions League",
-    date: "2026-08-11",
-    time: "21:00",
-    stadium: "Parc des Princes",
-    city: "Paris",
-    priceFrom: 1650,
-    totalTicketsCount: 143,
-    offers: [
-      {
-        id: "o6-1",
-        merchantName: "StubHub",
-        rating: 4.8,
-        reviewsCount: 3102,
-        section: "Kortsida Virage Auteuil",
-        category: "Kortsida",
-        priceSEK: 1650,
-        availableQuantity: 2,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true
-      },
-      {
-        id: "o6-2",
-        merchantName: "Sports Events 365",
-        rating: 4.9,
-        reviewsCount: 890,
-        section: "Borelli Långsida nedre",
-        category: "Långsida",
-        priceSEK: 2750,
-        availableQuantity: 4,
-        deliveryType: "Mobilbiljett",
-        isVerified: true
-      },
-      {
-        id: "o6-3",
-        merchantName: "Ticombo",
-        rating: 4.7,
-        reviewsCount: 1540,
-        section: "Espace Borelli VIP (Inkl. Buffé)",
-        category: "VIP",
-        priceSEK: 8900,
-        availableQuantity: 2,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true
-      }
-    ]
-  },
-  {
-    id: "m7",
-    homeTeam: {
-      name: "Borussia Dortmund",
-      shortName: "BVB",
-      primaryColor: "#FDE100",
-      secondaryColor: "#000000",
-      emoji: "🇩🇪"
-    },
-    awayTeam: {
-      name: "Real Madrid",
-      shortName: "RMA",
-      primaryColor: "#00529F",
-      secondaryColor: "#FFFFFF",
-      emoji: "🇪🇸"
-    },
-    league: "Champions League",
-    date: "2026-08-18",
-    time: "21:00",
-    stadium: "Signal Iduna Park",
-    city: "Dortmund",
-    priceFrom: 1350,
-    totalTicketsCount: 209,
-    offers: [
-      {
-        id: "o7-1",
-        merchantName: "Viagogo",
-        rating: 4.4,
-        reviewsCount: 1980,
-        section: "Südtribüne (Ståplats kortsida)",
-        category: "Kortsida",
-        priceSEK: 1350,
-        availableQuantity: 1,
-        deliveryType: "Mobilbiljett",
-        isVerified: true
-      },
-      {
-        id: "o7-2",
-        merchantName: "StubHub",
-        rating: 4.8,
-        reviewsCount: 3102,
-        section: "Osttribüne Långsida (Block 43)",
-        category: "Långsida",
-        priceSEK: 1950,
-        availableQuantity: 4,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true
-      }
-    ]
-  },
-  {
-    id: "m8",
-    homeTeam: {
-      name: "Malmö FF",
-      shortName: "MFF",
-      primaryColor: "#009CDC",
-      secondaryColor: "#FFFFFF",
-      emoji: "🇸🇪"
-    },
-    awayTeam: {
-      name: "IFK Göteborg",
-      shortName: "IFK",
-      primaryColor: "#004B87",
-      secondaryColor: "#FFFFFF",
-      emoji: "🔵"
-    },
-    league: "Allsvenskan",
-    date: "2026-06-21",
-    time: "15:00",
-    stadium: "Eleda Stadion",
-    city: "Malmö",
-    priceFrom: 340,
-    totalTicketsCount: 167,
-    offers: [
-      {
-        id: "o8-1",
-        merchantName: "Biljett Nu",
-        rating: 4.5,
-        reviewsCount: 340,
-        section: "Norra Stå (Kortsida Malmö)",
-        category: "Kortsida",
-        priceSEK: 340,
-        availableQuantity: 6,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true
-      },
-      {
-        id: "o8-2",
-        merchantName: "StubHub",
-        rating: 4.8,
-        reviewsCount: 3102,
-        section: "Sittplats Långsida (Sektion 19)",
-        category: "Långsida",
-        priceSEK: 480,
-        availableQuantity: 4,
-        deliveryType: "Mobilbiljett",
-        isVerified: true
-      },
-      {
-        id: "o8-3",
-        merchantName: "Ticombo",
-        rating: 4.7,
-        reviewsCount: 1540,
-        section: "Bortaläktaren (Sektion 17)",
-        category: "Borta",
-        priceSEK: 350,
-        availableQuantity: 4,
         deliveryType: "Mobilbiljett",
         isVerified: true
       }
