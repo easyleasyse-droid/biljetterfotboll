@@ -397,6 +397,7 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     history: "Klubben har på kort tid etablerat sig som en stormakt i spansk och europeisk fotboll.",
     faqs: [{ question: "Hur reser man bäst hit?", answer: "Tåg från Valencia till Vila-real tar cirka en timme." }]
   },
+  "villareal": TEAMS_SEO_DATA["villarreal"],
   "real-betis": {
     name: "Real Betis",
     stadiumName: "Benito Villamarín",
