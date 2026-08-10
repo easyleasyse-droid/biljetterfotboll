@@ -408,7 +408,7 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     heroImage: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
     stadiumLayoutImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
-    googleMapsEmbedUrl: "https://www.google.com/maps?q=Estadio%20Benito%20Villamar%C3%ADn%20Sevilla&output=embed",
+    googleMapsEmbedUrl: "https://maps.google.com/maps?q=37.356539,-5.988738&hl=sv&z=15&output=embed",
     howToBuy: "Officiella hemsidan är säkrast. Undvik oseriösa andrahandsajter.",
     sectionsAndPrices: "Golsur-läktaren är känd för sin fantastiska stämning.",
     packages: "Vi listar paket som inkluderar hotell i centrala Sevilla.",
