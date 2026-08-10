@@ -408,7 +408,7 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     heroImage: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
     stadiumLayoutImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
-    googleMapsEmbedUrl: "https://maps.google.com/maps?q=37.356539,-5.988738&hl=sv&z=15&output=embed",
+    googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3170.825227741484!2d-5.988737684693998!3d37.35653897983777!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd126e7929cf3991%3A0x62a8edc32e92c212!2sEstadio%20Benito%20Villamar%C3%ADn!5e0!3m2!1ssv!2sse",
     howToBuy: "Officiella hemsidan är säkrast. Undvik oseriösa andrahandsajter.",
     sectionsAndPrices: "Golsur-läktaren är känd för sin fantastiska stämning.",
     packages: "Vi listar paket som inkluderar hotell i centrala Sevilla.",
