@@ -397,7 +397,24 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     history: "Klubben har på kort tid etablerat sig som en stormakt i spansk och europeisk fotboll.",
     faqs: [{ question: "Hur reser man bäst hit?", answer: "Tåg från Valencia till Vila-real tar cirka en timme." }]
   },
-  "villareal": TEAMS_SEO_DATA["villarreal"],
+  "villareal": {
+    name: "Villarreal CF",
+    stadiumName: "Estadio de la Cerámica",
+    logo: "/logos/villareal.png",
+    stadiumDescription: "En modern arena känd för sin fantastiska arkitektur och keramiska fasad.",
+    location: "Villarreal, Spanien",
+    league: "La Liga",
+    aboutTickets: "Villarreal erbjuder en mycket gemytlig upplevelse med hög biljettillgänglighet.",
+    heroImage: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
+    contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
+    stadiumLayoutImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
+    googleMapsEmbedUrl: "http://googleusercontent.com/maps.google.com/6",
+    howToBuy: "Biljetter köps smidigast via klubbens officiella sajt.",
+    sectionsAndPrices: "Tribuna-sektionerna erbjuder bäst sikt över planen.",
+    packages: "Matchpaket med hotell i närliggande Castellón eller Valencia.",
+    history: "Klubben har på kort tid etablerat sig som en stormakt i spansk och europeisk fotboll.",
+    faqs: [{ question: "Hur reser man bäst hit?", answer: "Tåg från Valencia till Vila-real tar cirka en timme." }]
+  },
   "real-betis": {
     name: "Real Betis",
     stadiumName: "Benito Villamarín",
