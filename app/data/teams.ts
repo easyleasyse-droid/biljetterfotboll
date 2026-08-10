@@ -387,7 +387,7 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Villarreal, Spanien",
     league: "La Liga",
     aboutTickets: "Villarreal erbjuder en mycket gemytlig upplevelse med hög biljettillgänglighet.",
-    heroImage: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop",
+    heroImage: "/stadiums/ceramica-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
     stadiumLayoutImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
     googleMapsEmbedUrl: "https://maps.google.com/maps?q=Estadio+de+la+Ceramica,+Villarreal&t=&z=16&ie=UTF8&iwloc=&output=embed",
