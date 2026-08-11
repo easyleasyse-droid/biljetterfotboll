@@ -60,7 +60,7 @@ export default function Hero({
           (m.city || "").toLowerCase().includes(query) ||
           (m.stadium || "").toLowerCase().includes(query)
         );
-      }).slice(0, 4)
+      }).slice(0, 6)
     : [];
 
   const hasResults = matchingTeams.length > 0 || suggestions.length > 0;
@@ -128,8 +128,9 @@ export default function Hero({
             )}
           </div>
 
+          {/* Autocomplete Dropdown med scroll-stöd */}
           {isFocused && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xl z-50 text-left divide-y divide-slate-150">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 text-left overflow-y-auto max-h-[70vh] divide-y divide-slate-150">
               {searchText ? (
                 hasResults ? (
                   <div className="py-2 bg-white">
