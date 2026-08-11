@@ -40,11 +40,11 @@ export default function Hero({
     if (!searchText) return false;
     const query = searchText.toLowerCase();
     return (
-      m.homeTeam.name.toLowerCase().includes(query) ||
-      m.awayTeam.name.toLowerCase().includes(query) ||
-      m.league.toLowerCase().includes(query) ||
-      m.city.toLowerCase().includes(query) ||
-      m.stadium.toLowerCase().includes(query)
+      (m.homeTeam?.name || "").toLowerCase().includes(query) ||
+      (m.awayTeam?.name || "").toLowerCase().includes(query) ||
+      (m.league || "").toLowerCase().includes(query) ||
+      (m.city || "").toLowerCase().includes(query) ||
+      (m.stadium || "").toLowerCase().includes(query)
     );
   });
 
@@ -117,52 +117,44 @@ export default function Hero({
             )}
           </div>
 
-               {/* Autocomplete / Suggestions Dropdown */}
-{isFocused && (
-  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xl z-50 text-left divide-y divide-slate-150">
-    {searchText ? (
-      suggestions && suggestions.length > 0 ? (
-        <div className="py-2 bg-white">
-          <div className="px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-            Hittade matcher
-          </div>
-          {suggestions.slice(0, 5).map((match) => (
-            <button
-              key={match.id}
-              onClick={() => {
-                onSelectMatch(match);
-                setSearchText("");
-                setIsFocused(false);
-              }}
-              className="w-full px-4 py-3.5 hover:bg-slate-50 flex items-center justify-between text-xs sm:text-sm transition-colors text-left text-slate-900"
-            >
-              <div className="flex items-center gap-2.5">
-                <span className="text-base">{match.homeTeam?.emoji || "⚽"}</span>
-                <span className="font-extrabold text-blue-900">
-                  {match.homeTeam?.name || "Hemmalag"} – {match.awayTeam?.name || "Bortalag"}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 text-xs">
-                {match.league && (
-                  <span className="bg-slate-100 text-blue-900 px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">
-                    {match.league}
-                  </span>
-                )}
-                {match.priceFrom && (
-                  <span className="font-black text-blue-600">Från {match.priceFrom} kr</span>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="p-4 text-xs text-slate-500 text-center">
-          Inga matcher hittades.
-        </div>
-      )
-    ) : null}
-  </div>
-)}
+          {/* Autocomplete / Suggestions Dropdown */}
+          {isFocused && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xl z-50 text-left divide-y divide-slate-150">
+              {searchText ? (
+                suggestions && suggestions.length > 0 ? (
+                  <div className="py-2 bg-white">
+                    <div className="px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Hittade matcher
+                    </div>
+                    {suggestions.slice(0, 5).map((match) => (
+                      <button
+                        key={match.id}
+                        onClick={() => {
+                          onSelectMatch(match);
+                          setSearchText("");
+                          setIsFocused(false);
+                        }}
+                        className="w-full px-4 py-3.5 hover:bg-slate-50 flex items-center justify-between text-xs sm:text-sm transition-colors text-left text-slate-900 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-base">{match.homeTeam?.emoji || "⚽"}</span>
+                          <span className="font-extrabold text-blue-900">
+                            {match.homeTeam?.name || "Hemmalag"} – {match.awayTeam?.name || "Bortalag"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs">
+                          {match.league && (
+                            <span className="bg-slate-100 text-blue-900 px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">
+                              {match.league}
+                            </span>
+                          )}
+                          {match.priceFrom && (
+                            <span className="font-black text-blue-600">Från {match.priceFrom} kr</span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 ) : (
                   <div className="p-6 text-center text-slate-500 text-xs font-semibold bg-white">
                     Inga matcher hittades för <span className="text-blue-900 font-mono font-bold">"{searchText}"</span>. Prova ett annat sökord.
@@ -181,7 +173,7 @@ export default function Hero({
                           setSearchText(m.query);
                           setIsFocused(false);
                         }}
-                        className="bg-slate-50 hover:bg-slate-100 text-xs text-blue-900 font-bold px-3.5 py-2 rounded-xl border border-slate-200 transition-colors cursor-pointer flex items-center gap-1.1"
+                        className="bg-slate-50 hover:bg-slate-100 text-xs text-blue-900 font-bold px-3.5 py-2 rounded-xl border border-slate-200 transition-colors cursor-pointer flex items-center gap-1"
                       >
                         {m.label === "El Clásico" && <Flame className="w-3.5 h-3.5 text-amber-500" />}
                         <span>{m.label}</span>
