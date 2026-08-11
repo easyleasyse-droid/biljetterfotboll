@@ -15,15 +15,14 @@ import { TEAMS_SEO_DATA } from "./data/teams";
 import { Filter, Trophy, MapPin, Loader2 } from "lucide-react";
 
 export default function HomePage() {
-  const [matchesData, setMatchesData] = useState([]); // Håller våra live-matcher
-  const [loading, setLoading] = useState(true); // Laddningsstatus
+  const [matchesData, setMatchesData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [selectedLeague, setSelectedLeague] = useState(null);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [bookingQuantity, setBookingQuantity] = useState(2);
 
-  // Hämta matcherna från vår interna, säkra API-rutt när sidan laddas
   useEffect(() => {
     async function fetchLiveMatches() {
       try {
@@ -43,7 +42,6 @@ export default function HomePage() {
 
   const teamSlugs = TEAMS_SEO_DATA ? Object.keys(TEAMS_SEO_DATA) : [];
 
-  // Kraschsäker filtrering av matcher baserat på liga och söktext
   const filteredMatches = matchesData.filter((match) => {
     if (selectedLeague && match.league !== selectedLeague) {
       return false;
@@ -136,7 +134,6 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* MATCHLISTAN - Visar laddningssnurra om datan hämtas */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 gap-3 text-slate-500">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -150,7 +147,6 @@ export default function HomePage() {
         />
       )}
 
-      {/* Sök biljetter per lag */}
       <section className="bg-slate-50 border-t border-b border-slate-200 py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-black tracking-tight text-slate-800 mb-8 flex items-center gap-2">
