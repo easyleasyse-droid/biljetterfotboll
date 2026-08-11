@@ -43,36 +43,25 @@ export default function HomePage() {
 
   const teamSlugs = TEAMS_SEO_DATA ? Object.keys(TEAMS_SEO_DATA) : [];
 
+  // Kraschsäker filtrering av matcher baserat på liga och söktext
   const filteredMatches = matchesData.filter((match) => {
     if (selectedLeague && match.league !== selectedLeague) {
       return false;
     }
 
-    // Sök på LAG (för att kunna klicka sig direkt till lagsidan)
-const filteredTeams = teams.filter((team) => {
-  if (!searchText) return false;
-  const q = searchText.toLowerCase();
+    if (searchText) {
+      const q = searchText.toLowerCase();
+      const matchHome = (match.homeTeam?.name || "").toLowerCase().includes(q);
+      const matchAway = (match.awayTeam?.name || "").toLowerCase().includes(q);
+      const matchStadium = (match.stadium || "").toLowerCase().includes(q);
+      const matchCity = (match.city || "").toLowerCase().includes(q);
+      const matchLeague = (match.league || "").toLowerCase().includes(q);
 
-  const nameMatch = (team.name || "").toLowerCase().includes(q);
-  const cityMatch = (team.city || "").toLowerCase().includes(q);
-  const stadiumMatch = (team.stadium || "").toLowerCase().includes(q);
+      return matchHome || matchAway || matchStadium || matchCity || matchLeague;
+    }
 
-  return nameMatch || cityMatch || stadiumMatch;
-});
-
-// Sök på MATCHER
-const filteredMatches = matches.filter((match) => {
-  if (!searchText) return false;
-  const q = searchText.toLowerCase();
-
-  const matchHome = (match.homeTeam?.name || "").toLowerCase().includes(q);
-  const matchAway = (match.awayTeam?.name || "").toLowerCase().includes(q);
-  const matchStadium = (match.stadium || "").toLowerCase().includes(q);
-  const matchCity = (match.city || "").toLowerCase().includes(q);
-  const matchLeague = (match.league || "").toLowerCase().includes(q);
-
-  return matchHome || matchAway || matchStadium || matchCity || matchLeague;
-});
+    return true;
+  });
 
   const handleSearchFocus = () => {
     const searchInput = document.getElementById("hero-main-search");
