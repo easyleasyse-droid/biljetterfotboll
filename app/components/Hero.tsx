@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, Trophy, MapPin, X, Flame, ShieldAlert, Sparkles } from "lucide-react";
+import { Search, Trophy, MapPin, X, Flame, Sparkles, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { Match } from "../types";
+import { TEAMS_SEO_DATA } from "../data/teams";
 
 interface HeroProps {
   searchText: string;
@@ -24,7 +26,6 @@ export default function Hero({
   const [isFocused, setIsFocused] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close suggestions directory if clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -35,18 +36,36 @@ export default function Hero({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Filter matches for suggestions
-  const suggestions = matches.filter((m) => {
-    if (!searchText) return false;
-    const query = searchText.toLowerCase();
-    return (
-      (m.homeTeam?.name || "").toLowerCase().includes(query) ||
-      (m.awayTeam?.name || "").toLowerCase().includes(query) ||
-      (m.league || "").toLowerCase().includes(query) ||
-      (m.city || "").toLowerCase().includes(query) ||
-      (m.stadium || "").toLowerCase().includes(query)
-    );
-  });
+  // 1. Sök i lagsidor (TEAMS_SEO_DATA)
+  const teamKeys = TEAMS_SEO_DATA ? Object.keys(TEAMS_SEO_DATA) : [];
+  const query = searchText.toLowerCase().trim();
+
+  const matchingTeams = query
+    ? teamKeys
+        .map((slug) => ({ slug, ...TEAMS_SEO_DATA[slug] }))
+        .filter((team) => {
+          const nameMatch = (team.name || "").toLowerCase().includes(query);
+          const stadiumMatch = (team.stadiumName || "").toLowerCase().includes(query);
+          const cityMatch = (team.city || "").toLowerCase().includes(query);
+          return nameMatch || stadiumMatch || cityMatch;
+        })
+        .slice(0, 4)
+    : [];
+
+  // 2. Sök i matcher
+  const suggestions = query
+    ? matches.filter((m) => {
+        return (
+          (m.homeTeam?.name || "").toLowerCase().includes(query) ||
+          (m.awayTeam?.name || "").toLowerCase().includes(query) ||
+          (m.league || "").toLowerCase().includes(query) ||
+          (m.city || "").toLowerCase().includes(query) ||
+          (m.stadium || "").toLowerCase().includes(query)
+        );
+      }).slice(0, 4)
+    : [];
+
+  const hasResults = matchingTeams.length > 0 || suggestions.length > 0;
 
   const popularSearches = [
     { label: "El Clásico", query: "FC Barcelona" },
@@ -57,29 +76,24 @@ export default function Hero({
 
   return (
     <section className="relative overflow-hidden bg-slate-50 text-slate-900 py-16 px-4 md:py-24 border-b border-slate-200">
-      {/* Subtle brand geometry layout instead of glowing lights */}
       <div className="absolute top-0 left-1/4 w-80 h-80 bg-blue-100/50 rounded-full blur-2xl pointer-events-none"></div>
       <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-slate-100 rounded-full blur-2xl pointer-events-none"></div>
 
       <div className="max-w-4xl mx-auto text-center relative z-10" id="hero-section">
-        {/* Decorative Badge */}
         <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6 shadow-sm">
           <Sparkles className="w-3.5 h-3.5 text-blue-600" />
           <span>Svensk biljettjämförelse för sportevenemang</span>
         </div>
 
-        {/* Hero Headings */}
         <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black text-blue-900 leading-[0.95] tracking-tight mb-6 max-w-3xl mx-auto">
           Hitta billigaste <br />
-          <span className="text-blue-600">
-            fotbollsbiljetterna
-          </span>
+          <span className="text-blue-600">fotbollsbiljetterna</span>
         </h2>
         <p className="text-slate-500 text-base sm:text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed font-semibold">
           Vi jämför priser från över 50 auktoriserade återförsäljare så att du alltid får bäst deal på marknaden.
         </p>
 
-        {/* Search Bar Container */}
+        {/* Search Bar */}
         <div className="max-w-2xl mx-auto relative px-1 sm:px-0" ref={dropdownRef}>
           <div className="relative flex items-center bg-white border border-slate-200 hover:border-slate-350 focus-within:border-blue-900 focus-within:ring-4 focus-within:ring-blue-900/5 rounded-2xl transition-all duration-200 shadow-xl shadow-blue-900/10 p-1.5">
             <div className="pl-4 text-slate-400">
@@ -121,43 +135,79 @@ export default function Hero({
           {isFocused && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xl z-50 text-left divide-y divide-slate-150">
               {searchText ? (
-                suggestions && suggestions.length > 0 ? (
+                hasResults ? (
                   <div className="py-2 bg-white">
-                    <div className="px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      Hittade matcher
-                    </div>
-                    {suggestions.slice(0, 5).map((match) => (
-                      <button
-                        key={match.id}
-                        onClick={() => {
-                          onSelectMatch(match);
-                          setSearchText("");
-                          setIsFocused(false);
-                        }}
-                        className="w-full px-4 py-3.5 hover:bg-slate-50 flex items-center justify-between text-xs sm:text-sm transition-colors text-left text-slate-900 cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-base">{match.homeTeam?.emoji || "⚽"}</span>
-                          <span className="font-extrabold text-blue-900">
-                            {match.homeTeam?.name || "Hemmalag"} – {match.awayTeam?.name || "Bortalag"}
-                          </span>
+                    {/* Sektion 1: Lagsidor */}
+                    {matchingTeams.length > 0 && (
+                      <div className="mb-2">
+                        <div className="px-4 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
+                          Klubbar & Lagsidor
                         </div>
-                        <div className="flex items-center gap-3 text-xs">
-                          {match.league && (
-                            <span className="bg-slate-100 text-blue-900 px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">
-                              {match.league}
-                            </span>
-                          )}
-                          {match.priceFrom && (
-                            <span className="font-black text-blue-600">Från {match.priceFrom} kr</span>
-                          )}
+                        {matchingTeams.map((team) => (
+                          <Link
+                            key={team.slug}
+                            href={`/lag/${team.slug}`}
+                            onClick={() => setIsFocused(false)}
+                            className="w-full px-4 py-2.5 hover:bg-slate-50 flex items-center justify-between text-xs sm:text-sm transition-colors text-left text-slate-900 group"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <Trophy className="w-4 h-4 text-indigo-600" />
+                              <span className="font-extrabold text-slate-900 group-hover:text-indigo-600">
+                                {team.name}
+                              </span>
+                              <span className="text-[10px] text-slate-400 font-normal">
+                                ({team.stadiumName || "Lagsida"})
+                              </span>
+                            </div>
+                            <div className="flex items-center text-xs text-indigo-600 font-bold gap-1">
+                              <span>Visa biljetter</span>
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Sektion 2: Matcher */}
+                    {suggestions.length > 0 && (
+                      <div>
+                        <div className="px-4 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
+                          Matcher
                         </div>
-                      </button>
-                    ))}
+                        {suggestions.map((match) => (
+                          <button
+                            key={match.id}
+                            onClick={() => {
+                              onSelectMatch(match);
+                              setSearchText("");
+                              setIsFocused(false);
+                            }}
+                            className="w-full px-4 py-3 hover:bg-slate-50 flex items-center justify-between text-xs sm:text-sm transition-colors text-left text-slate-900 cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-base">{match.homeTeam?.emoji || "⚽"}</span>
+                              <span className="font-extrabold text-blue-900">
+                                {match.homeTeam?.name || "Hemmalag"} – {match.awayTeam?.name || "Bortalag"}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs">
+                              {match.league && (
+                                <span className="bg-slate-100 text-blue-900 px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">
+                                  {match.league}
+                                </span>
+                              )}
+                              {match.priceFrom && (
+                                <span className="font-black text-blue-600">Från {match.priceFrom} kr</span>
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="p-6 text-center text-slate-500 text-xs font-semibold bg-white">
-                    Inga matcher hittades för <span className="text-blue-900 font-mono font-bold">"{searchText}"</span>. Prova ett annat sökord.
+                    Inga träffar hittades för <span className="text-blue-900 font-mono font-bold">"{searchText}"</span>.
                   </div>
                 )
               ) : (
@@ -186,7 +236,7 @@ export default function Hero({
           )}
         </div>
 
-        {/* Quick Filter Tags Below Search */}
+        {/* Quick Filter Tags */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Snabbval:</span>
           {["Allsvenskan", "Premier League", "La Liga", "Champions League"].map((leagueName) => (
