@@ -48,19 +48,31 @@ export default function HomePage() {
       return false;
     }
 
-    if (searchText) {
-      const q = searchText.toLowerCase();
-      const matchHome = (match.homeTeam?.name || "").toLowerCase().includes(q);
-      const matchAway = (match.awayTeam?.name || "").toLowerCase().includes(q);
-      const matchStadium = (match.stadium || "").toLowerCase().includes(q);
-      const matchCity = (match.city || "").toLowerCase().includes(q);
-      const matchLeague = (match.league || "").toLowerCase().includes(q);
-      
-      return matchHome || matchAway || matchStadium || matchCity || matchLeague;
-    }
+    // Sök på LAG (för att kunna klicka sig direkt till lagsidan)
+const filteredTeams = teams.filter((team) => {
+  if (!searchText) return false;
+  const q = searchText.toLowerCase();
 
-    return true;
-  });
+  const nameMatch = (team.name || "").toLowerCase().includes(q);
+  const cityMatch = (team.city || "").toLowerCase().includes(q);
+  const stadiumMatch = (team.stadium || "").toLowerCase().includes(q);
+
+  return nameMatch || cityMatch || stadiumMatch;
+});
+
+// Sök på MATCHER
+const filteredMatches = matches.filter((match) => {
+  if (!searchText) return false;
+  const q = searchText.toLowerCase();
+
+  const matchHome = (match.homeTeam?.name || "").toLowerCase().includes(q);
+  const matchAway = (match.awayTeam?.name || "").toLowerCase().includes(q);
+  const matchStadium = (match.stadium || "").toLowerCase().includes(q);
+  const matchCity = (match.city || "").toLowerCase().includes(q);
+  const matchLeague = (match.league || "").toLowerCase().includes(q);
+
+  return matchHome || matchAway || matchStadium || matchCity || matchLeague;
+});
 
   const handleSearchFocus = () => {
     const searchInput = document.getElementById("hero-main-search");
