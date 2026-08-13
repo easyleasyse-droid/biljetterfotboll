@@ -3,7 +3,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Ticket } from "lucide-react";
+import { Ticket, CheckCircle2, ShieldCheck, Zap } from "lucide-react";
 
 export default function Header() {
   return (
@@ -22,7 +22,7 @@ export default function Header() {
         {/* Logo / Brand Name */}
         <Link 
           href="/"
-          className="flex items-center gap-2.5 cursor-pointer group"
+          className="flex items-center gap-2.5 cursor-pointer group shrink-0"
           id="brand-logo"
         >
           <div className="w-9 h-9 bg-blue-900 rounded-lg flex items-center justify-center text-white transition-transform group-hover:scale-105 duration-200 shadow-md shadow-blue-950/20">
@@ -37,6 +37,29 @@ export default function Header() {
             </p>
           </div>
         </Link>
+
+        {/* Right Side - Value Proposition & Badges */}
+        <div className="hidden md:flex items-center gap-6">
+          <div className="text-right border-r border-slate-200 pr-6 hidden lg:block">
+            <p className="text-xs font-extrabold text-blue-900">
+              Vi jämför priserna åt dig – så att du slipper
+            </p>
+            <p className="text-[11px] text-slate-400 font-medium">
+              Oberoende prissökning på ett ställe
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs font-bold text-slate-600">
+            <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>Verifierade källor</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200 hidden sm:flex">
+              <Zap className="w-4 h-4 text-amber-500" />
+              <span>Uppdateras direkt</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Navigation Bar */}
