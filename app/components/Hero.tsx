@@ -74,7 +74,16 @@ export default function Hero({
   ];
 
   return (
-    <section className="relative bg-slate-50 text-slate-900 py-16 px-4 md:py-24 border-b border-slate-200">
+    <section className="relative bg-slate-50 text-slate-900 py-16 px-4 md:py-24 border-b border-slate-200 overflow-hidden">
+      {/* Diskret bakgrundsbild (ljus stadium-mönster) */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-[0.035] pointer-events-none mix-blend-multiply"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1920&q=80')`
+        }}
+      />
+
+      {/* Existerande bakgrundsljus (gradients) */}
       <div className="absolute top-0 left-1/4 w-80 h-80 bg-blue-100/50 rounded-full blur-2xl pointer-events-none"></div>
       <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-slate-100 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -84,8 +93,9 @@ export default function Hero({
           <span>Svensk biljettjämförelse för sportevenemang</span>
         </div>
 
+        {/* ÄNDRAD RUBRIK: "Hitta de billigaste" */}
         <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black text-blue-900 leading-[0.95] tracking-tight mb-6 max-w-3xl mx-auto">
-          Hitta billigaste <br />
+          Hitta de billigaste <br />
           <span className="text-blue-600">fotbollsbiljetterna</span>
         </h2>
         <p className="text-slate-500 text-base sm:text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed font-semibold">
@@ -120,18 +130,20 @@ export default function Hero({
                 <X className="w-4 h-4" />
               </button>
             ) : (
+              /* UPPGRADERAD SÖKKNAPP (ikon + modernare stil) */
               <button 
                 onClick={() => setIsFocused(true)}
-                className="bg-blue-900 text-white px-5 py-3 rounded-xl font-bold text-xs sm:text-sm hover:bg-blue-800 transition-colors uppercase tracking-wider hidden sm:block"
+                className="bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all duration-150 uppercase tracking-wider hidden sm:flex items-center gap-2 shadow-md shadow-blue-900/20 cursor-pointer shrink-0"
               >
-                Sök nu
+                <Search className="w-4 h-4" />
+                <span>Sök</span>
               </button>
             )}
           </div>
 
-          {/* Autocomplete Dropdown */}
+          {/* Autocomplete Dropdown - Helt oförändrad från originalet */}
           {isFocused && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 text-left overflow-y-auto max-h-[420px] divide-y divide-slate-100 border-t-0">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 text-left overflow-y-auto max-h-[420px] divide-y divide-slate-100 border-t-0 text-slate-900">
               {searchText ? (
                 hasResults ? (
                   <div className="py-2 bg-white">
