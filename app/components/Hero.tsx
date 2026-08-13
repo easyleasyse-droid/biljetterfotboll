@@ -39,7 +39,6 @@ export default function Hero({
   const teamKeys = TEAMS_SEO_DATA ? Object.keys(TEAMS_SEO_DATA) : [];
   const query = searchText.toLowerCase().trim();
 
-  // Begränsa till max 2 lagsidor så att matcherna får plats direkt
   const matchingTeams = query
     ? teamKeys
         .map((slug) => ({ slug, ...TEAMS_SEO_DATA[slug] }))
@@ -49,14 +48,13 @@ export default function Hero({
           const locationMatch = (team.location || "").toLowerCase().includes(query);
           return nameMatch || stadiumMatch || locationMatch;
         })
-        .slice(0, 2)
+        .slice(0, 3)
     : [];
 
-  // Robust sökfiltrering som hanterar både strängar och objekt för lagspecifikationer
   const suggestions = query
     ? matches.filter((m) => {
-        const homeName = typeof m.homeTeam === "string" ? m.homeTeam : m.homeTeam?.name || "";
-        const awayName = typeof m.awayTeam === "string" ? m.awayTeam : m.awayTeam?.name || "";
+        const homeName = m.homeTeam?.name || "";
+        const awayName = m.awayTeam?.name || "";
         const leagueName = m.league || "";
         const cityName = m.city || "";
         const stadiumName = m.stadium || "";
@@ -68,7 +66,7 @@ export default function Hero({
           cityName.toLowerCase().includes(query) ||
           stadiumName.toLowerCase().includes(query)
         );
-      }).slice(0, 8)
+      }).slice(0, 5)
     : [];
 
   const hasResults = matchingTeams.length > 0 || suggestions.length > 0;
@@ -81,22 +79,7 @@ export default function Hero({
   ];
 
   return (
-    <section className="relative bg-slate-50 text-slate-900 py-16 px-4 md:py-24 border-b border-slate-200 overflow-hidden">
-      {/* Bakgrundsbild med rätt opacitet för ljusskärmar */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-15"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1920&q=80')`
-        }}
-      />
-      
-      {/* Mjuk tonad övergång mot bakgrunden */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-50/70 via-slate-50/50 to-slate-50 pointer-events-none" />
-
-      {/* Ljus-ackorder i bakgrunden */}
-      <div className="absolute top-0 left-1/4 w-80 h-80 bg-blue-100/60 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-slate-200/50 rounded-full blur-3xl pointer-events-none"></div>
-
+    <section className="relative bg-slate-50 bg-[url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center text-slate-900 py-16 px-4 md:py-24 border-b border-slate-200">
       <div className="max-w-4xl mx-auto text-center relative z-10" id="hero-section">
         <div className="inline-flex items-center gap-1.5 bg-blue-50/90 border border-blue-200 text-blue-700 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6 shadow-sm backdrop-blur-sm">
           <Sparkles className="w-3.5 h-3.5 text-blue-600" />
@@ -130,7 +113,7 @@ export default function Hero({
               id="hero-main-search"
             />
 
-            {searchText ? (
+            {searchText && (
               <button
                 onClick={() => setSearchText("")}
                 className="p-1.5 hover:bg-slate-100 rounded-full mr-2 text-slate-400 hover:text-slate-800 transition-colors cursor-pointer"
@@ -138,20 +121,11 @@ export default function Hero({
               >
                 <X className="w-4 h-4" />
               </button>
-            ) : (
-              <button 
-                onClick={() => setIsFocused(true)}
-                className="bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all duration-150 uppercase tracking-wider hidden sm:flex items-center gap-2 shadow-md shadow-blue-900/20 cursor-pointer shrink-0"
-              >
-                <Search className="w-4 h-4" />
-                <span>Sök</span>
-              </button>
             )}
           </div>
 
-          {/* Autocomplete Dropdown med scroll och säkerställd visning av matcher */}
           {isFocused && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 text-left overflow-y-auto max-h-[380px] divide-y divide-slate-100 text-slate-900">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 text-left overflow-hidden divide-y divide-slate-100 text-slate-900">
               {searchText ? (
                 hasResults ? (
                   <div className="py-2 bg-white">
@@ -190,40 +164,34 @@ export default function Hero({
                         <div className="px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/80">
                           Matcher
                         </div>
-                        {suggestions.map((match) => {
-                          const homeName = typeof match.homeTeam === "string" ? match.homeTeam : match.homeTeam?.name || "Hemmalag";
-                          const awayName = typeof match.awayTeam === "string" ? match.awayTeam : match.awayTeam?.name || "Bortalag";
-                          const homeEmoji = typeof match.homeTeam === "object" && match.homeTeam?.emoji ? match.homeTeam.emoji : "⚽";
-
-                          return (
-                            <button
-                              key={match.id}
-                              onClick={() => {
-                                onSelectMatch(match);
-                                setSearchText("");
-                                setIsFocused(false);
-                              }}
-                              className="w-full px-4 py-3 hover:bg-blue-50/50 flex items-center justify-between text-xs sm:text-sm transition-colors text-left text-slate-900 cursor-pointer border-b border-slate-50 last:border-none"
-                            >
-                              <div className="flex items-center gap-2.5">
-                                <span className="text-base shrink-0">{homeEmoji}</span>
-                                <span className="font-extrabold text-blue-900">
-                                  {homeName} – {awayName}
+                        {suggestions.map((match) => (
+                          <button
+                            key={match.id}
+                            onClick={() => {
+                              onSelectMatch(match);
+                              setSearchText("");
+                              setIsFocused(false);
+                            }}
+                            className="w-full px-4 py-3 hover:bg-blue-50/50 flex items-center justify-between text-xs sm:text-sm transition-colors text-left text-slate-900 cursor-pointer border-b border-slate-50 last:border-none"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-base shrink-0">{match.homeTeam?.emoji || "⚽"}</span>
+                              <span className="font-extrabold text-blue-900">
+                                {match.homeTeam?.name} – {match.awayTeam?.name}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs shrink-0">
+                              {match.league && (
+                                <span className="bg-slate-100 text-blue-900 px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider hidden sm:inline-block">
+                                  {match.league}
                                 </span>
-                              </div>
-                              <div className="flex items-center gap-3 text-xs shrink-0">
-                                {match.league && (
-                                  <span className="bg-slate-100 text-blue-900 px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider hidden sm:inline-block">
-                                    {match.league}
-                                  </span>
-                                )}
-                                {match.priceFrom && (
-                                  <span className="font-black text-blue-600">Från {match.priceFrom} kr</span>
-                                )}
-                              </div>
-                            </button>
-                          );
-                        })}
+                              )}
+                              {match.priceFrom && (
+                                <span className="font-black text-blue-600">Från {match.priceFrom} kr</span>
+                              )}
+                            </div>
+                          </button>
+                        ))}
                       </div>
                     )}
                   </div>
