@@ -223,9 +223,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Malmö, Sverige",
     league: "Allsvenskan",
     aboutTickets: "Köp biljetter till Sveriges mest framgångsrika klubb i modern tid. Se Malmö FF slåss om SM-guldet i Allsvenskan eller upplev magiska Europakvällar på Eleda Stadion.",
-    heroImage: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1200&auto=format&fit=crop", // Garanterad fotbollsstadion i strålkastarljus (INGEN LAMBORGHINI HÄR!)
+    heroImage: "/stadiums/eleda-stadion-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=600&auto=format&fit=crop", // Fotboll på gräs
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1556056504-51717367a80c?q=80&w=600&auto=format&fit=crop", // Läktarsektioner
+    stadiumLayoutImage: "/stadiums/eleda-stadion-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2254.735235546252!2d12.985449273413988!3d55.58434726410427!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4653a15dc4a3b723%3A0x633519894e6dc637!2sEleda%20Stadion!5e0!3m2!1ssv!2sse!4v1710000000008!5m2!1ssv!2sse",
     howToBuy: "Till ordinarie allsvenska seriematcher säljs biljetter enkelt direkt via Malmö FF:s officiella biljettsystem (axs). Men till de glödheta Skånederbyna, guldmatcher eller vid de prestigefyllda matcherna i Europa League och Champions League blir arenan snabbt helt slutsåld till klubbens över 10 000 säsongskortsinnehavare och medlemmar. För supportrar som reser långväga och vill säkra sina sittplatser i god tid samlar vi säkra, verifierade paketlösningar och resealternativ som garanterar officiella sittplatser på långsidorna.",
     sectionsAndPrices: "Arenan är uppdelad i Norra Läktaren (hemmaståplats, bäst tryck och mest prisvärt), Södra Läktaren (sittplats samt en sektion för bortafans), Östra Läktaren och Västra Läktaren (långsidorna). Västra Läktaren rymmer VIP-boxar och spelargången och ligger högst i pris. För familjer är de sydvästra sektionerna på sittplats utmärkta val med bra sikt och en lugnare miljö. Priserna på Eleda Stadion är mycket rimliga i jämförelse med europeiska toppligor, vilket gör ett besök till en extremt prisvärd fotbollsupplevelse.",
