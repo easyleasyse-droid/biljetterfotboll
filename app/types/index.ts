@@ -19,6 +19,7 @@ export interface TicketOffer {
   availableQuantity: number; // e.g. 4
   deliveryType: "E-biljett (Direkt)" | "Mobilbiljett" | "Pappersbiljett";
   isVerified: boolean;
+  url?: string;
 }
 
 export interface Match {
