@@ -79,7 +79,16 @@ export default function Hero({
   ];
 
   return (
-    <section className="relative bg-slate-50 bg-[url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center text-slate-900 py-16 px-4 md:py-24 border-b border-slate-200">
+    <section className="relative bg-slate-50 text-slate-900 py-16 px-4 md:py-24 border-b border-slate-200 overflow-hidden">
+      {/* Bakgrundsbild med toningslager */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-20"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1920&q=80')`
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-50/80 via-slate-50/50 to-slate-50 pointer-events-none" />
+
       <div className="max-w-4xl mx-auto text-center relative z-10" id="hero-section">
         <div className="inline-flex items-center gap-1.5 bg-blue-50/90 border border-blue-200 text-blue-700 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6 shadow-sm backdrop-blur-sm">
           <Sparkles className="w-3.5 h-3.5 text-blue-600" />
@@ -113,13 +122,21 @@ export default function Hero({
               id="hero-main-search"
             />
 
-            {searchText && (
+            {searchText ? (
               <button
                 onClick={() => setSearchText("")}
                 className="p-1.5 hover:bg-slate-100 rounded-full mr-2 text-slate-400 hover:text-slate-800 transition-colors cursor-pointer"
                 title="Rensa sökning"
               >
                 <X className="w-4 h-4" />
+              </button>
+            ) : (
+              <button 
+                onClick={() => setIsFocused(true)}
+                className="bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all duration-150 uppercase tracking-wider hidden sm:flex items-center gap-2 shadow-md shadow-blue-900/20 cursor-pointer shrink-0"
+              >
+                <Search className="w-4 h-4" />
+                <span>Sök</span>
               </button>
             )}
           </div>
