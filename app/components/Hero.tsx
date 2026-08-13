@@ -61,7 +61,7 @@ export default function Hero({
           (m.city || "").toLowerCase().includes(query) ||
           (m.stadium || "").toLowerCase().includes(query)
         );
-      }).slice(0, 6)
+      }).slice(0, 8)
     : [];
 
   const hasResults = matchingTeams.length > 0 || suggestions.length > 0;
@@ -75,25 +75,29 @@ export default function Hero({
 
   return (
     <section className="relative bg-slate-50 text-slate-900 py-16 px-4 md:py-24 border-b border-slate-200 overflow-hidden">
-      {/* Diskret bakgrundsbild (ljus stadium-mönster) */}
+      
+      {/* 🖼️ BAKGRUNDSBILD - Synligare mönster av stadium */}
       <div 
-        className="absolute inset-0 bg-cover bg-center opacity-[0.035] pointer-events-none mix-blend-multiply"
+        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-12 mix-blend-multiply"
         style={{
           backgroundImage: `url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1920&q=80')`
         }}
       />
+      
+      {/* Ljus overlay för att dämpa bilden och behålla det ljusa temat */}
+      <div className="absolute inset-0 bg-white/60 pointer-events-none" />
 
       {/* Existerande bakgrundsljus (gradients) */}
-      <div className="absolute top-0 left-1/4 w-80 h-80 bg-blue-100/50 rounded-full blur-2xl pointer-events-none"></div>
-      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-slate-100 rounded-full blur-2xl pointer-events-none"></div>
+      <div className="absolute top-0 left-1/4 w-80 h-80 bg-blue-100/50 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-slate-100 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="max-w-4xl mx-auto text-center relative z-10" id="hero-section">
-        <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6 shadow-sm">
+        <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6 shadow-smbackdrop-blur-sm">
           <Sparkles className="w-3.5 h-3.5 text-blue-600" />
           <span>Svensk biljettjämförelse för sportevenemang</span>
         </div>
 
-        {/* ÄNDRAD RUBRIK: "Hitta de billigaste" */}
+        {/* ✅ Ny korrekt rubrik */}
         <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black text-blue-900 leading-[0.95] tracking-tight mb-6 max-w-3xl mx-auto">
           Hitta de billigaste <br />
           <span className="text-blue-600">fotbollsbiljetterna</span>
@@ -130,7 +134,7 @@ export default function Hero({
                 <X className="w-4 h-4" />
               </button>
             ) : (
-              /* UPPGRADERAD SÖKKNAPP (ikon + modernare stil) */
+              /* ✅ Ny snyggare sökknapp */
               <button 
                 onClick={() => setIsFocused(true)}
                 className="bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all duration-150 uppercase tracking-wider hidden sm:flex items-center gap-2 shadow-md shadow-blue-900/20 cursor-pointer shrink-0"
@@ -141,9 +145,9 @@ export default function Hero({
             )}
           </div>
 
-          {/* Autocomplete Dropdown - Helt oförändrad från originalet */}
+          {/* 🔍 ✅ AUTOCOMPLETE DROPDOWN - NU MED SCROLL-FUNKTION ÅTERINFÖRD */}
           {isFocused && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 text-left overflow-y-auto max-h-[420px] divide-y divide-slate-100 border-t-0 text-slate-900">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 text-left overflow-y-auto max-h-[70vh] divide-y divide-slate-100 text-slate-900">
               {searchText ? (
                 hasResults ? (
                   <div className="py-2 bg-white">
@@ -255,8 +259,8 @@ export default function Hero({
               }}
               className={`text-xs px-4 py-2 rounded-xl border transition-all duration-150 cursor-pointer font-bold ${
                 selectedLeague === leagueName
-                  ? "bg-blue-900 border-blue-900 text-white font-extrabold"
-                  : "bg-white border-slate-200 text-slate-600 hover:text-blue-900 hover:border-slate-350"
+                  ? "bg-blue-900 border-blue-900 text-white font-extrabold shadow-md shadow-blue-900/10"
+                  : "bg-white/70 border-slate-200 text-slate-600 hover:text-blue-900 hover:border-slate-350 backdrop-blur-sm"
               }`}
             >
               {leagueName}
