@@ -79,8 +79,8 @@ export default function Hero({
   ];
 
   return (
-    <section className="relative bg-slate-50 text-slate-900 py-16 px-4 md:py-24 border-b border-slate-200 overflow-hidden">
-      {/* Bakgrundsbild med toningslager */}
+    <section className="relative bg-slate-50 text-slate-900 py-16 px-4 md:py-24 border-b border-slate-200 z-30">
+      {/* Bakgrundsbild */}
       <div 
         className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-20"
         style={{
@@ -103,7 +103,7 @@ export default function Hero({
           Vi jämför priser från över 50 auktoriserade återförsäljare så att du alltid får bäst deal på marknaden.
         </p>
 
-        <div className="max-w-2xl mx-auto relative px-1 sm:px-0" ref={dropdownRef}>
+        <div className="max-w-2xl mx-auto relative px-1 sm:px-0 z-50" ref={dropdownRef}>
           <div className="relative flex items-center bg-white border border-slate-200 hover:border-slate-350 focus-within:border-blue-900 focus-within:ring-4 focus-within:ring-blue-900/5 rounded-2xl transition-all duration-200 shadow-xl shadow-blue-900/10 p-1.5 z-20">
             <div className="pl-4 text-slate-400">
               <Search className="w-5 h-5 text-blue-900" />
@@ -142,7 +142,7 @@ export default function Hero({
           </div>
 
           {isFocused && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 text-left overflow-hidden divide-y divide-slate-100 text-slate-900">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 text-left overflow-hidden max-h-[60vh] overflow-y-auto divide-y divide-slate-100 text-slate-900">
               {searchText ? (
                 hasResults ? (
                   <div className="py-2 bg-white">
