@@ -63,5 +63,13 @@ export const LEAGUES_DATA: Record<string, LeagueSEOData> = {
     aboutTickets: "Eredivisie-biljetter är ofta lättare att få tag på via officiella kanaler.",
     ticketTips: "Kombinera matchen med en cykeltur – de flesta holländska arenor är mycket lättillgängliga.",
     teams: ["ajax", "psv", "feyenoord", "twente"]
+  },
+  "allsvenskan": {
+    name: "Allsvenskan",
+    country: "Sverige",
+    description: "Sveriges högsta serie med en av Europas bästa läktarkulturer och otrolig passion.",
+    aboutTickets: "Allsvenska biljetter säljs i första hand direkt via klubbarnas egna biljettsystem eller officiella partners.",
+    ticketTips: "Derbymatcher i Stockholm och Malmö blir snabbt slutsålda – boka så fort biljettsläppet sker.",
+    teams: ["aik", "hammarby", "djurgarden", "malmo-ff", "ifk-goteborg"]  
   }// <--- Ingen semikolon här
 }; // <--- Denna stänger LEAGUES_DATA och har semikolon
