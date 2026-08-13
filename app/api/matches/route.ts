@@ -60,7 +60,7 @@ export async function GET() {
       stadium: "Santiago Bernabéu",
       city: "Madrid",
       priceFrom: 1318,
-      totalTicketsCount: 15,
+      totalTicketsCount: 45,
       offers: [
         {
           id: "o-real-sociedad-1",
@@ -73,7 +73,49 @@ export async function GET() {
           availableQuantity: 4,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: "https://www.sportsevents365.com/event/395257?a_aid=5jutr9xaq8h3j", // Din länk med affiliate-ID!
+          url: "https://www.sportsevents365.com/event/395257?a_aid=5jutr9xaq8h3j",
+          type: "ticket"
+        },
+        {
+          id: "o-real-sociedad-2",
+          merchantName: "Sports Events 365",
+          rating: 4.8,
+          reviewsCount: 512,
+          section: "Long Side - Lateral Este",
+          category: "Långsida",
+          priceSEK: 1850,
+          availableQuantity: 2,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: "https://www.sportsevents365.com/event/395257?a_aid=5jutr9xaq8h3j",
+          type: "ticket"
+        },
+        {
+          id: "o-real-sociedad-3",
+          merchantName: "Sports Events 365",
+          rating: 4.8,
+          reviewsCount: 512,
+          section: "VIP / Hospitality - Tribuna",
+          category: "VIP",
+          priceSEK: 3400,
+          availableQuantity: 2,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: "https://www.sportsevents365.com/event/395257?a_aid=5jutr9xaq8h3j",
+          type: "ticket"
+        },
+        {
+          id: "o-real-sociedad-4",
+          merchantName: "Sports Events 365",
+          rating: 4.8,
+          reviewsCount: 512,
+          section: "Bortalagets Sektion",
+          category: "Borta",
+          priceSEK: 1450,
+          availableQuantity: 6,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: "https://www.sportsevents365.com/event/395257?a_aid=5jutr9xaq8h3j",
           type: "ticket"
         }
       ]
