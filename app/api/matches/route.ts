@@ -7,7 +7,7 @@ const TOP_TEAMS = [
   { name: "Liverpool FC", short: "LIV", color1: "#C8102E", color2: "#F6EB61", emoji: "🔴", league: "Premier League", stadium: "Anfield", city: "Liverpool" },
   { name: "Manchester City", short: "MCI", color1: "#6CABDD", color2: "#1C2C5B", emoji: "🇬🇧", league: "Premier League", stadium: "Etihad Stadium", city: "Manchester" },
   { name: "Real Madrid", short: "RMA", color1: "#FFFFFF", color2: "#FEBE10", emoji: "🇪🇸", league: "La Liga", stadium: "Santiago Bernabéu", city: "Madrid" },
-  { name: "FC Barcelona", short: "BAR", color1: "#004D98", color2: "#A50044", emoji: "🇪🇸", league: "La Liga", stadium: "Camp Nou", color2: "#FFFFFF", city: "Barcelona" },
+  { name: "FC Barcelona", short: "BAR", color1: "#004D98", color2: "#A50044", emoji: "🇪🇸", league: "La Liga", stadium: "Camp Nou", city: "Barcelona" },
   { name: "Atlético Madrid", short: "ATM", color1: "#CB3524", color2: "#FFFFFF", emoji: "🔴", league: "La Liga", stadium: "Metropolitano", city: "Madrid" },
   { name: "AC Milan", short: "MIL", color1: "#E32119", color2: "#000000", emoji: "🇮🇹", league: "Serie A", stadium: "San Siro", city: "Milano" },
   { name: "Inter Milan", short: "INT", color1: "#0053A0", color2: "#000000", emoji: "🔵", league: "Serie A", stadium: "San Siro", city: "Milano" },
