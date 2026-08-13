@@ -52,14 +52,21 @@ export default function Hero({
         .slice(0, 2)
     : [];
 
+  // Robust sökfiltrering som hanterar både strängar och objekt för lagspecifikationer
   const suggestions = query
     ? matches.filter((m) => {
+        const homeName = typeof m.homeTeam === "string" ? m.homeTeam : m.homeTeam?.name || "";
+        const awayName = typeof m.awayTeam === "string" ? m.awayTeam : m.awayTeam?.name || "";
+        const leagueName = m.league || "";
+        const cityName = m.city || "";
+        const stadiumName = m.stadium || "";
+
         return (
-          (m.homeTeam?.name || "").toLowerCase().includes(query) ||
-          (m.awayTeam?.name || "").toLowerCase().includes(query) ||
-          (m.league || "").toLowerCase().includes(query) ||
-          (m.city || "").toLowerCase().includes(query) ||
-          (m.stadium || "").toLowerCase().includes(query)
+          homeName.toLowerCase().includes(query) ||
+          awayName.toLowerCase().includes(query) ||
+          leagueName.toLowerCase().includes(query) ||
+          cityName.toLowerCase().includes(query) ||
+          stadiumName.toLowerCase().includes(query)
         );
       }).slice(0, 8)
     : [];
@@ -75,34 +82,32 @@ export default function Hero({
 
   return (
     <section className="relative bg-slate-50 text-slate-900 py-16 px-4 md:py-24 border-b border-slate-200 overflow-hidden">
-      
-      {/* 🖼️ BAKGRUNDSBILD - Synligare mönster av stadium */}
+      {/* Bakgrundsbild med rätt opacitet för ljusskärmar */}
       <div 
-        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-12 mix-blend-multiply"
+        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-15"
         style={{
           backgroundImage: `url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1920&q=80')`
         }}
       />
       
-      {/* Ljus overlay för att dämpa bilden och behålla det ljusa temat */}
-      <div className="absolute inset-0 bg-white/60 pointer-events-none" />
+      {/* Mjuk tonad övergång mot bakgrunden */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-50/70 via-slate-50/50 to-slate-50 pointer-events-none" />
 
-      {/* Existerande bakgrundsljus (gradients) */}
-      <div className="absolute top-0 left-1/4 w-80 h-80 bg-blue-100/50 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-slate-100 rounded-full blur-3xl pointer-events-none"></div>
+      {/* Ljus-ackorder i bakgrunden */}
+      <div className="absolute top-0 left-1/4 w-80 h-80 bg-blue-100/60 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-slate-200/50 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="max-w-4xl mx-auto text-center relative z-10" id="hero-section">
-        <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6 shadow-smbackdrop-blur-sm">
+        <div className="inline-flex items-center gap-1.5 bg-blue-50/90 border border-blue-200 text-blue-700 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6 shadow-sm backdrop-blur-sm">
           <Sparkles className="w-3.5 h-3.5 text-blue-600" />
           <span>Svensk biljettjämförelse för sportevenemang</span>
         </div>
 
-        {/* ✅ Ny korrekt rubrik */}
         <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black text-blue-900 leading-[0.95] tracking-tight mb-6 max-w-3xl mx-auto">
           Hitta de billigaste <br />
           <span className="text-blue-600">fotbollsbiljetterna</span>
         </h2>
-        <p className="text-slate-500 text-base sm:text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed font-semibold">
+        <p className="text-slate-600 text-base sm:text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed font-semibold">
           Vi jämför priser från över 50 auktoriserade återförsäljare så att du alltid får bäst deal på marknaden.
         </p>
 
@@ -134,7 +139,6 @@ export default function Hero({
                 <X className="w-4 h-4" />
               </button>
             ) : (
-              /* ✅ Ny snyggare sökknapp */
               <button 
                 onClick={() => setIsFocused(true)}
                 className="bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all duration-150 uppercase tracking-wider hidden sm:flex items-center gap-2 shadow-md shadow-blue-900/20 cursor-pointer shrink-0"
@@ -145,9 +149,9 @@ export default function Hero({
             )}
           </div>
 
-          {/* 🔍 ✅ AUTOCOMPLETE DROPDOWN - NU MED SCROLL-FUNKTION ÅTERINFÖRD */}
+          {/* Autocomplete Dropdown med scroll och säkerställd visning av matcher */}
           {isFocused && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 text-left overflow-y-auto max-h-[70vh] divide-y divide-slate-100 text-slate-900">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 text-left overflow-y-auto max-h-[380px] divide-y divide-slate-100 text-slate-900">
               {searchText ? (
                 hasResults ? (
                   <div className="py-2 bg-white">
@@ -186,34 +190,40 @@ export default function Hero({
                         <div className="px-4 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/80">
                           Matcher
                         </div>
-                        {suggestions.map((match) => (
-                          <button
-                            key={match.id}
-                            onClick={() => {
-                              onSelectMatch(match);
-                              setSearchText("");
-                              setIsFocused(false);
-                            }}
-                            className="w-full px-4 py-3 hover:bg-blue-50/50 flex items-center justify-between text-xs sm:text-sm transition-colors text-left text-slate-900 cursor-pointer border-b border-slate-50 last:border-none"
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <span className="text-base shrink-0">{match.homeTeam?.emoji || "⚽"}</span>
-                              <span className="font-extrabold text-blue-900">
-                                {match.homeTeam?.name || "Hemmalag"} – {match.awayTeam?.name || "Bortalag"}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-3 text-xs shrink-0">
-                              {match.league && (
-                                <span className="bg-slate-100 text-blue-900 px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider hidden sm:inline-block">
-                                  {match.league}
+                        {suggestions.map((match) => {
+                          const homeName = typeof match.homeTeam === "string" ? match.homeTeam : match.homeTeam?.name || "Hemmalag";
+                          const awayName = typeof match.awayTeam === "string" ? match.awayTeam : match.awayTeam?.name || "Bortalag";
+                          const homeEmoji = typeof match.homeTeam === "object" && match.homeTeam?.emoji ? match.homeTeam.emoji : "⚽";
+
+                          return (
+                            <button
+                              key={match.id}
+                              onClick={() => {
+                                onSelectMatch(match);
+                                setSearchText("");
+                                setIsFocused(false);
+                              }}
+                              className="w-full px-4 py-3 hover:bg-blue-50/50 flex items-center justify-between text-xs sm:text-sm transition-colors text-left text-slate-900 cursor-pointer border-b border-slate-50 last:border-none"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <span className="text-base shrink-0">{homeEmoji}</span>
+                                <span className="font-extrabold text-blue-900">
+                                  {homeName} – {awayName}
                                 </span>
-                              )}
-                              {match.priceFrom && (
-                                <span className="font-black text-blue-600">Från {match.priceFrom} kr</span>
-                              )}
-                            </div>
-                          </button>
-                        ))}
+                              </div>
+                              <div className="flex items-center gap-3 text-xs shrink-0">
+                                {match.league && (
+                                  <span className="bg-slate-100 text-blue-900 px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider hidden sm:inline-block">
+                                    {match.league}
+                                  </span>
+                                )}
+                                {match.priceFrom && (
+                                  <span className="font-black text-blue-600">Från {match.priceFrom} kr</span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -260,7 +270,7 @@ export default function Hero({
               className={`text-xs px-4 py-2 rounded-xl border transition-all duration-150 cursor-pointer font-bold ${
                 selectedLeague === leagueName
                   ? "bg-blue-900 border-blue-900 text-white font-extrabold shadow-md shadow-blue-900/10"
-                  : "bg-white/70 border-slate-200 text-slate-600 hover:text-blue-900 hover:border-slate-350 backdrop-blur-sm"
+                  : "bg-white/80 border-slate-200 text-slate-600 hover:text-blue-900 hover:border-slate-350 backdrop-blur-sm"
               }`}
             >
               {leagueName}
