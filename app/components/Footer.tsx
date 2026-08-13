@@ -9,7 +9,7 @@ export default function Footer() {
     <footer className="bg-slate-900 text-slate-400 text-xs py-16 px-6 sm:px-10 border-t border-slate-950 font-sans" id="main-footer">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
         
-        {/* Kolumn 1 & 2: Varumärkespresentation och Ansvarsfriskrivning */}
+        {/* Kolumn 1 & 2: Varumärkespresentation och Ansvarsfriskrivning/Affiliate Disclosure */}
         <div className="md:col-span-2 space-y-5">
           <div className="flex items-center gap-2.5">
             <div className="bg-blue-600 p-2.5 rounded-lg text-white">
@@ -25,7 +25,7 @@ export default function Footer() {
           <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-800/80 flex items-start gap-3 max-w-md">
             <ShieldAlert className="w-4.5 h-4.5 text-slate-500 shrink-0 mt-0.5" />
             <p className="text-[10px] text-slate-500 leading-normal font-medium">
-              <strong className="text-slate-400 uppercase tracking-widest font-bold">Ansvarsfriskrivning:</strong> biljetterfotboll.se säljer inte biljetter direkt. Vi är en oberoende sökmotor och hänvisar säkert vidare till verifierade andrahandsmarknader där köpet bekräftas säkert under gällande garantier.
+              <strong className="text-slate-400 uppercase tracking-widest font-bold">Ansvarsfriskrivning & Finansiering:</strong> biljetterfotboll.se säljer inga biljetter direkt. Vi är en oberoende jämförelsetjänst. Tjänsten är gratis att använda och vi erhåller eventuellt en kommission från partners om du slutför ett köp via våra länkar.
             </p>
           </div>
         </div>
@@ -59,6 +59,7 @@ export default function Footer() {
           <h4 className="text-white font-black uppercase tracking-widest mb-5 text-[11px]">Vår Policy</h4>
           <ul className="space-y-3 font-semibold">
             {[
+              { name: "Om oss", slug: "om-oss" },
               { name: "Integritetspolicy", slug: "integritetspolicy" },
               { name: "Användarvillkor", slug: "anvandarvillkor" },
               { name: "Cookies-inställningar", slug: "cookies" },
