@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { TicketOffer, Match } from "../types";
 import { ShieldCheck, Loader2, ArrowRight, CheckCircle, ExternalLink, Lock, HelpCircle, X } from "lucide-react";
+import { getAffiliateUrl } from "@/lib/affiliate";
 
 interface BookingModalProps {
   match: Match | null;
@@ -33,8 +34,11 @@ export default function BookingModal({ match, offer, quantity, onClose }: Bookin
 
   const totalCost = offer.priceSEK * quantity;
 
-  // Hämta den dynamiska url:en som vi skapade i API:et, med en fallback om den saknas
-  const destinationUrl = (offer as any).url || "https://www.google.com";
+  // Hämta URL och lägg på affiliate-ID om det är Sports Events 365
+  const rawUrl = (offer as any).url || "https://www.sportsevents365.com";
+  const destinationUrl = offer.merchantName === "Sports Events 365" 
+    ? getAffiliateUrl(rawUrl) 
+    : rawUrl;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" id="booking-modal-overlay">
