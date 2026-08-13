@@ -139,7 +139,7 @@ export default function BookingModal({ match, offer, quantity, onClose }: Bookin
                   <span>Svensk Köpargaranti Aktiv</span>
                 </p>
                 <p className="text-emerald-700 mt-1">
-                  Ditt köp är nu skyddat. Du slutför checkouten tryggt och krypterat på partnersajten <span className="font-bold">{offer.merchantName}</span>. Din biljett är garanterat autentisk.
+                  Slutför din bokning tryggt och säkert på partnersajten <span className="font-bold">{offer.merchantName}</span>. Din biljett är garanterat autentisk.
                 </p>
               </div>
 
@@ -152,7 +152,7 @@ export default function BookingModal({ match, offer, quantity, onClose }: Bookin
                   className="bg-blue-900 hover:bg-blue-800 active:bg-blue-950 text-white font-black text-xs uppercase tracking-widest py-4 px-4 rounded-xl transition-all shadow-lg shadow-blue-900/10 text-center flex items-center justify-center gap-2 cursor-pointer"
                   id="external-partner-book-btn"
                 >
-                  <span>Öppna betalsida hos {offer.merchantName}</span>
+                  <span>Fortsätt till bokning hos {offer.merchantName}</span>
                   <ExternalLink className="w-4 h-4" />
                 </a>
 
