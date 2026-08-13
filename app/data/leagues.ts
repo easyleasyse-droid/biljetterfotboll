@@ -70,6 +70,6 @@ export const LEAGUES_DATA: Record<string, LeagueSEOData> = {
     description: "Sveriges högsta serie med en av Europas bästa läktarkulturer och otrolig passion.",
     aboutTickets: "Allsvenska biljetter säljs i första hand direkt via klubbarnas egna biljettsystem eller officiella partners.",
     ticketTips: "Derbymatcher i Stockholm och Malmö blir snabbt slutsålda – boka så fort biljettsläppet sker.",
-    teams: ["aik", "hammarby", "djurgarden", "malmo-ff", "ifk-goteborg"]  
+    teams: ["aik", "hammarby", "djurgarden", "malmo-ff", "ifk-goteborg"]   
   }// <--- Ingen semikolon här
 }; // <--- Denna stänger LEAGUES_DATA och har semikolon
