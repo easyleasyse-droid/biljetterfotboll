@@ -2,6 +2,45 @@ import { Match, FAQItem } from "../types";
 
 export const MATCHES_DATA: Match[] = [
   {
+    id: "m-real-sociedad", // Nytt unikt ID
+    homeTeam: {
+      name: "Real Madrid",
+      shortName: "RMA",
+      primaryColor: "#FFFFFF",
+      secondaryColor: "#FEBE10",
+      emoji: "🇪🇸"
+    },
+    awayTeam: {
+      name: "Real Sociedad",
+      shortName: "RSO",
+      primaryColor: "#0067B1",
+      secondaryColor: "#FFFFFF",
+      emoji: "🇪🇸"
+    },
+    league: "La Liga",
+    date: "2026-08-26",
+    time: "21:00",
+    stadium: "Santiago Bernabéu",
+    city: "Madrid",
+    priceFrom: 1318,
+    totalTicketsCount: 15,
+    offers: [
+      {
+        id: "o-real-sociedad-1", // Unikt ID för detta erbjudande
+        merchantName: "Sports Events 365",
+        rating: 4.8,
+        reviewsCount: 512,
+        section: "Short Side - 4th Ring",
+        category: "Kortsida",
+        priceSEK: 1318,
+        availableQuantity: 4,
+        deliveryType: "E-biljett (Direkt)",
+        isVerified: true,
+        url: "https://www.sportsevents365.com/event/395257" // Länken du hittade
+      }
+    ]
+  },
+  {
     id: "m1",
     homeTeam: {
       name: "Arsenal FC",
