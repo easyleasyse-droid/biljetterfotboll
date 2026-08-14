@@ -24,7 +24,12 @@ const getSearchUrl = (merchantName: string, homeTeam: string, awayTeam: string):
 
 export async function GET() {
   try {
-    const matches = MY_MATCHES.map((m, index) => {
+    const today = new Date().toISOString().split("T")[0]; // Dagens datum (YYYY-MM-DD)
+
+    // Filtrerar automatiskt bort matcher vars speldag har passerat
+    const upcomingMatches = MY_MATCHES.filter((m) => m.date >= today);
+
+    const matches = upcomingMatches.map((m, index) => {
       const matchId = `m-${index + 1}`;
       
       const homeInfo = TEAMS_SEO_DATA[m.homeKey];
