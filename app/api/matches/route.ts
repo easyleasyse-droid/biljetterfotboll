@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-// Importera din befintliga teams-konfiguration (justera sökvägen om teams.ts ligger på annat ställe)
-import { teams } from "@/lib/teams"; 
+import { TEAMS_SEO_DATA } from "@/data/teams";
 
 const MY_MATCHES = [
   { home: "Arsenal FC", away: "Chelsea FC", date: "2026-08-25", time: "21:00" },
@@ -12,21 +11,20 @@ const MY_MATCHES = [
   { home: "Malmö FF", away: "Tottenham Hotspur", date: "2026-09-17", time: "19:00" }
 ];
 
-// Hjälpfunktion för att matcha lagnamn mot nycklarna i din teams.ts
+// Hjälpfunktion för att slå upp lag i TEAMS_SEO_DATA
 function getTeamData(teamName: string) {
   const normalized = teamName.toLowerCase().trim();
   
-  // Sök efter lag i din teams.ts baserat på id eller name
-  const foundKey = Object.keys(teams).find(key => {
-    const t = teams[key];
+  const foundKey = Object.keys(TEAMS_SEO_DATA).find(key => {
+    const t = TEAMS_SEO_DATA[key];
     return key.toLowerCase() === normalized || 
            t.name?.toLowerCase() === normalized || 
            t.name?.toLowerCase().includes(normalized) ||
            normalized.includes(key.toLowerCase());
   });
 
-  if (foundKey && teams[foundKey]) {
-    return teams[foundKey];
+  if (foundKey && TEAMS_SEO_DATA[foundKey]) {
+    return TEAMS_SEO_DATA[foundKey];
   }
 
   return null;
@@ -48,8 +46,8 @@ export async function GET() {
     const matches = MY_MATCHES.map((m, index) => {
       const matchId = `m-${index + 1}`;
       
-      const homeTeamInfo = getTeamData(m.home);
-      const awayTeamInfo = getTeamData(m.away);
+      const homeInfo = getTeamData(m.home);
+      const awayInfo = getTeamData(m.away);
 
       const basePrice = 1100 + (index * 120) % 750;
 
@@ -115,26 +113,26 @@ export async function GET() {
       return {
         id: matchId,
         homeTeam: { 
-          name: homeTeamInfo?.name || m.home, 
+          name: homeInfo?.name || m.home, 
           shortName: m.home.substring(0, 3).toUpperCase(), 
-          logo: homeTeamInfo?.logo || `/logos/${m.home.toLowerCase().replace(/\s+/g, '-')}.png`,
+          logo: homeInfo?.logo || `/logos/${m.home.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`,
           primaryColor: "#111827", 
           secondaryColor: "#FFFFFF", 
           emoji: "⚽" 
         },
         awayTeam: { 
-          name: awayTeamInfo?.name || m.away, 
+          name: awayInfo?.name || m.away, 
           shortName: m.away.substring(0, 3).toUpperCase(), 
-          logo: awayTeamInfo?.logo || `/logos/${m.away.toLowerCase().replace(/\s+/g, '-')}.png`,
+          logo: awayInfo?.logo || `/logos/${m.away.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`,
           primaryColor: "#4B5563", 
           secondaryColor: "#FFFFFF", 
           emoji: "⚽" 
         },
-        league: homeTeamInfo?.league || "Fotboll",
+        league: homeInfo?.league || "Fotboll",
         date: m.date,
         time: m.time,
-        stadium: homeTeamInfo?.stadiumName || "Stadion",
-        city: homeTeamInfo?.location || "Europa",
+        stadium: homeInfo?.stadiumName || "Stadion",
+        city: homeInfo?.location || "Europa",
         priceFrom: Math.min(...offers.map((o) => o.priceSEK)),
         totalTicketsCount: 45,
         offers: offers
