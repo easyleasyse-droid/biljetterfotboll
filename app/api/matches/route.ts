@@ -1,18 +1,14 @@
 import { NextResponse } from "next/server";
 
 const TOP_TEAMS = [
-  { name: "Arsenal FC", short: "ARS", color1: "#EF0107", color2: "#FFFFFF", emoji: "🇬🇧", league: "Premier League", stadium: "Emirates Stadium", city: "London" },
-  { name: "Chelsea FC", short: "CHE", color1: "#034694", color2: "#FFFFFF", emoji: "🔵", league: "Premier League", stadium: "Stamford Bridge", city: "London" },
-  { name: "Manchester United", short: "MUN", color1: "#DA291C", color2: "#000000", emoji: "🇬🇧", league: "Premier League", stadium: "Old Trafford", city: "Manchester" },
-  { name: "Liverpool FC", short: "LIV", color1: "#C8102E", color2: "#F6EB61", emoji: "🔴", league: "Premier League", stadium: "Anfield", city: "Liverpool" },
-  { name: "Manchester City", short: "MCI", color1: "#6CABDD", color2: "#1C2C5B", emoji: "🇬🇧", league: "Premier League", stadium: "Etihad Stadium", city: "Manchester" },
-  { name: "Real Madrid", short: "RMA", color1: "#FFFFFF", color2: "#FEBE10", emoji: "🇪🇸", league: "La Liga", stadium: "Santiago Bernabéu", city: "Madrid" },
-  { name: "FC Barcelona", short: "BAR", color1: "#004D98", color2: "#A50044", emoji: "🇪🇸", league: "La Liga", stadium: "Camp Nou", city: "Barcelona" },
-  { name: "Atlético Madrid", short: "ATM", color1: "#CB3524", color2: "#FFFFFF", emoji: "🔴", league: "La Liga", stadium: "Metropolitano", city: "Madrid" },
-  { name: "AC Milan", short: "MIL", color1: "#E32119", color2: "#000000", emoji: "🇮🇹", league: "Serie A", stadium: "San Siro", city: "Milano" },
-  { name: "Inter Milan", short: "INT", color1: "#0053A0", color2: "#000000", emoji: "🔵", league: "Serie A", stadium: "San Siro", city: "Milano" },
-  { name: "Bayern München", short: "FCB", color1: "#DC052D", color2: "#0066B2", emoji: "🇩🇪", league: "Champions League", stadium: "Allianz Arena", city: "München" },
-  { name: "Paris Saint-Germain", short: "PSG", color1: "#004170", color2: "#E30613", emoji: "🇫🇷", league: "Champions League", stadium: "Parc des Princes", city: "Paris" }
+  { name: "Arsenal", short: "ARS", color1: "#EF0107", color2: "#FFFFFF", emoji: "🇬🇧" },
+  { name: "Chelsea", short: "CHE", color1: "#034694", color2: "#FFFFFF", emoji: "🔵" },
+  { name: "Manchester United", short: "MUN", color1: "#DA291C", color2: "#000000", emoji: "🇬🇧" },
+  { name: "Liverpool", short: "LIV", color1: "#C8102E", color2: "#F6EB61", emoji: "🔴" },
+  { name: "Manchester City", short: "MCI", color1: "#6CABDD", color2: "#1C2C5B", emoji: "🇬🇧" },
+  { name: "Real Madrid", short: "RMA", color1: "#FFFFFF", color2: "#FEBE10", emoji: "🇪🇸" },
+  { name: "Barcelona", short: "BAR", color1: "#004D98", color2: "#A50044", emoji: "🇪🇸" },
+  { name: "Atletico Madrid", short: "ATM", color1: "#CB3524", color2: "#FFFFFF", emoji: "🔴" }
 ];
 
 const getSearchUrl = (merchantName: string, homeTeam: string, awayTeam: string): string => {
@@ -21,184 +17,129 @@ const getSearchUrl = (merchantName: string, homeTeam: string, awayTeam: string):
     "Viagogo": `https://www.viagogo.se/Search?q=${query}`,
     "StubHub": `https://www.stubhub.se/search?q=${query}`,
     "Ticombo": `https://www.ticombo.com/sv/search?q=${query}`,
-    "Sports Events 365": `https://www.sportsevents365.se/search?q=${query}`,
-    "FootballTicketNet": `https://www.footballticketnet.com/search?q=${query}`
+    "Sports Events 365": `https://www.sportsevents365.se/search?q=${query}?a_aid=5jutr9xaq8h3j`
   };
-  return domainMap[merchantName] || `https://www.google.com/search?q=${encodeURIComponent(merchantName + " " + homeTeam + " " + awayTeam)}`;
-};
-
-const getFutureDateString = (daysAhead: number): string => {
-  const d = new Date();
-  d.setDate(d.getDate() + daysAhead);
-  return d.toISOString().split("T")[0];
+  return domainMap[merchantName] || `https://www.google.com/search?q=${query}`;
 };
 
 export async function GET() {
   try {
-    const generatedMatches = [];
+    // Hämtar öppna matcher för Premier League (eng.1) och La Liga (esp.1) från Öppet API utan nyckel
+    const [plRes, laLigaRes] = await Promise.all([
+      fetch("https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard"),
+      fetch("https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard")
+    ]);
 
-    // --- LÄGG TILL DIN SPECIFIKA REAL MADRID-MATCH HÄR ---
-    generatedMatches.push({
-      id: "m-real-sociedad",
-      homeTeam: {
-        name: "Real Madrid",
-        shortName: "RMA",
-        primaryColor: "#FFFFFF",
-        secondaryColor: "#FEBE10",
-        emoji: "🇪🇸"
-      },
-      awayTeam: {
-        name: "Real Sociedad",
-        shortName: "RSO",
-        primaryColor: "#0067B1",
-        secondaryColor: "#FFFFFF",
-        emoji: "🇪🇸"
-      },
-      league: "La Liga",
-      date: "2026-08-26",
-      time: "21:00",
-      stadium: "Santiago Bernabéu",
-      city: "Madrid",
-      priceFrom: 1318,
-      totalTicketsCount: 45,
-      offers: [
-        {
-          id: "o-real-sociedad-1",
-          merchantName: "Sports Events 365",
-          rating: 4.8,
-          reviewsCount: 512,
-          section: "Short Side - 4th Ring",
-          category: "Kortsida",
-          priceSEK: 1318,
-          availableQuantity: 4,
-          deliveryType: "E-biljett (Direkt)",
-          isVerified: true,
-          url: "https://www.sportsevents365.com/event/395257?a_aid=5jutr9xaq8h3j",
-          type: "ticket"
-        },
-        {
-          id: "o-real-sociedad-2",
-          merchantName: "Sports Events 365",
-          rating: 4.8,
-          reviewsCount: 512,
-          section: "Long Side - Lateral Este",
-          category: "Långsida",
-          priceSEK: 1850,
-          availableQuantity: 2,
-          deliveryType: "E-biljett (Direkt)",
-          isVerified: true,
-          url: "https://www.sportsevents365.com/event/395257?a_aid=5jutr9xaq8h3j",
-          type: "ticket"
-        },
-        {
-          id: "o-real-sociedad-3",
-          merchantName: "Sports Events 365",
-          rating: 4.8,
-          reviewsCount: 512,
-          section: "VIP / Hospitality - Tribuna",
-          category: "VIP",
-          priceSEK: 3400,
-          availableQuantity: 2,
-          deliveryType: "E-biljett (Direkt)",
-          isVerified: true,
-          url: "https://www.sportsevents365.com/event/395257?a_aid=5jutr9xaq8h3j",
-          type: "ticket"
-        },
-        {
-          id: "o-real-sociedad-4",
-          merchantName: "Sports Events 365",
-          rating: 4.8,
-          reviewsCount: 512,
-          section: "Bortalagets Sektion",
-          category: "Borta",
-          priceSEK: 1450,
-          availableQuantity: 6,
-          deliveryType: "E-biljett (Direkt)",
-          isVerified: true,
-          url: "https://www.sportsevents365.com/event/395257?a_aid=5jutr9xaq8h3j",
-          type: "ticket"
-        }
-      ]
-    });
-    
-    // De övriga dynamiska matcherna...
-    const pairings = [
-      { homeIdx: 0, awayIdx: 1, daysAhead: 14, time: "16:00", price: 1250 },
-      { homeIdx: 5, awayIdx: 7, daysAhead: 18, time: "21:00", price: 1450 },
-      { homeIdx: 2, awayIdx: 3, daysAhead: 25, time: "13:30", price: 1850 },
-      { homeIdx: 8, awayIdx: 9, daysAhead: 28, time: "20:45", price: 950 },
-      { homeIdx: 6, awayIdx: 10, daysAhead: 32, time: "21:00", price: 1600 },
-      { homeIdx: 3, awayIdx: 4, daysAhead: 38, time: "16:00", price: 1390 },
-      { homeIdx: 5, awayIdx: 6, daysAhead: 45, time: "21:00", price: 2200 },
-      { homeIdx: 11, awayIdx: 0, daysAhead: 52, time: "21:00", price: 1500 }
-    ];
+    const plData = await plRes.json();
+    const laLigaData = await laLigaRes.json();
 
-    for (let i = 0; i < pairings.length; i++) {
-      const p = pairings[i];
-      const home = TOP_TEAMS[p.homeIdx];
-      const away = TOP_TEAMS[p.awayIdx];
-      const matchId = `dynamic-m-${i}`;
-      
-      const mockOffers = [
-        {
-          id: `o-${matchId}-1`,
-          merchantName: "StubHub",
-          rating: 4.8,
-          reviewsCount: 3102,
-          section: "Långsida Premium",
-          category: "Långsida",
-          priceSEK: Math.round(p.price * 1.2),
-          availableQuantity: 4,
-          deliveryType: "E-biljett (Direkt)",
-          isVerified: true,
-          url: getSearchUrl("StubHub", home.name, away.name),
-          type: "ticket"
-        },
-        {
-          id: `o-${matchId}-2`,
-          merchantName: "Viagogo",
-          rating: 4.4,
-          reviewsCount: 1980,
-          section: "Kortsida Standard",
-          category: "Kortsida",
-          priceSEK: p.price,
-          availableQuantity: 2,
-          deliveryType: "Mobilbiljett",
-          isVerified: true,
-          url: getSearchUrl("Viagogo", home.name, away.name),
-          type: "ticket"
-        }
-      ];
+    const rawEvents = [...(plData.events || []), ...(laLigaData.events || [])];
 
-      generatedMatches.push({
-        id: matchId,
-        homeTeam: {
-          name: home.name,
-          shortName: home.short,
-          primaryColor: home.color1,
-          secondaryColor: home.color2,
-          emoji: home.emoji
-        },
-        awayTeam: {
-          name: away.name,
-          shortName: away.short,
-          primaryColor: away.color1,
-          secondaryColor: away.color2,
-          emoji: away.emoji
-        },
-        league: home.league === "Champions League" ? "Champions League" : home.league,
-        date: getFutureDateString(p.daysAhead),
-        time: p.time,
-        stadium: home.stadium,
-        city: home.city,
-        priceFrom: p.price,
-        totalTicketsCount: Math.floor(Math.random() * 200) + 50,
-        offers: mockOffers
-      });
-    }
+    // Omformaterar och filtrerar så att vi enbart visar matcher med dina storlag
+    const matches = rawEvents
+      .map((event: any) => {
+        const competition = event.competitions?.[0];
+        if (!competition) return null;
 
-    return NextResponse.json(generatedMatches);
+        const homeComp = competition.competitors?.find((c: any) => c.homeAway === "home");
+        const awayComp = competition.competitors?.find((c: any) => c.homeAway === "away");
+
+        const homeName = homeComp?.team?.displayName || "";
+        const awayName = awayComp?.team?.displayName || "";
+
+        // Kolla om något av lagen matchar våra storklubbar
+        const isTopMatch = TOP_TEAMS.some(t => homeName.includes(t.name) || awayName.includes(t.name));
+        if (!isTopMatch) return null;
+
+        const homeConfig = TOP_TEAMS.find(t => homeName.includes(t.name)) || {
+          color1: "#111827", color2: "#FFFFFF", emoji: "⚽", short: homeName.substring(0, 3).toUpperCase()
+        };
+        const awayConfig = TOP_TEAMS.find(t => awayName.includes(t.name)) || {
+          color1: "#4B5563", color2: "#FFFFFF", emoji: "⚽", short: awayName.substring(0, 3).toUpperCase()
+        };
+
+        const matchId = `espn-${event.id}`;
+        const eventDate = new Date(event.date);
+        const matchDate = eventDate.toISOString().split("T")[0];
+        const matchTime = eventDate.toTimeString().substring(0, 5);
+
+        const basePrice = Math.floor(Math.random() * 400) + 1100;
+
+        const offers = [
+          {
+            id: `o-${matchId}-se365`,
+            merchantName: "Sports Events 365",
+            rating: 4.8,
+            reviewsCount: 512,
+            section: "Kortsida Standard",
+            category: "Kortsida",
+            priceSEK: basePrice,
+            availableQuantity: 4,
+            deliveryType: "E-biljett (Direkt)",
+            isVerified: true,
+            url: getSearchUrl("Sports Events 365", homeName, awayName),
+            type: "ticket"
+          },
+          {
+            id: `o-${matchId}-stubhub`,
+            merchantName: "StubHub",
+            rating: 4.8,
+            reviewsCount: 3102,
+            section: "Långsida Sektion",
+            category: "Långsida",
+            priceSEK: Math.round(basePrice * 1.2),
+            availableQuantity: 6,
+            deliveryType: "E-biljett (Direkt)",
+            isVerified: true,
+            url: getSearchUrl("StubHub", homeName, awayName),
+            type: "ticket"
+          },
+          {
+            id: `o-${matchId}-viagogo`,
+            merchantName: "Viagogo",
+            rating: 4.4,
+            reviewsCount: 1980,
+            section: "Kortsida Nedre",
+            category: "Kortsida",
+            priceSEK: Math.round(basePrice * 0.95),
+            availableQuantity: 2,
+            deliveryType: "Mobilbiljett",
+            isVerified: true,
+            url: getSearchUrl("Viagogo", homeName, awayName),
+            type: "ticket"
+          }
+        ];
+
+        return {
+          id: matchId,
+          homeTeam: {
+            name: homeName,
+            shortName: homeConfig.short,
+            primaryColor: homeConfig.color1,
+            secondaryColor: homeConfig.color2,
+            emoji: homeConfig.emoji
+          },
+          awayTeam: {
+            name: awayName,
+            shortName: awayConfig.short,
+            primaryColor: awayConfig.color1,
+            secondaryColor: awayConfig.color2,
+            emoji: awayConfig.emoji
+          },
+          league: event.season?.slug === "premier-league" ? "Premier League" : "La Liga",
+          date: matchDate,
+          time: matchTime,
+          stadium: competition.venue?.fullName || "Stadion",
+          city: competition.venue?.address?.city || "Europa",
+          priceFrom: Math.min(...offers.map(o => o.priceSEK)),
+          totalTicketsCount: Math.floor(Math.random() * 80) + 20,
+          offers: offers
+        };
+      })
+      .filter(Boolean);
+
+    return NextResponse.json(matches);
   } catch (error: any) {
-    return NextResponse.json({ error: "Kunde inte generera matcher" }, { status: 500 });
+    return NextResponse.json({ error: "Kunde inte hämta matcher" }, { status: 500 });
   }
 }
