@@ -9,6 +9,9 @@ const MY_MATCHES = [
   { homeKey: "psg", awayKey: "marseille", date: "2026-09-06", time: "21:00" },
   { homeKey: "bayern-munchen", awayKey: "borussia-dortmund", date: "2026-09-12", time: "18:30" },
   { homeKey: "malmo-ff", awayKey: "tottenham", date: "2026-09-17", time: "19:00" }
+  { homeKey: "arsenal", awayKey: "coventry", date: "2026-08-21", time: "21:00" }
+  { homeKey: "nottingham", awayKey: "leeds", date: "2026-08-22", time: "16:00" }
+  { homeKey: "hull-city", awayKey: "manchester-united", date: "2026-08-22", time: "13:30" }
 ];
 
 const getSearchUrl = (merchantName: string, homeTeam: string, awayTeam: string): string => {
