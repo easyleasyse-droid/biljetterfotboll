@@ -882,7 +882,7 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     packages: "Matchpaket finns.",
     history: "En klubb med starkt regionalt stöd.",
     faqs: [{ question: "Var ligger arenan?", answer: "Strax utanför Enschede centrum." }]
-  }
+  },
   "hull-city": {
   name: "Hull City",
   league: "Championship",
