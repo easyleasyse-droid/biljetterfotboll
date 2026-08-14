@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { TEAMS_SEO_DATA } from "@/data/teams";
+import { TEAMS_SEO_DATA } from "../../data/teams";
 
 const MY_MATCHES = [
   { home: "Arsenal FC", away: "Chelsea FC", date: "2026-08-25", time: "21:00" },
@@ -11,7 +11,6 @@ const MY_MATCHES = [
   { home: "Malmö FF", away: "Tottenham Hotspur", date: "2026-09-17", time: "19:00" }
 ];
 
-// Hjälpfunktion för att slå upp lag i TEAMS_SEO_DATA
 function getTeamData(teamName: string) {
   const normalized = teamName.toLowerCase().trim();
   
