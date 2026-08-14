@@ -18,7 +18,12 @@ const MY_MATCHES = [
   { homeKey: "malmo-ff", awayKey: "tottenham", date: "2026-09-17", time: "19:00" }, // <-- Se till att kommat finns här!
   { homeKey: "arsenal", awayKey: "coventry", date: "2026-08-21", time: "21:00" },
   { homeKey: "nottingham", awayKey: "leeds", date: "2026-08-22", time: "16:00" },
-  { homeKey: "hull-city", awayKey: "manchester-united", date: "2026-08-22", time: "13:30" }
+  { homeKey: "hull-city", awayKey: "manchester-united", date: "2026-08-22", time: "13:30" },
+  { homeKey: "brentford", awayKey: "tottenham", date: "2026-08-22", time: "18:30" },
+  { homeKey: "manchester-city", awayKey: "bournemouth", date: "2026-08-23", time: "15:00" },
+  { homeKey: "brighton", awayKey: "aston-villa", date: "2026-08-23", time: "15:00" },
+  { homeKey: "newcastle", awayKey: "liverpool", date: "2026-08-23", time: "17:30" },
+  { homeKey: "fulham", awayKey: "chelsea", date: "2026-08-24", time: "21:00" },
 ];
 
 const getSearchUrl = (merchantName: string, homeTeam: string, awayTeam: string): string => {

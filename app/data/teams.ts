@@ -886,7 +886,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
   "hull-city": {
     slug: "hull-city",
     name: "Hull City",
-    league: "Championship",
+    league: "Premier League",
     stadiumName: "MKM Stadium",
     location: "Hull, England",
     logo: "/logos/hull-city.png",
@@ -896,7 +896,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
   "coventry": {
     slug: "coventry",
     name: "Coventry City",
-    league: "Championship",
+    league: "Premier League",
     stadiumName: "Coventry Building Society Arena",
     location: "Coventry, England",
     logo: "/logos/coventry.png",
@@ -912,5 +912,69 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     logo: "/logos/nottingham.png",
     description: "Köp biljetter till Nottingham Forest.",
     faqs: [{ question: "Var ligger arenan?", answer: "I Nottingham, England." }]
+  },
+  "brentford": {
+    name: "Brentford FC",
+    league: "Premier League",
+    stadiumName: "Gtech Community Stadium",
+    location: "London, England",
+    logo: "/logos/brentford.png",
+    faqs: [{ question: "Var ligger arenan?", answer: "I västra London, England." }]
+  },
+  "bournemouth": {
+    name: "AFC Bournemouth",
+    league: "Premier League",
+    stadiumName: "Vitality Stadium",
+    location: "Bournemouth, England",
+    logo: "/logos/bournemouth.png",
+    faqs: [{ question: "Var ligger arenan?", answer: "I Bournemouth, England." }]
+  },
+  "brighton": {
+    name: "Brighton & Hove Albion",
+    league: "Premier League",
+    stadiumName: "American Express Stadium",
+    location: "Brighton, England",
+    logo: "/logos/brighton.png",
+    faqs: [{ question: "Var ligger arenan?", answer: "I Brighton, England." }]
+  },
+  "fulham": {
+    name: "Fulham FC",
+    league: "Premier League",
+    stadiumName: "Craven Cottage",
+    location: "London, England",
+    logo: "/logos/fulham.png",
+    faqs: [{ question: "Var ligger arenan?", answer: "I London, England." }]
+  },
+  "everton": {
+    name: "Everton FC",
+    league: "Premier League",
+    stadiumName: "Goodison Park",
+    location: "Liverpool, England",
+    logo: "/logos/everton.png",
+    faqs: [{ question: "Var ligger arenan?", answer: "I Liverpool, England." }]
+  },
+  "crystal-palace": {
+    name: "Crystal Palace",
+    league: "Premier League",
+    stadiumName: "Selhurst Park",
+    location: "London, England",
+    logo: "/logos/crystal-palace.png",
+    faqs: [{ question: "Var ligger arenan?", answer: "I London, England." }]
+  },
+  "ipswich": {
+    name: "Ipswich Town",
+    league: "Premier League",
+    stadiumName: "Portman Road",
+    location: "Ipswich, England",
+    logo: "/logos/ipswich.png",
+    faqs: [{ question: "Var ligger arenan?", answer: "I Ipswich, England." }]
+  },
+  "sunderland": {
+    name: "Sunderland AFC",
+    league: "Championship",
+    stadiumName: "Stadium of Light",
+    location: "Sunderland, England",
+    logo: "/logos/sunderland.png",
+    faqs: [{ question: "Var ligger arenan?", answer: "I Sunderland, England." }]
   }
 };
