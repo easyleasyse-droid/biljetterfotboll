@@ -907,4 +907,4 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     logo: "/logos/nottingham.png",
     faqs: [{ question: "Var ligger arenan?", answer: "I Nottingham, England." }]
   }
-};
+}; 
