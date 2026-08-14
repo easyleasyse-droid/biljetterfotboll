@@ -29,11 +29,11 @@ const MY_MATCHES = [
 const getSearchUrl = (merchantName: string, homeTeam: string, awayTeam: string): string => {
   const query = encodeURIComponent(`${homeTeam} ${awayTeam}`);
   const domainMap: Record<string, string> = {
-    "Viagogo": `https://www.viagogo.se/Search?q=${query}`,
-    "StubHub": `https://www.stubhub.se/search?q=${query}`,
-    "Ticombo": `https://www.ticombo.com/sv/search?q=${query}`,
-    "Sports Events 365": `https://www.sportsevents365.se/search?q=${query}&a_aid=5jutr9xaq8h3j`
-  };
+  "Viagogo": `https://www.viagogo.se/Search?q=${query}`,
+  "StubHub": `https://www.stubhub.se/search?q=${query}`,
+  "Ticombo": `https://www.ticombo.com/sv/search?q=${query}`,
+  "Sports Events 365": `https://www.sportsevents365.com/search?q=${encodeURIComponent(homeTeam)}&a_aid=5jutr9xaq8h3j`
+};
   return domainMap[merchantName] || `https://www.google.com/search?q=${query}`;
 };
 
