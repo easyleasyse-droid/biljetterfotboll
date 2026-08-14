@@ -31,9 +31,9 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "London, England",
     league: "Premier League",
     aboutTickets: "Hitta auktoriserade biljetter till Arsenal på Emirates Stadium. Vi jämför priser för allt från prisvärda kortsidesbiljetter till exklusiva Club Level-paket med mat och dryck inkluderat.",
-    heroImage: "https://images.unsplash.com/photo-1513568690814-db9512f36f60?q=80&w=1200&auto=format&fit=crop", // Garanterad fotbollsarena/stadion
+    heroImage: "/stadiums/emirates-stadium-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=600&auto=format&fit=crop", // Arenastrålkastare/matchmiljö
-    stadiumLayoutImage: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=600&auto=format&fit=crop", // Läktarsektioner
+    stadiumLayoutImage: "/stadiums/emirates-stadium-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2480.24584281729!2d-0.10842242337777176!3d51.5548884718247!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48761b764bf00001%3A0x12e9491176b9117a!2sEmirates%20Stadium!5e0!3m2!1ssv!2sse!4v1710000000000!5m2!1ssv!2sse",
     howToBuy: "Att köpa biljetter direkt via Arsenals officiella kanaler kräver i princip alltid ett betalt medlemskap (Red Membership, ca £35/år) per biljett. Biljetterna släpps exakt två månader före match via ett digitalt kösystem där chanserna är små för populära helgmatcher. För internationella resenärer är det betydligt tryggare och smidigare att köpa via auktoriserade 'Official Overseas Travel Agents' som säljer officiella hospitality-biljetter i kombination med hotell eller louloger, helt utan krav på medlemskap. Vi listar enbart verifierade aktörer så att du slipper oroa dig för falska biljetter på andrahandsmarknaden.",
     sectionsAndPrices: "Priserna är uppdelade i Kategori A (t.ex. Tottenham, Chelsea, Man Utd), Kategori B (t.ex. Aston Villa, Newcastle) och Kategori C (t.ex. nykomlingar). Upper Tier (övre etage) ger en fantastisk taktisk vy över spelet och är billigast, men du sitter högt upp. Lower Tier (nedre etage) tar dig så nära spelarna att du kan höra dem prata, men sikten kan bli lidande vid kortsidorna när bollen är på andra sidan. För den ultimata upplevelsen rekommenderas Club Level (mellanetaget) – här sitter du på vadderade lyxsäten och har tillgång till exklusiva barer, restauranger och gratis dryck i halvtid.",
@@ -58,7 +58,7 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     location: "Manchester, England",
     league: "Premier League",
     aboutTickets: "Jämför biljetter till Manchester United på Old Trafford. Säkra din plats på drömmarnas teater och upplev den mäktiga stämningen i den engelska fotbollens hjärta.",
-    heroImage: "https://images.unsplash.com/photo-1622760807800-47b29302b3c4?q=80&w=1200&auto=format&fit=crop", // Garanterad röd/fotbollsarena känsla
+    heroImage: "/stadiums/old-trafford.jpg",
     contentImage: "https://images.unsplash.com/photo-1510563800743-aed2364902cb?q=80&w=600&auto=format&fit=crop", // Klassisk läktare/stadion
     stadiumLayoutImage: "/stadiums/old-trafford.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2375.3129596489387!2d-2.293902323267597!3d53.46305886623668!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487bae72e7e47f69%3A0x6c930e96df4455fe!2sOld%20Trafford!5e0!3m2!1ssv!2sse!4v1710000000001!5m2!1ssv!2sse",
