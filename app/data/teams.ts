@@ -889,7 +889,6 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     stadiumName: "MKM Stadium",
     location: "Hull, England",
     logo: "/logos/hull-city.png",
-    stadiumDetails: "MKM Stadium i Hull.",
     faqs: [{ question: "Var ligger arenan?", answer: "I Hull, England." }]
   },
   "coventry": {
@@ -898,7 +897,6 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     stadiumName: "Coventry Building Society Arena",
     location: "Coventry, England",
     logo: "/logos/coventry.png",
-    stadiumDetails: "Coventry Building Society Arena i Coventry.",
     faqs: [{ question: "Var ligger arenan?", answer: "I Coventry, England." }]
   },
   "nottingham": {
@@ -907,7 +905,6 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     stadiumName: "City Ground",
     location: "Nottingham, England",
     logo: "/logos/nottingham.png",
-    stadiumDetails: "City Ground i Nottingham.",
     faqs: [{ question: "Var ligger arenan?", answer: "I Nottingham, England." }]
   }
 };
