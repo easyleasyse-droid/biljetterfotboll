@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Header from "../../components/Header";
@@ -11,8 +11,7 @@ import ComparisonDrawer from "../../components/ComparisonDrawer";
 import BookingModal from "../../components/BookingModal";
 import { LEAGUES_DATA } from "../../data/leagues";
 import { TEAMS_SEO_DATA } from "../../data/teams";
-import { MATCHES_DATA } from "../../data/matches";
-import { Trophy, Globe, Ticket, Info, ShieldCheck, MapPin, ChevronRight } from "lucide-react";
+import { Trophy, Globe, Ticket, Info, ShieldCheck, MapPin, ChevronRight, Loader2 } from "lucide-react";
 
 export default function LeaguePage() {
   const params = useParams();
@@ -21,9 +20,30 @@ export default function LeaguePage() {
   
   const leagueData = LEAGUES_DATA[leagueSlug];
 
+  const [matches, setMatches] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [bookingQuantity, setBookingQuantity] = useState<number>(2);
+
+  // Hämtar alla matcher från API:et istället för den statiska filen
+  useEffect(() => {
+    async function fetchMatches() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/matches");
+        if (res.ok) {
+          const data = await res.json();
+          setMatches(data);
+        }
+      } catch (err) {
+        console.error("Kunde inte hämta matcher:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMatches();
+  }, []);
 
   if (!leagueData) {
     return (
@@ -41,9 +61,19 @@ export default function LeaguePage() {
     );
   }
 
-  const filteredMatches = MATCHES_DATA.filter(
-    (match) => match.league?.toLowerCase() === leagueData.name.toLowerCase()
-  );
+  // Säkrare filtrering: Kollar både matchens liganamn samt om något av lagen spelar i ligan
+  const filteredMatches = matches.filter((match) => {
+    if (!match.league) return false;
+    
+    const matchLeague = match.league.trim().toLowerCase();
+    const targetLeague = leagueData.name.trim().toLowerCase();
+
+    return (
+      matchLeague === targetLeague ||
+      matchLeague.includes(targetLeague) ||
+      targetLeague.includes(matchLeague)
+    );
+  });
 
   const handleBookOffer = (offer: any, quantity: number) => {
     setSelectedOffer(offer);
@@ -79,7 +109,7 @@ export default function LeaguePage() {
 
       <main className="max-w-6xl mx-auto px-4 py-12">
         
-        {/* DENNA SEKTION VISAR ENBART LAGEN SOM TILLHÖR DENNA SPECIFIKA LIGA */}
+        {/* LAG I LIGAN */}
         <section className="mb-14">
           <h2 className="text-2xl font-black tracking-tight text-slate-800 mb-6 flex items-center gap-2">
             <ShieldCheck className="text-indigo-600 h-6 w-6" />
@@ -131,13 +161,19 @@ export default function LeaguePage() {
           </div>
         </section>
 
+        {/* KOMMANDE MATCHER */}
         <section className="mb-14">
           <h2 className="text-2xl font-black tracking-tight text-slate-800 mb-6 flex items-center gap-2">
             <Trophy className="text-amber-500 h-6 w-6" />
             Kommande matcher i ligan
           </h2>
           
-          {filteredMatches.length > 0 ? (
+          {loading ? (
+            <div className="flex justify-center items-center py-12 text-slate-500 gap-2">
+              <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+              <span>Hämtar matcher...</span>
+            </div>
+          ) : filteredMatches.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredMatches.map((match) => (
                 <MatchCard 
