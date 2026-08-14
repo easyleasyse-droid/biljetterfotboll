@@ -1,33 +1,17 @@
 import { NextResponse } from "next/server";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 
+// Här lägger du enkelt till eller ändrar matcher.
+// Använd samma nycklar som finns i din teams.ts (t.ex. "inter", "milan", "arsenal").
 const MY_MATCHES = [
-  { home: "Arsenal FC", away: "Chelsea FC", date: "2026-08-25", time: "21:00" },
-  { home: "Real Madrid", away: "FC Barcelona", date: "2026-08-29", time: "21:00" },
-  { home: "Inter", away: "Milan", date: "2026-08-30", time: "20:45" },
-  { home: "Liverpool FC", away: "Manchester United", date: "2026-09-02", time: "16:30" },
-  { home: "Paris Saint-Germain", away: "Marseille", date: "2026-09-06", time: "21:00" },
-  { home: "Bayern München", away: "Dortmund", date: "2026-09-12", time: "18:30" },
-  { home: "Malmö FF", away: "Tottenham Hotspur", date: "2026-09-17", time: "19:00" }
+  { homeKey: "arsenal", awayKey: "chelsea", date: "2026-08-25", time: "21:00" },
+  { homeKey: "real-madrid", awayKey: "barcelona", date: "2026-08-29", time: "21:00" },
+  { homeKey: "inter", awayKey: "milan", date: "2026-08-30", time: "20:45" },
+  { homeKey: "liverpool", awayKey: "manchester-united", date: "2026-09-02", time: "16:30" },
+  { homeKey: "psg", awayKey: "marseille", date: "2026-09-06", time: "21:00" },
+  { homeKey: "bayern-munchen", awayKey: "dortmund", date: "2026-09-12", time: "18:30" },
+  { homeKey: "malmo-ff", awayKey: "tottenham", date: "2026-09-17", time: "19:00" }
 ];
-
-function getTeamData(teamName: string) {
-  const normalized = teamName.toLowerCase().trim();
-  
-  const foundKey = Object.keys(TEAMS_SEO_DATA).find(key => {
-    const t = TEAMS_SEO_DATA[key];
-    return key.toLowerCase() === normalized || 
-           t.name?.toLowerCase() === normalized || 
-           t.name?.toLowerCase().includes(normalized) ||
-           normalized.includes(key.toLowerCase());
-  });
-
-  if (foundKey && TEAMS_SEO_DATA[foundKey]) {
-    return TEAMS_SEO_DATA[foundKey];
-  }
-
-  return null;
-}
 
 const getSearchUrl = (merchantName: string, homeTeam: string, awayTeam: string): string => {
   const query = encodeURIComponent(`${homeTeam} ${awayTeam}`);
@@ -45,8 +29,12 @@ export async function GET() {
     const matches = MY_MATCHES.map((m, index) => {
       const matchId = `m-${index + 1}`;
       
-      const homeInfo = getTeamData(m.home);
-      const awayInfo = getTeamData(m.away);
+      // Hämta exakt lagdata direkt från TEAMS_SEO_DATA baserat på nyckeln
+      const homeInfo = TEAMS_SEO_DATA[m.homeKey];
+      const awayInfo = TEAMS_SEO_DATA[m.awayKey];
+
+      const homeName = homeInfo?.name || m.homeKey;
+      const awayName = awayInfo?.name || m.awayKey;
 
       const basePrice = 1100 + (index * 120) % 750;
 
@@ -62,7 +50,7 @@ export async function GET() {
           availableQuantity: 4,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: getSearchUrl("Sports Events 365", m.home, m.away),
+          url: getSearchUrl("Sports Events 365", homeName, awayName),
           type: "ticket"
         },
         {
@@ -76,7 +64,7 @@ export async function GET() {
           availableQuantity: 6,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: getSearchUrl("StubHub", m.home, m.away),
+          url: getSearchUrl("StubHub", homeName, awayName),
           type: "ticket"
         },
         {
@@ -90,7 +78,7 @@ export async function GET() {
           availableQuantity: 2,
           deliveryType: "Mobilbiljett",
           isVerified: true,
-          url: getSearchUrl("Viagogo", m.home, m.away),
+          url: getSearchUrl("Viagogo", homeName, awayName),
           type: "ticket"
         },
         {
@@ -104,7 +92,7 @@ export async function GET() {
           availableQuantity: 2,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: getSearchUrl("Ticombo", m.home, m.away),
+          url: getSearchUrl("Ticombo", homeName, awayName),
           type: "ticket"
         }
       ];
@@ -112,17 +100,17 @@ export async function GET() {
       return {
         id: matchId,
         homeTeam: { 
-          name: homeInfo?.name || m.home, 
-          shortName: m.home.substring(0, 3).toUpperCase(), 
-          logo: homeInfo?.logo || `/logos/${m.home.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`,
+          name: homeName, 
+          shortName: homeName.substring(0, 3).toUpperCase(), 
+          logo: homeInfo?.logo || `/logos/${m.homeKey}.png`,
           primaryColor: "#111827", 
           secondaryColor: "#FFFFFF", 
           emoji: "⚽" 
         },
         awayTeam: { 
-          name: awayInfo?.name || m.away, 
-          shortName: m.away.substring(0, 3).toUpperCase(), 
-          logo: awayInfo?.logo || `/logos/${m.away.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`,
+          name: awayName, 
+          shortName: awayName.substring(0, 3).toUpperCase(), 
+          logo: awayInfo?.logo || `/logos/${m.awayKey}.png`,
           primaryColor: "#4B5563", 
           secondaryColor: "#FFFFFF", 
           emoji: "⚽" 
