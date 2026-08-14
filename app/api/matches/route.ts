@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 
-// Här lägger du enkelt till eller ändrar matcher.
-// Använd samma nycklar som finns i din teams.ts (t.ex. "inter", "milan", "arsenal").
 const MY_MATCHES = [
   { homeKey: "arsenal", awayKey: "chelsea", date: "2026-08-25", time: "21:00" },
   { homeKey: "real-madrid", awayKey: "barcelona", date: "2026-08-29", time: "21:00" },
-  { homeKey: "inter", awayKey: "milan", date: "2026-08-30", time: "20:45" },
+  { homeKey: "inter", awayKey: "ac-milan", date: "2026-08-30", time: "20:45" },
   { homeKey: "liverpool", awayKey: "manchester-united", date: "2026-09-02", time: "16:30" },
   { homeKey: "psg", awayKey: "marseille", date: "2026-09-06", time: "21:00" },
-  { homeKey: "bayern-munchen", awayKey: "dortmund", date: "2026-09-12", time: "18:30" },
+  { homeKey: "bayern-munchen", awayKey: "borussia-dortmund", date: "2026-09-12", time: "18:30" },
   { homeKey: "malmo-ff", awayKey: "tottenham", date: "2026-09-17", time: "19:00" }
 ];
 
@@ -29,7 +27,6 @@ export async function GET() {
     const matches = MY_MATCHES.map((m, index) => {
       const matchId = `m-${index + 1}`;
       
-      // Hämta exakt lagdata direkt från TEAMS_SEO_DATA baserat på nyckeln
       const homeInfo = TEAMS_SEO_DATA[m.homeKey];
       const awayInfo = TEAMS_SEO_DATA[m.awayKey];
 
