@@ -22,7 +22,7 @@ export interface TeamSEOData {
   faqs: FAQItem[];
 }
 
-export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
+export const TEAMS_SEO_DATA: Record<string, any> = {
   "arsenal": {
     name: "Arsenal FC",
     stadiumName: "Emirates Stadium",
