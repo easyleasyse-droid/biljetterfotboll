@@ -884,27 +884,33 @@ export const TEAMS_SEO_DATA: Record<string, TeamSEOData> = {
     faqs: [{ question: "Var ligger arenan?", answer: "Strax utanför Enschede centrum." }]
   },
   "hull-city": {
+    slug: "hull-city",
     name: "Hull City",
     league: "Championship",
     stadiumName: "MKM Stadium",
     location: "Hull, England",
     logo: "/logos/hull-city.png",
+    description: "Köp biljetter till Hull City.",
     faqs: [{ question: "Var ligger arenan?", answer: "I Hull, England." }]
   },
   "coventry": {
+    slug: "coventry",
     name: "Coventry City",
     league: "Championship",
     stadiumName: "Coventry Building Society Arena",
     location: "Coventry, England",
     logo: "/logos/coventry.png",
+    description: "Köp biljetter till Coventry City.",
     faqs: [{ question: "Var ligger arenan?", answer: "I Coventry, England." }]
   },
   "nottingham": {
+    slug: "nottingham",
     name: "Nottingham Forest",
     league: "Premier League",
     stadiumName: "City Ground",
     location: "Nottingham, England",
     logo: "/logos/nottingham.png",
+    description: "Köp biljetter till Nottingham Forest.",
     faqs: [{ question: "Var ligger arenan?", answer: "I Nottingham, England." }]
   }
-}; 
+};
