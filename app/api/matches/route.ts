@@ -61,7 +61,32 @@ const MY_MATCHES = [
   { homeKey: "getafe", awayKey: "racing-santander", date: "2026-08-23", time: "19:30" },
   { homeKey: "elche", awayKey: "barcelona", date: "2026-08-23", time: "21:30" },
   { homeKey: "osasuna", awayKey: "levante", date: "2026-08-24", time: "19:30" },
-  { homeKey: "malaga", awayKey: "deportivo", date: "2026-08-24", time: "21:30" }
+  { homeKey: "valencia", awayKey: "real-betis", date: "2026-08-25", time: "21:00" },
+  { homeKey: "real-madrid", awayKey: "real-sociedad", date: "2026-08-26", time: "21:00" },
+  { homeKey: "celta-vigo", awayKey: "osasuna", date: "2026-08-27", time: "20:30" },
+  { homeKey: "barcelona", awayKey: "athletic-bilbao", date: "2026-08-27", time: "21:00" },
+  { homeKey: "racing-santander", awayKey: "elche", date: "2026-08-28", time: "19:00" },
+  { homeKey: "alaves", awayKey: "villarreal", date: "2026-08-28", time: "21:30" },
+  { homeKey: "levante", awayKey: "real-betis", date: "2026-08-29", time: "17:00" },
+  { homeKey: "real-sociedad", awayKey: "espanyol", date: "2026-08-29", time: "19:00" },
+  { homeKey: "sevilla", awayKey: "atletico-madrid", date: "2026-08-29", time: "21:30" },
+  { homeKey: "real-madrid", awayKey: "malaga", date: "2026-08-30", time: "17:00" },
+  { homeKey: "deportivo", awayKey: "valencia", date: "2026-08-30", time: "19:30" },
+  { homeKey: "celta-vigo", awayKey: "athletic-bilbao", date: "2026-08-30", time: "21:30" },
+  { homeKey: "osasuna", awayKey: "getafe", date: "2026-08-31", time: "19:30" },
+  { homeKey: "barcelona", awayKey: "rayo", date: "2026-08-31", time: "21:30" },
+  { homeKey: "real-sociedad", awayKey: "celta-vigo", date: "2026-09-03", time: "21:00" },
+  { homeKey: "real-betis", awayKey: "real-madrid", date: "2026-09-04", time: "21:00" },
+  { homeKey: "athletic-bilbao", awayKey: "atletico-madrid", date: "2026-09-05", time: "16:15" },
+  { homeKey: "rayo", awayKey: "racing-santander", date: "2026-09-05", time: "18:30" },
+  { homeKey: "villarreal", awayKey: "deportivo", date: "2026-09-05", time: "21:00" },
+  { homeKey: "valencia", awayKey: "barcelona", date: "2026-09-06", time: "16:15" },
+  { homeKey: "alaves", awayKey: "osasuna", date: "2026-09-06", time: "18:30" },
+  { homeKey: "malaga", awayKey: "levante", date: "2026-09-06", time: "18:30" },
+  { homeKey: "espanyol", awayKey: "sevilla", date: "2026-09-06", time: "21:00" },
+  { homeKey: "getafe", awayKey: "celta-vigo", date: "2026-09-07", time: "19:00" },
+  { homeKey: "elche", awayKey: "real-sociedad", date: "2026-09-07", time: "21:30" },
+
 ];
 
 const getSearchUrl = (
