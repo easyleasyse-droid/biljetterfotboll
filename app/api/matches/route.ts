@@ -86,6 +86,16 @@ const MY_MATCHES = [
   { homeKey: "espanyol", awayKey: "sevilla", date: "2026-09-06", time: "21:00" },
   { homeKey: "getafe", awayKey: "celta-vigo", date: "2026-09-07", time: "19:00" },
   { homeKey: "elche", awayKey: "real-sociedad", date: "2026-09-07", time: "21:30" },
+  { homeKey: "getafe", awayKey: "deportivo", date: "2026-09-13", time: "TBD" },
+  { homeKey: "real-sociedad", awayKey: "atletico-madrid", date: "2026-09-13", time: "TBD" },
+  { homeKey: "levante", awayKey: "barcelona", date: "2026-09-13", time: "TBD" },
+  { homeKey: "athletic-bilbao", awayKey: "elche", date: "2026-09-13", time: "TBD" },
+  { homeKey: "sevilla", awayKey: "valencia", date: "2026-09-13", time: "TBD" },
+  { homeKey: "osasuna", awayKey: "espanyol", date: "2026-09-13", time: "TBD" },
+  { homeKey: "real-madrid", awayKey: "rayo", date: "2026-09-13", time: "TBD" },
+  { homeKey: "villarreal", awayKey: "real-betis", date: "2026-09-13", time: "TBD" },
+  { homeKey: "celta-vigo", awayKey: "malaga", date: "2026-09-13", time: "TBD" },
+  { homeKey: "racing-santander", awayKey: "alaves", date: "2026-09-07", time: "TBD" },
 
 ];
 
