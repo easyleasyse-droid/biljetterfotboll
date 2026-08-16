@@ -8,17 +8,11 @@ const formatTeamName = (key: string) => {
     .join(" ");
 };
 
-const MY_MATCHES = [  
-  { homeKey: "real-madrid", awayKey: "barcelona", date: "2026-08-29", time: "21:00" },
-  { homeKey: "inter", awayKey: "ac-milan", date: "2026-08-30", time: "20:45" },
-  { homeKey: "liverpool", awayKey: "manchester-united", date: "2026-09-02", time: "16:30" },
-  { homeKey: "psg", awayKey: "marseille", date: "2026-09-06", time: "21:00" },
-  { homeKey: "bayern-munchen", awayKey: "borussia-dortmund", date: "2026-09-12", time: "18:30" },
-  { homeKey: "malmo-ff", awayKey: "tottenham", date: "2026-09-17", time: "19:00" },
+const MY_MATCHES = [
   { homeKey: "arsenal", awayKey: "coventry", date: "2026-08-21", time: "21:00" },
   { homeKey: "nottingham", awayKey: "leeds", date: "2026-08-22", time: "16:00" },
   { homeKey: "ipswich", awayKey: "sunderland", date: "2026-08-22", time: "16:00" },
-  { homeKey: "everton", awayKey: "crytal-palace", date: "2026-08-22", time: "16:00" },
+  { homeKey: "everton", awayKey: "crystal-palace", date: "2026-08-22", time: "16:00" },
   { homeKey: "hull-city", awayKey: "manchester-united", date: "2026-08-22", time: "13:30" },
   { homeKey: "brentford", awayKey: "tottenham", date: "2026-08-22", time: "18:30" },
   { homeKey: "manchester-city", awayKey: "bournemouth", date: "2026-08-23", time: "15:00" },
@@ -54,6 +48,20 @@ const MY_MATCHES = [
   { homeKey: "coventry", awayKey: "brighton", date: "2026-09-13", time: "15:00" },
   { homeKey: "manchester-united", awayKey: "manchester-city", date: "2026-09-13", time: "17:30" },
   { homeKey: "leeds", awayKey: "newcastle", date: "2026-09-14", time: "21:00" },
+  { homeKey: "racing-santander", awayKey: "villareal", date: "2026-08-16", time: "17:00" },
+  { homeKey: "espanyol", awayKey: "levante", date: "2026-08-16", time: "19:00" },
+  { homeKey: "deportivo", awayKey: "elche", date: "2026-08-17", time: "21:00" },
+  { homeKey: "atletico-madrid", awayKey: "malaga", date: "2026-08-19", time: "21:00" },
+  { homeKey: "rayo", awayKey: "alaves", date: "2026-08-20", time: "21:00" },
+  { homeKey: "real-betis", awayKey: "real-sociedad", date: "2026-08-21", time: "21:00" },
+  { homeKey: "athletic-bilbao", awayKey: "sevilla", date: "2026-08-22", time: "17:00" },
+  { homeKey: "valencia", awayKey: "celta-vigo", date: "2026-08-22", time: "19:30" },
+  { homeKey: "espanyol", awayKey: "real-madrid", date: "2026-08-22", time: "21:30" },
+  { homeKey: "atletico-madrid", awayKey: "villarreal", date: "2026-08-23", time: "17:00" },
+  { homeKey: "getafe", awayKey: "racing-santander", date: "2026-08-23", time: "19:30" },
+  { homeKey: "elche", awayKey: "barcelona", date: "2026-08-23", time: "21:30" },
+  { homeKey: "osasuna", awayKey: "levante", date: "2026-08-24", time: "19:30" },
+  { homeKey: "malaga", awayKey: "deportivo", date: "2026-08-24", time: "21:30" }
 ];
 
 const getSearchUrl = (
@@ -62,12 +70,10 @@ const getSearchUrl = (
   awayTeam: string,
   customUrl?: string
 ): string => {
-  // Om du klistrat in en direktlänk i MY_MATCHES används den!
   if (customUrl) return customUrl;
 
   const query = encodeURIComponent(`${homeTeam} ${awayTeam}`);
 
-  // Fallbacks som garanterat ALDRIG ger 404 och sätter din affiliate-cookie
   const domainMap: Record<string, string> = {
     "Viagogo": `https://www.viagogo.se/Search?q=${query}`,
     "StubHub": `https://www.stubhub.se/`,
@@ -81,7 +87,6 @@ const getSearchUrl = (
 export async function GET() {
   try {
     const today = new Date().toISOString().split("T")[0];
-
     const upcomingMatches = MY_MATCHES.filter((m) => m.date >= today);
 
     const matches = upcomingMatches.map((m, index) => {
@@ -96,63 +101,63 @@ export async function GET() {
       const basePrice = 1100 + (index * 120) % 750;
 
       const offers = [
-  {
-    id: `o-${matchId}-se365`,
-    merchantName: "Sports Events 365",
-    rating: 4.8,
-    reviewsCount: 512,
-    section: "Kortsida Standard",
-    category: "Kortsida",
-    priceSEK: basePrice,
-    availableQuantity: 4,
-    deliveryType: "E-biljett (Direkt)",
-    isVerified: true,
-    url: getSearchUrl("Sports Events 365", homeName, awayName, (m as any).se365Url),
-    type: "ticket"
-  },
-  {
-    id: `o-${matchId}-stubhub`,
-    merchantName: "StubHub",
-    rating: 4.8,
-    reviewsCount: 3102,
-    section: "Långsida Sektion",
-    category: "Långsida",
-    priceSEK: Math.round(basePrice * 1.25),
-    availableQuantity: 6,
-    deliveryType: "E-biljett (Direkt)",
-    isVerified: true,
-    url: getSearchUrl("StubHub", homeName, awayName, (m as any).stubhubUrl),
-    type: "ticket"
-  },
-  {
-    id: `o-${matchId}-viagogo`,
-    merchantName: "Viagogo",
-    rating: 4.4,
-    reviewsCount: 1980,
-    section: "Kortsida Nedre",
-    category: "Kortsida",
-    priceSEK: Math.round(basePrice * 0.95),
-    availableQuantity: 2,
-    deliveryType: "Mobilbiljett",
-    isVerified: true,
-    url: getSearchUrl("Viagogo", homeName, awayName),
-    type: "ticket"
-  },
-  {
-    id: `o-${matchId}-ticombo`,
-    merchantName: "Ticombo",
-    rating: 4.7,
-    reviewsCount: 1540,
-    section: "VIP / Hospitality",
-    category: "VIP",
-    priceSEK: Math.round(basePrice * 2.1),
-    availableQuantity: 2,
-    deliveryType: "E-biljett (Direkt)",
-    isVerified: true,
-    url: getSearchUrl("Ticombo", homeName, awayName),
-    type: "ticket"
-  }
-];
+        {
+          id: `o-${matchId}-se365`,
+          merchantName: "Sports Events 365",
+          rating: 4.8,
+          reviewsCount: 512,
+          section: "Kortsida Standard",
+          category: "Kortsida",
+          priceSEK: basePrice,
+          availableQuantity: 4,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: getSearchUrl("Sports Events 365", homeName, awayName, (m as any).se365Url),
+          type: "ticket"
+        },
+        {
+          id: `o-${matchId}-stubhub`,
+          merchantName: "StubHub",
+          rating: 4.8,
+          reviewsCount: 3102,
+          section: "Långsida Sektion",
+          category: "Långsida",
+          priceSEK: Math.round(basePrice * 1.25),
+          availableQuantity: 6,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: getSearchUrl("StubHub", homeName, awayName, (m as any).stubhubUrl),
+          type: "ticket"
+        },
+        {
+          id: `o-${matchId}-viagogo`,
+          merchantName: "Viagogo",
+          rating: 4.4,
+          reviewsCount: 1980,
+          section: "Kortsida Nedre",
+          category: "Kortsida",
+          priceSEK: Math.round(basePrice * 0.95),
+          availableQuantity: 2,
+          deliveryType: "Mobilbiljett",
+          isVerified: true,
+          url: getSearchUrl("Viagogo", homeName, awayName),
+          type: "ticket"
+        },
+        {
+          id: `o-${matchId}-ticombo`,
+          merchantName: "Ticombo",
+          rating: 4.7,
+          reviewsCount: 1540,
+          section: "VIP / Hospitality",
+          category: "VIP",
+          priceSEK: Math.round(basePrice * 2.1),
+          availableQuantity: 2,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: getSearchUrl("Ticombo", homeName, awayName),
+          type: "ticket"
+        }
+      ];
 
       return {
         id: matchId,

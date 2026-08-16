@@ -976,5 +976,86 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     location: "Sunderland, England",
     logo: "/logos/sunderland.png",
     faqs: [{ question: "Var ligger arenan?", answer: "I Sunderland, England." }]
+  },
+  export const TEAMS_SEO_DATA: Record<string, any> = {
+  // ... dina befintliga lag ...
+
+  "racing-santander": {
+    name: "Racing Santander",
+    league: "La Liga",
+    stadiumName: "Campos de Sport de El Sardinero",
+    location: "Santander, Spanien",
+    logo: "/logos/racing-santander.png"
+  },
+  "alaves": {
+    name: "Deportivo Alavés",
+    league: "La Liga",
+    stadiumName: "Mendizorrotza",
+    location: "Vitoria-Gasteiz, Spanien",
+    logo: "/logos/alaves.png"
+  },
+  "getafe": {
+    name: "Getafe CF",
+    league: "La Liga",
+    stadiumName: "Coliseum",
+    location: "Getafe (Madrid), Spanien",
+    logo: "/logos/getafe.png"
+  },
+  "espanyol": {
+    name: "RCD Espanyol",
+    league: "La Liga",
+    stadiumName: "Stage Front Stadium",
+    location: "Barcelona, Spanien",
+    logo: "/logos/espanyol.png"
+  },
+  "rayo": {
+    name: "Rayo Vallecano",
+    league: "La Liga",
+    stadiumName: "Campo de Fútbol de Vallecas",
+    location: "Madrid, Spanien",
+    logo: "/logos/rayo.png"
+  },
+  "levante": {
+    name: "Levante UD",
+    league: "La Liga",
+    stadiumName: "Estadi Ciutat de València",
+    location: "Valencia, Spanien",
+    logo: "/logos/levante.png"
+  },
+  "deportivo": {
+    name: "Deportivo La Coruña",
+    league: "La Liga",
+    stadiumName: "Abanca-Riazor",
+    location: "A Coruña, Spanien",
+    logo: "/logos/deportivo.png"
+  },
+  "elche": {
+    name: "Elche CF",
+    league: "La Liga",
+    stadiumName: "Estadio Martínez Valero",
+    location: "Elche, Spanien",
+    logo: "/logos/elche.png"
+  },
+  "malaga": {
+    name: "Málaga CF",
+    league: "La Liga",
+    stadiumName: "La Rosaleda",
+    location: "Málaga, Spanien",
+    logo: "/logos/malaga.png"
+  },
+  "osasuna": {
+    name: "CA Osasuna",
+    league: "La Liga",
+    stadiumName: "El Sadar",
+    location: "Pamplona, Spanien",
+    logo: "/logos/osasuna.png"
+  },
+  "celta-vigo": {
+    name: "Celta Vigo",
+    league: "La Liga",
+    stadiumName: "Abanca-Balaídos",
+    location: "Vigo, Spanien",
+    logo: "/logos/celta-vigo.png"
   }
+};
 };
