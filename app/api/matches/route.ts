@@ -15,7 +15,7 @@ const MY_MATCHES = [
   { homeKey: "liverpool", awayKey: "manchester-united", date: "2026-09-02", time: "16:30" },
   { homeKey: "psg", awayKey: "marseille", date: "2026-09-06", time: "21:00" },
   { homeKey: "bayern-munchen", awayKey: "borussia-dortmund", date: "2026-09-12", time: "18:30" },
-  { homeKey: "malmo-ff", awayKey: "tottenham", date: "2026-09-17", time: "19:00" }, // <-- Se till att kommat finns här!
+  { homeKey: "malmo-ff", awayKey: "tottenham", date: "2026-09-17", time: "19:00" },
   { homeKey: "arsenal", awayKey: "coventry", date: "2026-08-21", time: "21:00" },
   { homeKey: "nottingham", awayKey: "leeds", date: "2026-08-22", time: "16:00" },
   { homeKey: "hull-city", awayKey: "manchester-united", date: "2026-08-22", time: "13:30" },
@@ -26,14 +26,35 @@ const MY_MATCHES = [
   { homeKey: "fulham", awayKey: "chelsea", date: "2026-08-24", time: "21:00" },
 ];
 
-const getSearchUrl = (merchantName: string, homeTeam: string, awayTeam: string): string => {
+const getSearchUrl = (
+  merchantName: string, 
+  homeTeam: string, 
+  awayTeam: string, 
+  homeKey: string, 
+  awayKey: string
+): string => {
   const query = encodeURIComponent(`${homeTeam} ${awayTeam}`);
+
+  if (merchantName === "Sports Events 365") {
+    // Map för lagnamn som stavas annorlunda hos Sports Events 365
+    const nameFixes: Record<string, string> = {
+      "bournemouth": "afc-bournemouth",
+      "bayern-munchen": "bayern-munich",
+      "malmo-ff": "malmo"
+    };
+
+    const cleanHome = nameFixes[homeKey] || homeKey;
+    const cleanAway = nameFixes[awayKey] || awayKey;
+
+    return `https://www.sportsevents365.com/event/${cleanHome}-vs-${cleanAway}?a_aid=5jutr9xaq8h3j`;
+  }
+
   const domainMap: Record<string, string> = {
-  "Viagogo": `https://www.viagogo.se/Search?q=${query}`,
-  "StubHub": `https://www.stubhub.se/search?q=${query}`,
-  "Ticombo": `https://www.ticombo.com/sv/search?q=${query}`,
-  "Sports Events 365": `https://www.sportsevents365.com/search?q=${encodeURIComponent(homeTeam)}&a_aid=5jutr9xaq8h3j`
-};
+    "Viagogo": `https://www.viagogo.se/Search?q=${query}`,
+    "StubHub": `https://www.stubhub.se/search?q=${query}`,
+    "Ticombo": `https://www.ticombo.com/sv/search?q=${query}`
+  };
+
   return domainMap[merchantName] || `https://www.google.com/search?q=${query}`;
 };
 
@@ -66,7 +87,7 @@ export async function GET() {
           availableQuantity: 4,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: getSearchUrl("Sports Events 365", homeName, awayName),
+          url: getSearchUrl("Sports Events 365", homeName, awayName, m.homeKey, m.awayKey),
           type: "ticket"
         },
         {
@@ -80,7 +101,7 @@ export async function GET() {
           availableQuantity: 6,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: getSearchUrl("StubHub", homeName, awayName),
+          url: getSearchUrl("StubHub", homeName, awayName, m.homeKey, m.awayKey),
           type: "ticket"
         },
         {
@@ -94,7 +115,7 @@ export async function GET() {
           availableQuantity: 2,
           deliveryType: "Mobilbiljett",
           isVerified: true,
-          url: getSearchUrl("Viagogo", homeName, awayName),
+          url: getSearchUrl("Viagogo", homeName, awayName, m.homeKey, m.awayKey),
           type: "ticket"
         },
         {
@@ -108,7 +129,7 @@ export async function GET() {
           availableQuantity: 2,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: getSearchUrl("Ticombo", homeName, awayName),
+          url: getSearchUrl("Ticombo", homeName, awayName, m.homeKey, m.awayKey),
           type: "ticket"
         }
       ];
