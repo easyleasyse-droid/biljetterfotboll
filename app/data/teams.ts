@@ -1055,4 +1055,3 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     logo: "/logos/celta-vigo.png"
   }
 };
-};
