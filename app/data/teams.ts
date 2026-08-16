@@ -977,9 +977,6 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     logo: "/logos/sunderland.png",
     faqs: [{ question: "Var ligger arenan?", answer: "I Sunderland, England." }]
   },
-  export const TEAMS_SEO_DATA: Record<string, any> = {
-  // ... dina befintliga lag ...
-
   "racing-santander": {
     name: "Racing Santander",
     league: "La Liga",
