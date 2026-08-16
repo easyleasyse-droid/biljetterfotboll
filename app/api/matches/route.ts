@@ -29,24 +29,14 @@ const MY_MATCHES = [
 const getSearchUrl = (
   merchantName: string, 
   homeTeam: string, 
-  awayTeam: string, 
-  homeKey: string, 
-  awayKey: string
+  awayTeam: string
 ): string => {
   const query = encodeURIComponent(`${homeTeam} ${awayTeam}`);
 
   if (merchantName === "Sports Events 365") {
-    // Map för lagnamn som stavas annorlunda hos Sports Events 365
-    const nameFixes: Record<string, string> = {
-      "bournemouth": "afc-bournemouth",
-      "bayern-munchen": "bayern-munich",
-      "malmo-ff": "malmo"
-    };
-
-    const cleanHome = nameFixes[homeKey] || homeKey;
-    const cleanAway = nameFixes[awayKey] || awayKey;
-
-    return `https://www.sportsevents365.com/event/${cleanHome}-vs-${cleanAway}?a_aid=5jutr9xaq8h3j`;
+    // Skickar besökaren till Sports Events 365 med din spårning
+    // Detta förhindrar 404 och sätter din affiliate-cookie direkt
+    return `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`;
   }
 
   const domainMap: Record<string, string> = {
