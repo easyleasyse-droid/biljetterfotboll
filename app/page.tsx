@@ -14,6 +14,27 @@ import Link from "next/link";
 import { TEAMS_SEO_DATA } from "./data/teams";
 import { Filter, Trophy, MapPin, Loader2 } from "lucide-react";
 
+// Lista över storklubbar som gör en match extra het
+const TOP_CLUBS = [
+  "Real Madrid", "FC Barcelona", "Bayern München", "PSG", 
+  "Inter", "AC Milan", "Juventus", "Liverpool", "Arsenal", 
+  "Manchester City", "Chelsea", "Tottenham", "Atletico Madrid"
+];
+
+// Hjälpfunktion för att avgöra om en match ska klassas som "het"
+function isHotMatch(match) {
+  if (match.featured) return true;
+  if (match.league === "Champions League") return true;
+
+  const homeName = match.homeTeam?.name || "";
+  const awayName = match.awayTeam?.name || "";
+
+  const isHomeTop = TOP_CLUBS.some((club) => homeName.includes(club));
+  const isAwayTop = TOP_CLUBS.some((club) => awayName.includes(club));
+
+  return isHomeTop && isAwayTop;
+}
+
 export default function HomePage() {
   const [matchesData, setMatchesData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,8 +82,14 @@ export default function HomePage() {
     return true;
   });
 
-  // Kronologisk datum- och tids-sortering för filtrerade matcher
+  // Sortering: Hetaste matcherna överst, sedan kronologiskt
   const sortedMatches = [...filteredMatches].sort((a, b) => {
+    const aHot = isHotMatch(a);
+    const bHot = isHotMatch(b);
+
+    if (aHot && !bHot) return -1;
+    if (!aHot && bHot) return 1;
+
     const timeA = a.time === "TBD" || !a.time ? "23:59" : a.time;
     const timeB = b.time === "TBD" || !b.time ? "23:59" : b.time;
     return `${a.date} ${timeA}`.localeCompare(`${b.date} ${timeB}`);
@@ -148,7 +175,7 @@ export default function HomePage() {
         </div>
       ) : (
         <MatchList
-          matches={sortedMatches}
+          matches={searchText || selectedLeague ? sortedMatches : sortedMatches.slice(0, 12)}
           onSelectMatch={handleSelectMatch}
           selectedLeague={selectedLeague}
         />
