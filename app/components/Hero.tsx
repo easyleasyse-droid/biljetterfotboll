@@ -245,7 +245,7 @@ export default function Hero({
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Snabbval:</span>
-          {["Allsvenskan", "Premier League", "La Liga", "Champions League"].map((leagueName) => (
+          {["Serie A", "Premier League", "La Liga", "Champions League"].map((leagueName) => (
             <button
               key={leagueName}
               onClick={() => {
