@@ -21,8 +21,17 @@ export async function GET(request: Request) {
     }
     const markdownContent = await jinaRes.text();
 
-    // 2. Skicka till Gemini API direkt via fetch
-    const prompt = `Analysera följande text från en biljettsida och returnera ENBART ett giltigt JSON-objekt med matchnamn, datum, biljetttyper/sektioner, priser och valuta.\n\nInnehåll:\n${markdownContent.slice(0, 15000)}`;
+    // 2. Tydligare instruktion till Gemini
+    const prompt = `Du är en expert på att extrahera biljettdata. Extrahera följande information från denna text:
+- match (namn på lagen)
+- datum
+- biljetter (en lista med objekten: sektion, pris, valuta)
+
+Svara ENBART med ett giltigt JSON-objekt enligt denna struktur:
+{"match": "", "datum": "", "biljetter": [{"sektion": "", "pris": 0, "valuta": ""}]}
+
+Text från sidan:
+${markdownContent.slice(0, 15000)}`;
 
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
@@ -41,7 +50,8 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       success: true,
-      scrapedData: JSON.parse(rawText || "{}")
+      scrapedData: JSON.parse(rawText || "{}"),
+      rawPreview: markdownContent.slice(0, 500) // Visar de första 500 tecknen för felsökning
     });
 
   } catch (error: any) {
