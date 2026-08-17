@@ -14,25 +14,35 @@ import Link from "next/link";
 import { TEAMS_SEO_DATA } from "./data/teams";
 import { Filter, Trophy, MapPin, Loader2 } from "lucide-react";
 
-// Lista över storklubbar som gör en match extra het
+// Nyckelord för storklubbar som lyfter en match
 const TOP_CLUBS = [
-  "Real Madrid", "FC Barcelona", "Bayern München", "PSG", 
-  "Inter", "AC Milan", "Juventus", "Liverpool", "Arsenal", 
-  "Manchester City", "Chelsea", "Tottenham", "Atletico Madrid"
+  "Real Madrid", "Barcelona", "Atlético Madrid", "Atletico", 
+  "Bayern", "PSG", "Paris", "Inter", "Milan", "Juventus", 
+  "Liverpool", "Arsenal", "Manchester City", "Man City", 
+  "Chelsea", "Tottenham", "Dortmund"
 ];
 
-// Hjälpfunktion för att avgöra om en match ska klassas som "het"
-function isHotMatch(match) {
-  if (match.featured) return true;
-  if (match.league === "Champions League") return true;
+// Poängsystem för att räkna ut matchhetta
+function getMatchHotnessScore(match) {
+  let score = 0;
 
-  const homeName = match.homeTeam?.name || "";
-  const awayName = match.awayTeam?.name || "";
+  // 1. Manuell utvald match (högst prioritet)
+  if (match.featured) score += 100;
 
-  const isHomeTop = TOP_CLUBS.some((club) => homeName.includes(club));
-  const isAwayTop = TOP_CLUBS.some((club) => awayName.includes(club));
+  // 2. Champions League får extrapoäng
+  if (match.league === "Champions League") score += 50;
 
-  return isHomeTop && isAwayTop;
+  const homeName = (match.homeTeam?.name || "").toLowerCase();
+  const awayName = (match.awayTeam?.name || "").toLowerCase();
+
+  const isHomeTop = TOP_CLUBS.some((club) => homeName.includes(club.toLowerCase()));
+  const isAwayTop = TOP_CLUBS.some((club) => awayName.includes(club.toLowerCase()));
+
+  // 3. Poäng per storklubb (25p för ett storlag, 50p om BÅDA är storlag)
+  if (isHomeTop) score += 25;
+  if (isAwayTop) score += 25;
+
+  return score;
 }
 
 export default function HomePage() {
@@ -82,14 +92,16 @@ export default function HomePage() {
     return true;
   });
 
-  // Sortering: Hetaste matcherna överst, sedan kronologiskt
+  // Sortering: Sortera i första hand på hettapoäng (högst först), därefter datum
   const sortedMatches = [...filteredMatches].sort((a, b) => {
-    const aHot = isHotMatch(a);
-    const bHot = isHotMatch(b);
+    const scoreA = getMatchHotnessScore(a);
+    const scoreB = getMatchHotnessScore(b);
 
-    if (aHot && !bHot) return -1;
-    if (!aHot && bHot) return 1;
+    if (scoreA !== scoreB) {
+      return scoreB - scoreA; // Högst poäng hamnar överst
+    }
 
+    // Om samma hettapoäng, sortera på datum/tid
     const timeA = a.time === "TBD" || !a.time ? "23:59" : a.time;
     const timeB = b.time === "TBD" || !b.time ? "23:59" : b.time;
     return `${a.date} ${timeA}`.localeCompare(`${b.date} ${timeB}`);
