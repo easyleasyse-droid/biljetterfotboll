@@ -1130,5 +1130,173 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     stadiumName: "Stadio Artemio Franchi",
     location: "Florens, Italien",
     logo: "/logos/fiorentina.png"
+  },
+  "lens": {
+    name: "RC Lens",
+    league: "Ligue 1",
+    stadiumName: "Stade Bollaert-Delelis",
+    location: "Lens, Frankrike",
+    logo: "/logos/lens.png"
+  },
+  "auxerre": {
+    name: "AJ Auxerre",
+    league: "Ligue 1",
+    stadiumName: "Stade Abbé-Deschamps",
+    location: "Auxerre, Frankrike",
+    logo: "/logos/auxerre.png"
+  },
+  "troyes": {
+    name: "ESTAC Troyes",
+    league: "Ligue 1",
+    stadiumName: "Stade de l'Aube",
+    location: "Troyes, Frankrike",
+    logo: "/logos/troyes.png"
+  },
+  "paris-fc": {
+    name: "Paris FC",
+    league: "Ligue 1",
+    stadiumName: "Stade Jean-Bouin",
+    location: "Paris, Frankrike",
+    logo: "/logos/paris-fc.png"
+  },
+  "le-mans": {
+    name: "Le Mans FC",
+    league: "Ligue 1",
+    stadiumName: "Stade Marie-Marvingt",
+    location: "Le Mans, Frankrike",
+    logo: "/logos/le-mans.png"
+  },
+  "brest": {
+    name: "Stade Brestois 29",
+    league: "Ligue 1",
+    stadiumName: "Stade Francis-Le Blé",
+    location: "Brest, Frankrike",
+    logo: "/logos/brest.png"
+  },
+  "lorient": {
+    name: "FC Lorient",
+    league: "Ligue 1",
+    stadiumName: "Stade du Moustoir",
+    location: "Lorient, Frankrike",
+    logo: "/logos/lorient.png"
+  },
+  "toulouse": {
+    name: "Toulouse FC",
+    league: "Ligue 1",
+    stadiumName: "Stadium de Toulouse",
+    location: "Toulouse, Frankrike",
+    logo: "/logos/toulouse.png"
+  },
+  "angers": {
+    name: "Angers SCO",
+    league: "Ligue 1",
+    stadiumName: "Stade Raymond-Kopa",
+    location: "Angers, Frankrike",
+    logo: "/logos/angers.png"
+  },
+  "le-havre": {
+    name: "Le Havre AC",
+    league: "Ligue 1",
+    stadiumName: "Stade Océane",
+    location: "Le Havre, Frankrike",
+    logo: "/logos/le-havre.png"
+  },
+  "monaco": {
+    name: "AS Monaco",
+    league: "Ligue 1",
+    stadiumName: "Stade Louis II",
+    location: "Monaco",
+    logo: "/logos/monaco.png"
+  },
+  "rennes": {
+    name: "Stade Rennais FC",
+    league: "Ligue 1",
+    stadiumName: "Roazhon Park",
+    location: "Rennes, Frankrike",
+    logo: "/logos/rennes.png"
+  },
+  "leipzig": {
+    name: "RB Leipzig",
+    league: "Bundesliga",
+    stadiumName: "Red Bull Arena",
+    location: "Leipzig, Tyskland",
+    logo: "/logos/leipzig.png"
+  },
+  "monchengladbach": {
+    name: "Borussia Mönchengladbach",
+    league: "Bundesliga",
+    stadiumName: "BORUSSIA-PARK",
+    location: "Mönchengladbach, Tyskland",
+    logo: "/logos/monchengladbach.png"
+  },
+  "mainz": {
+    name: "1. FSV Mainz 05",
+    league: "Bundesliga",
+    stadiumName: "MEWA ARENA",
+    location: "Mainz, Tyskland",
+    logo: "/logos/mainz.png"
+  },
+  "paderborn": {
+    name: "SC Paderborn 07",
+    league: "2. Bundesliga",
+    stadiumName: "Home Deluxe Arena",
+    location: "Paderborn, Tyskland",
+    logo: "/logos/paderborn.png"
+  },
+  "koln": {
+    name: "1. FC Köln",
+    league: "Bundesliga",
+    stadiumName: "RheinEnergieSTADION",
+    location: "Köln, Tyskland",
+    logo: "/logos/koln.png"
+  },
+  "hoffenheim": {
+    name: "TSG 1899 Hoffenheim",
+    league: "Bundesliga",
+    stadiumName: "PreZero Arena",
+    location: "Sinsheim, Tyskland",
+    logo: "/logos/hoffenheim.png"
+  },
+  "elversberg": {
+    name: "SV Elversberg",
+    league: "2. Bundesliga",
+    stadiumName: "URSAPHARM-Arena an der Kaiserlinde",
+    location: "Spiesen-Elversberg, Tyskland",
+    logo: "/logos/elversberg.png"
+  },
+  "hamburger-sv": {
+    name: "Hamburger SV",
+    league: "2. Bundesliga",
+    stadiumName: "Volksparkstadion",
+    location: "Hamburg, Tyskland",
+    logo: "/logos/hamburger-sv.png"
+  },
+  "freiburg": {
+    name: "SC Freiburg",
+    league: "Bundesliga",
+    stadiumName: "Europa-Park Stadion",
+    location: "Freiburg im Breisgau, Tyskland",
+    logo: "/logos/freiburg.png"
+  },
+  "werder-bremen": {
+    name: "SV Werder Bremen",
+    league: "Bundesliga",
+    stadiumName: "Weserstadion",
+    location: "Bremen, Tyskland",
+    logo: "/logos/werder-bremen.png"
+  },
+  "augsburg": {
+    name: "FC Augsburg",
+    league: "Bundesliga",
+    stadiumName: "WWK Arena",
+    location: "Augsburg, Tyskland",
+    logo: "/logos/augsburg.png"
+  },
+  "schalke": {
+    name: "FC Schalke 04",
+    league: "2. Bundesliga",
+    stadiumName: "VELTINS-Arena",
+    location: "Gelsenkirchen, Tyskland",
+    logo: "/logos/schalke.png"
   }
 };
