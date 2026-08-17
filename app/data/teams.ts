@@ -1298,5 +1298,40 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     stadiumName: "VELTINS-Arena",
     location: "Gelsenkirchen, Tyskland",
     logo: "/logos/schalke.png"
+  },
+  "groningen": {
+    name: "FC Groningen",
+    league: "Eredivisie",
+    stadiumName: "Euroborg",
+    location: "Groningen, Nederländerna",
+    logo: "/logos/groningen.png"
+  },
+  "cambuur": {
+    name: "SC Cambuur",
+    league: "Eredivisie",
+    stadiumName: "Kooi Stadion",
+    location: "Leeuwarden, Nederländerna",
+    logo: "/logos/cambuur.png"
+  },
+  "utrecht": {
+    name: "FC Utrecht",
+    league: "Eredivisie",
+    stadiumName: "Stadion Galgenwaard",
+    location: "Utrecht, Nederländerna",
+    logo: "/logos/utrecht.png"
+  },
+  "den-haag": {
+    name: "ADO Den Haag",
+    league: "Eredivisie",
+    stadiumName: "Bingoal Stadion",
+    location: "Den Haag, Nederländerna",
+    logo: "/logos/den-haag.png"
+  },
+  "telstar": {
+    name: "SC Telstar",
+    league: "Eredivisie",
+    stadiumName: "711 Stadion",
+    location: "Velsen-Zuid, Nederländerna",
+    logo: "/logos/telstar.png"
   }
 };

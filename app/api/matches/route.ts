@@ -194,6 +194,12 @@ const MY_MATCHES = [
   { homeKey: "bayer-leverkusen", awayKey: "leipzig", date: "2026-09-20", time: "15:30" },
   { homeKey: "schalke", awayKey: "elversberg", date: "2026-09-20", time: "17:30" },
   { homeKey: "paderborn", awayKey: "hoffenheim", date: "2026-09-20", time: "19:30" },
+  { homeKey: "psv", awayKey: "groningen", date: "2026-08-23", time: "14:30" },
+  { homeKey: "cambuur", awayKey: "feyenoord", date: "2026-08-23", time: "16:45" },
+  { homeKey: "utrecht", awayKey: "psv", date: "2026-08-30", time: "12:15" },
+  { homeKey: "feyenoord", awayKey: "den-haag", date: "2026-08-30", time: "14:30" },
+  { homeKey: "telstar", awayKey: "ajax", date: "2026-08-30", time: "16:45" },
+  { homeKey: "cambuur", awayKey: "twente", date: "2026-08-30", time: "20:00" },
 
 ];
 
