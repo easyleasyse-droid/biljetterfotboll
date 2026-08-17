@@ -61,6 +61,13 @@ export default function HomePage() {
     return true;
   });
 
+  // Kronologisk datum- och tids-sortering för filtrerade matcher
+  const sortedMatches = [...filteredMatches].sort((a, b) => {
+    const timeA = a.time === "TBD" || !a.time ? "23:59" : a.time;
+    const timeB = b.time === "TBD" || !b.time ? "23:59" : b.time;
+    return `${a.date} ${timeA}`.localeCompare(`${b.date} ${timeB}`);
+  });
+
   const handleSearchFocus = () => {
     const searchInput = document.getElementById("hero-main-search");
     if (searchInput) {
@@ -118,7 +125,7 @@ export default function HomePage() {
             <div className="flex items-center gap-1.5 font-semibold">
               <Filter className="w-3.5 h-3.5 text-blue-600" />
               <span>
-                Visar <strong className="text-blue-900 font-black">{filteredMatches.length}</strong> matcher 
+                Visar <strong className="text-blue-900 font-black">{sortedMatches.length}</strong> matcher 
                 {searchText && <span> för sökningen "{searchText}"</span>}
                 {selectedLeague && <span> i <span className="text-blue-600 font-extrabold">{selectedLeague}</span></span>}
               </span>
@@ -141,7 +148,7 @@ export default function HomePage() {
         </div>
       ) : (
         <MatchList
-          matches={filteredMatches}
+          matches={sortedMatches}
           onSelectMatch={handleSelectMatch}
           selectedLeague={selectedLeague}
         />
