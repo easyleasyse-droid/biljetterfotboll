@@ -1053,5 +1053,82 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     stadiumName: "Abanca-Balaídos",
     location: "Vigo, Spanien",
     logo: "/logos/celta-vigo.png"
+  },
+  "udinese": {
+    name: "Udinese Calcio",
+    league: "Serie A",
+    stadiumName: "Stadio Friuli (Bluenergy Stadium)",
+    location: "Udine, Italien",
+    logo: "/logos/udinese.png"
+  },
+  "monza": {
+    name: "AC Monza",
+    league: "Serie A",
+    stadiumName: "U-Power Stadium",
+    location: "Monza, Italien",
+    logo: "/logos/monza.png"
+  },
+  "parma": {
+    name: "Parma Calcio 1913",
+    league: "Serie A",
+    stadiumName: "Stadio Ennio Tardini",
+    location: "Parma, Italien",
+    logo: "/logos/parma.png"
+  },
+  "cagliari": {
+    name: "Cagliari Calcio",
+    league: "Serie A",
+    stadiumName: "Unipol Domus",
+    location: "Cagliari, Italien",
+    logo: "/logos/cagliari.png"
+  },
+  "genoa": {
+    name: "Genoa CFC",
+    league: "Serie A",
+    stadiumName: "Stadio Luigi Ferraris",
+    location: "Genua, Italien",
+    logo: "/logos/genoa.png"
+  },
+  "lecce": {
+    name: "US Lecce",
+    league: "Serie A",
+    stadiumName: "Stadio Via del Mare",
+    location: "Lecce, Italien",
+    logo: "/logos/lecce.png"
+  },
+  "venezia": {
+    name: "Venezia FC",
+    league: "Serie A",
+    stadiumName: "Stadio Pier Luigi Penzo",
+    location: "Venedig, Italien",
+    logo: "/logos/venezia.png"
+  },
+  "frosinone": {
+    name: "Frosinone Calcio",
+    league: "Serie A",
+    stadiumName: "Stadio Benito Stirpe",
+    location: "Frosinone, Italien",
+    logo: "/logos/frosinone.png"
+  },
+  "torino": {
+    name: "Torino FC",
+    league: "Serie A",
+    stadiumName: "Stadio Olimpico Grande Torino",
+    location: "Turin, Italien",
+    logo: "/logos/torino.png"
+  },
+  "sassuolo": {
+    name: "US Sassuolo Calcio",
+    league: "Serie A",
+    stadiumName: "Mapei Stadium – Città del Tricolore",
+    location: "Reggio Emilia, Italien",
+    logo: "/logos/sassuolo.png"
+  },
+  "fiorentina": {
+    name: "ACF Fiorentina",
+    league: "Serie A",
+    stadiumName: "Stadio Artemio Franchi",
+    location: "Florens, Italien",
+    logo: "/logos/fiorentina.png"
   }
 };
