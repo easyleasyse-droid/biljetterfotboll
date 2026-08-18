@@ -11,13 +11,10 @@ export const getAffiliateUrl = (destinationUrl: string): string => {
 const TICOMBO_CAMREF = '1100l5Rouq';
 
 export const getTicomboSearchUrl = (homeTeam: string, awayTeam: string): string => {
-  // 1. Skapa sökfras baserat på lagen
-  const query = `${homeTeam} vs ${awayTeam}`;
+  // Sök enbart på hemmalaget (t.ex. "Atlético Madrid") för att garantera sökträffar
+  const query = homeTeam;
   
-  // 2. Mål-URL för sökningen på Ticombo
   const searchUrl = `https://www.ticombo.com/en/discover?q=${encodeURIComponent(query)}`;
-  
-  // 3. Partnerize spårningslänk
   const trackingBase = `https://ticombo.prf.hn/click/camref:${TICOMBO_CAMREF}`;
   
   return `${trackingBase}/destination:${encodeURIComponent(searchUrl)}`;
