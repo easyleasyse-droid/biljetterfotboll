@@ -1,7 +1,64 @@
+export interface P1Ticket {
+  title: string;
+  price: number;
+  currency: string;
+  directUrl: string;
+}
+
+function cleanTeamName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\b(fc|cf|afc|sc|club|cd)\b/g, "")
+    .trim();
+}
+
+// Hämtar hela CSV-feeden EN gång
+export async function fetchP1FeedRows(): Promise<any[]> {
+  const feedUrl = process.env.P1_TRAVEL_FEED_URL;
+
+  if (!feedUrl) {
+    console.warn("P1_TRAVEL_FEED_URL saknas.");
+    return [];
+  }
+
+  try {
+    const response = await fetch(feedUrl, { next: { revalidate: 3600 } });
+    if (!response.ok) return [];
+
+    const csvText = await response.text();
+    const lines = csvText.split('\n');
+    if (lines.length < 2) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+    const rows: any[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line) continue;
+
+      const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
+      const cleanValues = values.map(v => v.replace(/^"|"$/g, '').trim());
+
+      const row: Record<string, string> = {};
+      headers.forEach((header, idx) => {
+        row[header] = cleanValues[idx] || '';
+      });
+      rows.push(row);
+    }
+
+    return rows;
+  } catch (error) {
+    console.error("Fel vid hämtning av P1 Feed:", error);
+    return [];
+  }
+}
+
+// Söker i den hämtade feeden med stöd för lag-alias (som Inter / Internazionale)
 export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: string): P1Ticket | null {
   if (!rows || rows.length === 0) return null;
 
-  // Hjälpfunktion för att översätta vanliga lagnamn till vad P1 brukar kalla dem i sin CSV
   const getSearchKeywords = (teamName: string): string[] => {
     const clean = cleanTeamName(teamName);
     
@@ -18,7 +75,6 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
       return ["real madrid", "r. madrid"];
     }
 
-    // Standard: ta första ordet (t.ex. "monza", "liverpool", "barcelona")
     return [clean.split(' ')[0]];
   };
 
@@ -28,7 +84,6 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
   const matchedRow = rows.find((row) => {
     const titleClean = cleanTeamName(row.title || row.product_name || row.name || '');
 
-    // Kollar om MINST ETT av hemmalagets alias OCH bortalagets alias finns i titeln
     const homeMatch = homeKeywords.some(k => titleClean.includes(k));
     const awayMatch = awayKeywords.some(k => titleClean.includes(k));
 
