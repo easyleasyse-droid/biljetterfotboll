@@ -44,7 +44,6 @@ export async function fetchP1FeedRows(): Promise<any[]> {
   }
 
   try {
-    // VIKTIGT: cache: 'no-store' förhindrar att Vercel/Next.js kraschar på för stora CSV-filer
     const response = await fetch(feedUrl, { cache: 'no-store' });
     if (!response.ok) return [];
 
@@ -78,71 +77,57 @@ export async function fetchP1FeedRows(): Promise<any[]> {
 export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: string): P1Ticket | null {
   if (!rows || rows.length === 0) return null;
 
-  const getTeamTokens = (teamName: string): string[] => {
-    const clean = cleanTeamName(teamName);
+  // Hämta enbart ord med fler än 2 tecken för flexibel matchning
+  const homeClean = cleanTeamName(homeTeam);
+  const awayClean = cleanTeamName(awayTeam);
 
-    if (clean.includes("inter") && !clean.includes("miami") && !clean.includes("turku")) {
-      return ["inter", "internazionale"];
-    }
-    if (clean.includes("atletico") || clean.includes("atletico madrid")) {
-      return ["atletico"];
-    }
-    if (clean.includes("malaga")) {
-      return ["malaga", "málaga"];
-    }
-    if (clean.includes("monza")) {
-      return ["monza"];
-    }
-    if (clean.includes("milan") && !clean.includes("inter")) {
-      return ["milan"];
-    }
-
-    return clean.split(' ').filter(w => w.length > 2);
-  };
-
-  const homeTokens = getTeamTokens(homeTeam);
-  const awayTokens = getTeamTokens(awayTeam);
-
+  // Sök efter rad där titeln/texten innehåller något av orden
   const matchedRow = rows.find((row) => {
     const fullRowText = Object.values(row).join(' ').toLowerCase();
-
-    const hasHome = homeTokens.some(token => fullRowText.includes(token));
-    const hasAway = awayTokens.some(token => fullRowText.includes(token));
+    
+    // Testa om båda lagnamnen (eller delar av dem) finns med
+    const hasHome = fullRowText.includes(homeClean) || (homeClean.includes("inter") && fullRowText.includes("inter"));
+    const hasAway = fullRowText.includes(awayClean) || (awayClean.includes("monza") && fullRowText.includes("monza"));
 
     return hasHome && hasAway;
   });
 
-  if (matchedRow) {
-    const rawPrice = 
-      matchedRow['price'] || 
-      matchedRow['price_eur'] || 
-      matchedRow['price_sek'] || 
-      matchedRow['buy_price'] || 
-      matchedRow['search_price'] ||
-      Object.values(matchedRow).find((v: any) => !isNaN(parseFloat(v)) && parseFloat(v) > 10) || 
-      '0';
+  if (!matchedRow) {
+    // LOGGA VARFÖR DET MISSLYCKAS (Skriver ut de första 3 titlarna i feeden i Vercel Logs)
+    const sampleTitles = rows.slice(0, 3).map(r => r.title || r.product_name || r.name || Object.values(r)[0]);
+    console.log(`[P1 SEARCH FAIL] Sökte efter: "${homeTeam}" vs "${awayTeam}". Feeden har ${rows.length} rader. Exempel på titlar i feeden:`, sampleTitles);
+    return null;
+  }
 
-    const url = 
-      matchedRow['destination_url'] || 
-      matchedRow['destination url'] || 
-      matchedRow['deeplink'] || 
-      matchedRow['deep_link'] || 
-      matchedRow['link'] || 
-      matchedRow['url'] || 
-      matchedRow['tracking_url'] || 
-      '';
+  const rawPrice = 
+    matchedRow['price'] || 
+    matchedRow['price_eur'] || 
+    matchedRow['price_sek'] || 
+    matchedRow['buy_price'] || 
+    matchedRow['search_price'] ||
+    Object.values(matchedRow).find((v: any) => !isNaN(parseFloat(v)) && parseFloat(v) > 10) || 
+    '0';
 
-    const title = matchedRow['title'] || matchedRow['product_name'] || matchedRow['name'] || `${homeTeam} vs ${awayTeam}`;
-    const priceNum = parseFloat(rawPrice as string);
+  const url = 
+    matchedRow['destination_url'] || 
+    matchedRow['destination url'] || 
+    matchedRow['deeplink'] || 
+    matchedRow['deep_link'] || 
+    matchedRow['link'] || 
+    matchedRow['url'] || 
+    matchedRow['tracking_url'] || 
+    '';
 
-    if (priceNum > 0 && url) {
-      return {
-        title,
-        price: priceNum,
-        currency: 'EUR',
-        directUrl: url as string
-      };
-    }
+  const title = matchedRow['title'] || matchedRow['product_name'] || matchedRow['name'] || `${homeTeam} vs ${awayTeam}`;
+  const priceNum = parseFloat(rawPrice as string);
+
+  if (priceNum > 0 && url) {
+    return {
+      title,
+      price: priceNum,
+      currency: 'EUR',
+      directUrl: url as string
+    };
   }
 
   return null;
