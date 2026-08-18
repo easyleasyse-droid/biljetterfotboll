@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { TicketOffer, Match } from "../types";
 import { ShieldCheck, Loader2, ArrowRight, CheckCircle, ExternalLink, Lock, HelpCircle, X } from "lucide-react";
-import { getAffiliateUrl } from "@/lib/affiliate";
+import { getAffiliateUrl, getTicomboSearchUrl } from "@/lib/affiliate";
 
 interface BookingModalProps {
   match: Match | null;
@@ -34,11 +34,14 @@ export default function BookingModal({ match, offer, quantity, onClose }: Bookin
 
   const totalCost = offer.priceSEK * quantity;
 
-  // Hämta URL och lägg på affiliate-ID om det är Sports Events 365
-  const rawUrl = (offer as any).url || "https://www.sportsevents365.com";
-  const destinationUrl = offer.merchantName === "Sports Events 365" 
-    ? getAffiliateUrl(rawUrl) 
-    : rawUrl;
+  // Dynamisk hantering av affiliate-URL baserat på vald partner/merchant
+  let destinationUrl = (offer as any).url || "";
+
+  if (offer.merchantName === "Sports Events 365") {
+    destinationUrl = getAffiliateUrl(destinationUrl || "https://www.sportsevents365.com");
+  } else if (offer.merchantName === "Ticombo") {
+    destinationUrl = getTicomboSearchUrl(match.homeTeam.name, match.awayTeam.name);
+  }
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" id="booking-modal-overlay">
@@ -86,7 +89,7 @@ export default function BookingModal({ match, offer, quantity, onClose }: Bookin
             </div>
 
             <div className="border-t border-slate-150 pt-5 flex items-center justify-center gap-2 text-xs text-slate-400 font-semibold">
-              <ShieldCheck className="w-4.5 h-4.5 text-emerald-505" />
+              <ShieldCheck className="w-4.5 h-4.5 text-emerald-500" />
               <span>Säker krypterad anslutning via partners SSL</span>
             </div>
           </div>
@@ -138,7 +141,7 @@ export default function BookingModal({ match, offer, quantity, onClose }: Bookin
 
               {/* Security advice text */}
               <div className="bg-emerald-50/50 border border-emerald-200/70 p-3.5 rounded-xl text-emerald-800 text-[11px] sm:text-xs">
-                <p className="font-bold flex items-center gap-1.5 text-emerald-920">
+                <p className="font-bold flex items-center gap-1.5 text-emerald-900">
                   <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>Svensk Köpargaranti Aktiv</span>
                 </p>
