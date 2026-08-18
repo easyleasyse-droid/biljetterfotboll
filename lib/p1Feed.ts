@@ -5,13 +5,12 @@ export interface P1Ticket {
   directUrl: string;
 }
 
-// Rensar bort vanliga klubb-prefix så att "AS Monza" blir "monza" och "FC Internazionale" blir "internazionale"
 function cleanTeamName(name: string): string {
   return name
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Tar bort á, é, ö etc.
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us)\b/g, "") // Nu rensar vi även AS, AC, SS osv.
+    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us)\b/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -32,6 +31,7 @@ export async function fetchP1FeedRows(): Promise<any[]> {
     const lines = csvText.split('\n');
     if (lines.length < 2) return [];
 
+    // Rensa headers från citattecken och skiftläge
     const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
     const rows: any[] = [];
 
@@ -59,12 +59,14 @@ export async function fetchP1FeedRows(): Promise<any[]> {
 export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: string): P1Ticket | null {
   if (!rows || rows.length === 0) return null;
 
-  // Hämtar nyckelord för lagen utan prefix
   const getKeywords = (teamName: string): string[] => {
     const clean = cleanTeamName(teamName);
     
     if (clean.includes("inter") && !clean.includes("miami")) {
       return ["inter", "internazionale"];
+    }
+    if (clean.includes("monza")) {
+      return ["monza"];
     }
     if (clean.includes("milan")) {
       return ["milan"];
@@ -76,7 +78,6 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
       return ["real madrid"];
     }
 
-    // Standard: Ta det första ordet som är längre än 2 bokstäver
     const words = clean.split(' ').filter(w => w.length > 2);
     return words.length > 0 ? [words[0]] : [clean];
   };
@@ -85,7 +86,9 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
   const awayKeywords = getKeywords(awayTeam);
 
   const matchedRow = rows.find((row) => {
-    const titleClean = cleanTeamName(row.title || row.product_name || row.name || '');
+    // Sök i alla tänkbara fält där titeln kan ligga
+    const rawTitle = row.title || row.product_name || row['product name'] || row['product_title'] || row.name || row['event_title'] || Object.values(row).join(' ');
+    const titleClean = cleanTeamName(rawTitle);
 
     const hasHome = homeKeywords.some(k => titleClean.includes(k));
     const hasAway = awayKeywords.some(k => titleClean.includes(k));
@@ -94,10 +97,13 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
   });
 
   if (matchedRow) {
-    const rawPrice = matchedRow['price'] || matchedRow['price_sek'] || matchedRow['buy_price'] || Object.values(matchedRow).find((v: any) => !isNaN(parseFloat(v)) && parseFloat(v) > 10) || '0';
-    const url = matchedRow['destination_url'] || matchedRow['destination url'] || matchedRow['link'] || matchedRow['url'] || matchedRow['tracking_url'] || '';
-    const title = matchedRow['title'] || matchedRow['product_name'] || matchedRow['name'] || `${homeTeam} vs ${awayTeam}`;
-
+    // Sök efter pris i alla tänkbara fält
+    const rawPrice = matchedRow['price'] || matchedRow['price_eur'] || matchedRow['price_sek'] || matchedRow['buy_price'] || matchedRow['search_price'] || Object.values(matchedRow).find((v: any) => !isNaN(parseFloat(v)) && parseFloat(v) > 10) || '0';
+    
+    // Sök efter URL i alla tänkbara fält
+    const url = matchedRow['destination_url'] || matchedRow['destination url'] || matchedRow['deeplink'] || matchedRow['deep_link'] || matchedRow['link'] || matchedRow['url'] || matchedRow['tracking_url'] || '';
+    
+    const title = matchedRow['title'] || matchedRow['product_name'] || `${homeTeam} vs ${awayTeam}`;
     const priceNum = parseFloat(rawPrice as string);
 
     if (priceNum > 0) {
