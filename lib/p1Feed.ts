@@ -14,66 +14,75 @@ function cleanTeamName(name: string): string {
     .trim();
 }
 
-export async function getP1TicketForMatch(homeTeam: string, awayTeam: string): Promise<P1Ticket | null> {
+// Hämtar hela CSV-feeden EN gång och cachar svaret i 1 timme
+export async function fetchP1FeedRows(): Promise<any[]> {
   const feedUrl = process.env.P1_TRAVEL_FEED_URL;
 
   if (!feedUrl) {
     console.warn("P1_TRAVEL_FEED_URL saknas.");
-    return null;
+    return [];
   }
 
   try {
-    const response = await fetch(feedUrl, { cache: 'no-store' });
-    if (!response.ok) return null;
+    const response = await fetch(feedUrl, { next: { revalidate: 3600 } });
+    if (!response.ok) return [];
 
     const csvText = await response.text();
     const lines = csvText.split('\n');
-    if (lines.length < 2) return null;
+    if (lines.length < 2) return [];
 
-    // Läs in rubriker och gör dem till små bokstäver för säker matchning
     const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
-
-    const homeKeyword = cleanTeamName(homeTeam).split(' ')[0];
-    const awayKeyword = cleanTeamName(awayTeam).split(' ')[0];
+    const rows: any[] = [];
 
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i];
       if (!line) continue;
 
-      const lineLower = line.toLowerCase();
+      const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
+      const cleanValues = values.map(v => v.replace(/^"|"$/g, '').trim());
 
-      // Kolla om båda lagens nyckelord finns på raden
-      if (lineLower.includes(homeKeyword) && lineLower.includes(awayKeyword)) {
-        // Enkel regex för att dela upp CSV-raden och behålla citattecken-grupper
-        const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
-        const cleanValues = values.map(v => v.replace(/^"|"$/g, '').trim());
-
-        const row: Record<string, string> = {};
-        headers.forEach((header, idx) => {
-          row[header] = cleanValues[idx] || '';
-        });
-
-        // Hitta rätt fält oavsett exakt namn i CSV-filen
-        const rawPrice = row['price'] || row['price_sek'] || row['buy_price'] || Object.values(row).find(v => !isNaN(parseFloat(v)) && parseFloat(v) > 10) || '0';
-        const url = row['destination_url'] || row['destination url'] || row['link'] || row['url'] || row['tracking_url'] || '';
-        const title = row['title'] || row['product_name'] || row['name'] || `${homeTeam} vs ${awayTeam}`;
-
-        const priceNum = parseFloat(rawPrice);
-
-        if (priceNum > 0) {
-          return {
-            title,
-            price: priceNum,
-            currency: 'EUR',
-            directUrl: url
-          };
-        }
-      }
+      const row: Record<string, string> = {};
+      headers.forEach((header, idx) => {
+        row[header] = cleanValues[idx] || '';
+      });
+      rows.push(row);
     }
 
-    return null;
+    return rows;
   } catch (error) {
-    console.error("Fel vid parsa av P1 Feed:", error);
-    return null;
+    console.error("Fel vid hämtning av P1 Feed:", error);
+    return [];
   }
+}
+
+// Blixtsnabb sökning i den redan hämtade feeden i minnet
+export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: string): P1Ticket | null {
+  if (!rows || rows.length === 0) return null;
+
+  const homeKeyword = cleanTeamName(homeTeam).split(' ')[0];
+  const awayKeyword = cleanTeamName(awayTeam).split(' ')[0];
+
+  const matchedRow = rows.find((row) => {
+    const titleClean = cleanTeamName(row.title || row.product_name || row.name || '');
+    return titleClean.includes(homeKeyword) && titleClean.includes(awayKeyword);
+  });
+
+  if (matchedRow) {
+    const rawPrice = matchedRow['price'] || matchedRow['price_sek'] || matchedRow['buy_price'] || Object.values(matchedRow).find((v: any) => !isNaN(parseFloat(v)) && parseFloat(v) > 10) || '0';
+    const url = matchedRow['destination_url'] || matchedRow['destination url'] || matchedRow['link'] || matchedRow['url'] || matchedRow['tracking_url'] || '';
+    const title = matchedRow['title'] || matchedRow['product_name'] || matchedRow['name'] || `${homeTeam} vs ${awayTeam}`;
+
+    const priceNum = parseFloat(rawPrice as string);
+
+    if (priceNum > 0) {
+      return {
+        title,
+        price: priceNum,
+        currency: 'EUR',
+        directUrl: url as string
+      };
+    }
+  }
+
+  return null;
 }

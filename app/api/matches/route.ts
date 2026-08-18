@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { TEAMS_SEO_DATA } from "../../data/teams";
-import { getP1TicketForMatch } from "@/lib/p1Feed";
+import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 export const dynamic = 'force-dynamic';
 
 const formatTeamName = (key: string) => {
@@ -231,133 +231,133 @@ export async function GET() {
     const today = new Date().toISOString().split("T")[0];
     const upcomingMatches = MY_MATCHES.filter((m) => m.date >= today);
 
-    const matches = await Promise.all(
-      upcomingMatches.map(async (m, index) => {
-        const matchId = `m-${index + 1}`;
-        
-        const homeInfo = TEAMS_SEO_DATA[m.homeKey];
-        const awayInfo = TEAMS_SEO_DATA[m.awayKey];
+    // 1. Hämta hela P1-feeden EN GÅNG för alla matcher
+    const p1Rows = await fetchP1FeedRows();
 
-        const homeName = homeInfo?.name || formatTeamName(m.homeKey);
-        const awayName = awayInfo?.name || formatTeamName(m.awayKey);
+    // 2. Skapa matchobjekten direkt i minnet
+    const matches = upcomingMatches.map((m, index) => {
+      const matchId = `m-${index + 1}`;
+      
+      const homeInfo = TEAMS_SEO_DATA[m.homeKey];
+      const awayInfo = TEAMS_SEO_DATA[m.awayKey];
 
-        const basePrice = 1100 + (index * 120) % 750;
+      const homeName = homeInfo?.name || formatTeamName(m.homeKey);
+      const awayName = awayInfo?.name || formatTeamName(m.awayKey);
 
-        // Slå upp matchen i P1 Travels CSV-feed
-        const p1Data = await getP1TicketForMatch(homeName, awayName);
+      const basePrice = 1100 + (index * 120) % 750;
 
-        // Om en direktlänk finns i feeden används den, annars söklänken
-        const p1Url = p1Data?.directUrl 
-          ? `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(p1Data.directUrl)}`
-          : getSearchUrl("P1 Travel", homeName, awayName);
+      // Slå upp matchen i minnet
+      const p1Data = findP1TicketInRows(p1Rows, homeName, awayName);
 
-        // Om pris hittades i feeden (EUR), räkna om till SEK (~11.5 EUR/SEK)
-        const p1PriceSEK = p1Data && p1Data.price 
-          ? Math.round(p1Data.price * 11.5) 
-          : Math.round(basePrice * 1.15);
+      const p1Url = p1Data?.directUrl 
+        ? `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(p1Data.directUrl)}`
+        : getSearchUrl("P1 Travel", homeName, awayName);
 
-        const offers = [
-          {
-            id: `o-${matchId}-se365`,
-            merchantName: "Sports Events 365",
-            rating: 4.8,
-            reviewsCount: 512,
-            section: "Kortsida Standard",
-            category: "Kortsida",
-            priceSEK: basePrice,
-            availableQuantity: 4,
-            deliveryType: "E-biljett (Direkt)",
-            isVerified: true,
-            url: getSearchUrl("Sports Events 365", homeName, awayName, (m as any).se365Url),
-            type: "ticket"
-          },
-          {
-            id: `o-${matchId}-p1travel`,
-            merchantName: "P1 Travel",
-            rating: 4.9,
-            reviewsCount: 1840,
-            section: "Officiell Långsida",
-            category: "Långsida",
-            priceSEK: p1PriceSEK,
-            availableQuantity: p1Data ? 8 : 4,
-            deliveryType: "E-biljett (Direkt)",
-            isVerified: true,
-            url: p1Url,
-            type: "ticket"
-          },
-          {
-            id: `o-${matchId}-stubhub`,
-            merchantName: "StubHub",
-            rating: 4.8,
-            reviewsCount: 3102,
-            section: "Långsida Sektion",
-            category: "Långsida",
-            priceSEK: Math.round(basePrice * 1.25),
-            availableQuantity: 6,
-            deliveryType: "E-biljett (Direkt)",
-            isVerified: true,
-            url: getSearchUrl("StubHub", homeName, awayName, (m as any).stubhubUrl),
-            type: "ticket"
-          },
-          {
-            id: `o-${matchId}-viagogo`,
-            merchantName: "Viagogo",
-            rating: 4.4,
-            reviewsCount: 1980,
-            section: "Kortsida Nedre",
-            category: "Kortsida",
-            priceSEK: Math.round(basePrice * 0.95),
-            availableQuantity: 2,
-            deliveryType: "Mobilbiljett",
-            isVerified: true,
-            url: getSearchUrl("Viagogo", homeName, awayName),
-            type: "ticket"
-          },
-          {
-            id: `o-${matchId}-ticombo`,
-            merchantName: "Ticombo",
-            rating: 4.7,
-            reviewsCount: 1540,
-            section: "VIP / Hospitality",
-            category: "VIP",
-            priceSEK: Math.round(basePrice * 2.1),
-            availableQuantity: 2,
-            deliveryType: "E-biljett (Direkt)",
-            isVerified: true,
-            url: getSearchUrl("Ticombo", homeName, awayName),
-            type: "ticket"
-          }
-        ];
+      const p1PriceSEK = p1Data && p1Data.price 
+        ? Math.round(p1Data.price * 11.5) 
+        : Math.round(basePrice * 1.15);
 
-        return {
-          id: matchId,
-          homeTeam: { 
-            name: homeName, 
-            shortName: homeName.substring(0, 3).toUpperCase(), 
-            logo: homeInfo?.logo || `/logos/${m.homeKey}.png`,
-            primaryColor: "#111827", 
-            secondaryColor: "#FFFFFF", 
-            emoji: "⚽" 
-          },
-          awayTeam: { 
-            name: awayName, 
-            shortName: awayName.substring(0, 3).toUpperCase(), 
-            logo: awayInfo?.logo || `/logos/${m.awayKey}.png`,
-            primaryColor: "#4B5563", 
-            secondaryColor: "#FFFFFF", 
-            emoji: "⚽" 
-          },
-          league: homeInfo?.league || "Fotboll",
-          date: m.date,
-          time: m.time,
-          stadium: homeInfo?.stadiumName || "Stadion",
-          city: homeInfo?.location || "Europa",
-          priceFrom: Math.min(...offers.map((o) => o.priceSEK)),
-          totalTicketsCount: 45,
-          offers: offers
-        };
-      })
-    );
+      const offers = [
+        {
+          id: `o-${matchId}-se365`,
+          merchantName: "Sports Events 365",
+          rating: 4.8,
+          reviewsCount: 512,
+          section: "Kortsida Standard",
+          category: "Kortsida",
+          priceSEK: basePrice,
+          availableQuantity: 4,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: getSearchUrl("Sports Events 365", homeName, awayName, (m as any).se365Url),
+          type: "ticket"
+        },
+        {
+          id: `o-${matchId}-p1travel`,
+          merchantName: "P1 Travel",
+          rating: 4.9,
+          reviewsCount: 1840,
+          section: "Officiell Långsida",
+          category: "Långsida",
+          priceSEK: p1PriceSEK,
+          availableQuantity: p1Data ? 8 : 4,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: p1Url,
+          type: "ticket"
+        },
+        {
+          id: `o-${matchId}-stubhub`,
+          merchantName: "StubHub",
+          rating: 4.8,
+          reviewsCount: 3102,
+          section: "Långsida Sektion",
+          category: "Långsida",
+          priceSEK: Math.round(basePrice * 1.25),
+          availableQuantity: 6,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: getSearchUrl("StubHub", homeName, awayName, (m as any).stubhubUrl),
+          type: "ticket"
+        },
+        {
+          id: `o-${matchId}-viagogo`,
+          merchantName: "Viagogo",
+          rating: 4.4,
+          reviewsCount: 1980,
+          section: "Kortsida Nedre",
+          category: "Kortsida",
+          priceSEK: Math.round(basePrice * 0.95),
+          availableQuantity: 2,
+          deliveryType: "Mobilbiljett",
+          isVerified: true,
+          url: getSearchUrl("Viagogo", homeName, awayName),
+          type: "ticket"
+        },
+        {
+          id: `o-${matchId}-ticombo`,
+          merchantName: "Ticombo",
+          rating: 4.7,
+          reviewsCount: 1540,
+          section: "VIP / Hospitality",
+          category: "VIP",
+          priceSEK: Math.round(basePrice * 2.1),
+          availableQuantity: 2,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: getSearchUrl("Ticombo", homeName, awayName),
+          type: "ticket"
+        }
+      ];
+
+      return {
+        id: matchId,
+        homeTeam: { 
+          name: homeName, 
+          shortName: homeName.substring(0, 3).toUpperCase(), 
+          logo: homeInfo?.logo || `/logos/${m.homeKey}.png`,
+          primaryColor: "#111827", 
+          secondaryColor: "#FFFFFF", 
+          emoji: "⚽" 
+        },
+        awayTeam: { 
+          name: awayName, 
+          shortName: awayName.substring(0, 3).toUpperCase(), 
+          logo: awayInfo?.logo || `/logos/${m.awayKey}.png`,
+          primaryColor: "#4B5563", 
+          secondaryColor: "#FFFFFF", 
+          emoji: "⚽" 
+        },
+        league: homeInfo?.league || "Fotboll",
+        date: m.date,
+        time: m.time,
+        stadium: homeInfo?.stadiumName || "Stadion",
+        city: homeInfo?.location || "Europa",
+        priceFrom: Math.min(...offers.map((o) => o.priceSEK)),
+        totalTicketsCount: 45,
+        offers: offers
+      };
+    });
 
     return NextResponse.json(matches);
   } catch (error: any) {
