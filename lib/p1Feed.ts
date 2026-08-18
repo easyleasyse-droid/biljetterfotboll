@@ -10,7 +10,9 @@ function cleanTeamName(name: string): string {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us)\b/g, "")
+    // Ta bort årtal och vanliga klubb-suffix/prefix
+    .replace(/\b(18\d\d|19\d\d|20\d\d)\b/g, "")
+    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio)\b/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -77,25 +79,33 @@ export async function fetchP1FeedRows(): Promise<any[]> {
 export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: string): P1Ticket | null {
   if (!rows || rows.length === 0) return null;
 
-  // Hämta enbart ord med fler än 2 tecken för flexibel matchning
-  const homeClean = cleanTeamName(homeTeam);
-  const awayClean = cleanTeamName(awayTeam);
+  // Extrahera viktiga sökord (ord längre än 2 tecken efter städning)
+  const getKeywords = (teamName: string): string[] => {
+    const cleaned = cleanTeamName(teamName);
 
-  // Sök efter rad där titeln/texten innehåller något av orden
+    // Specialfall för Inter
+    if (cleaned.includes("inter") && !cleaned.includes("miami") && !cleaned.includes("turku")) {
+      return ["inter", "internazionale"];
+    }
+
+    const words = cleaned.split(' ').filter(w => w.length > 2);
+    return words.length > 0 ? words : [cleaned];
+  };
+
+  const homeKeywords = getKeywords(homeTeam);
+  const awayKeywords = getKeywords(awayTeam);
+
   const matchedRow = rows.find((row) => {
     const fullRowText = Object.values(row).join(' ').toLowerCase();
-    
-    // Testa om båda lagnamnen (eller delar av dem) finns med
-    const hasHome = fullRowText.includes(homeClean) || (homeClean.includes("inter") && fullRowText.includes("inter"));
-    const hasAway = fullRowText.includes(awayClean) || (awayClean.includes("monza") && fullRowText.includes("monza"));
+
+    // Kräv att MINST ett huvudord från hemmalaget OCH bortalaget finns på raden
+    const hasHome = homeKeywords.some(kw => fullRowText.includes(kw));
+    const hasAway = awayKeywords.some(kw => fullRowText.includes(kw));
 
     return hasHome && hasAway;
   });
 
   if (!matchedRow) {
-    // LOGGA VARFÖR DET MISSLYCKAS (Skriver ut de första 3 titlarna i feeden i Vercel Logs)
-    const sampleTitles = rows.slice(0, 3).map(r => r.title || r.product_name || r.name || Object.values(r)[0]);
-    console.log(`[P1 SEARCH FAIL] Sökte efter: "${homeTeam}" vs "${awayTeam}". Feeden har ${rows.length} rader. Exempel på titlar i feeden:`, sampleTitles);
     return null;
   }
 
