@@ -1,3 +1,44 @@
+export interface P1Ticket {
+  title: string;
+  price: number;
+  currency: string;
+  directUrl: string;
+}
+
+// Rensar lag-namn från FC, CF, citattecken och gör allt till små bokstäver
+function cleanTeamName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Tar bort á, é, ö etc.
+    .toLowerCase()
+    .replace(/\b(fc|cf|afc|sc|club|cd)\b/g, "") // Tar bort FC, CF osv.
+    .trim();
+}
+
+function parseCSV(text: string) {
+  const lines = text.split('\n');
+  if (lines.length === 0) return [];
+
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+  const results: any[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+    const cleanValues = values.map(v => v.replace(/^"|"$/g, '').trim());
+
+    const row: any = {};
+    headers.forEach((header, index) => {
+      row[header] = cleanValues[index] || '';
+    });
+    results.push(row);
+  }
+
+  return results;
+}
+
 export async function getP1TicketForMatch(homeTeam: string, awayTeam: string): Promise<P1Ticket | null> {
   const feedUrl = process.env.P1_TRAVEL_FEED_URL;
 
@@ -7,7 +48,6 @@ export async function getP1TicketForMatch(homeTeam: string, awayTeam: string): P
   }
 
   try {
-    // Sätter cache till 'no-store' för att alltid hämta senaste CSV-filen
     const response = await fetch(feedUrl, { cache: 'no-store' });
     if (!response.ok) return null;
 
@@ -23,7 +63,6 @@ export async function getP1TicketForMatch(homeTeam: string, awayTeam: string): P
 
     const matchedRow = rows.find((row: any) => {
       const titleClean = cleanTeamName(row.title || row.product_name || '');
-      // Kollar bara om "atletico" och "malaga" finns i P1's titel
       return titleClean.includes(homeKeyword) && titleClean.includes(awayKeyword);
     });
 
