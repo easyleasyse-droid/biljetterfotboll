@@ -40,7 +40,11 @@ export default function BookingModal({ match, offer, quantity, onClose }: Bookin
   if (offer.merchantName === "Sports Events 365") {
     destinationUrl = getAffiliateUrl(destinationUrl || "https://www.sportsevents365.com");
   } else if (offer.merchantName === "Ticombo") {
-    destinationUrl = getTicomboSearchUrl(match.homeTeam.name, match.awayTeam.name);
+    destinationUrl = getTicomboSearchUrl(
+      match.homeTeam.name, 
+      match.awayTeam.name, 
+      match.league
+    );
   }
 
   return (
