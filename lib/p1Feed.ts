@@ -15,6 +15,26 @@ function cleanTeamName(name: string): string {
     .trim();
 }
 
+function parseCsvLine(text: string, delimiter: string): string[] {
+  const result: string[] = [];
+  let cur = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') {
+      inQuotes = !inQuotes;
+    } else if (c === delimiter && !inQuotes) {
+      result.push(cur.trim().replace(/^"|"$/g, ''));
+      cur = '';
+    } else {
+      cur += c;
+    }
+  }
+  result.push(cur.trim().replace(/^"|"$/g, ''));
+  return result;
+}
+
 export async function fetchP1FeedRows(): Promise<any[]> {
   const feedUrl = process.env.P1_TRAVEL_FEED_URL;
 
@@ -24,28 +44,26 @@ export async function fetchP1FeedRows(): Promise<any[]> {
   }
 
   try {
-    const response = await fetch(feedUrl, { next: { revalidate: 3600 } });
+    // VIKTIGT: cache: 'no-store' förhindrar att Vercel/Next.js kraschar på för stora CSV-filer
+    const response = await fetch(feedUrl, { cache: 'no-store' });
     if (!response.ok) return [];
 
     const csvText = await response.text();
-    const lines = csvText.split('\n');
+    const lines = csvText.split(/\r?\n/).filter(line => line.trim().length > 0);
     if (lines.length < 2) return [];
 
     const delimiter = lines[0].includes(';') ? ';' : ',';
-    const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+    const headers = parseCsvLine(lines[0], delimiter).map(h => h.toLowerCase());
 
     const rows: any[] = [];
 
     for (let i = 1; i < lines.length; i++) {
-      const line = lines[i];
-      if (!line) continue;
-
-      const values = line.split(delimiter);
-      const cleanValues = values.map(v => v.replace(/^"|"$/g, '').trim());
+      const values = parseCsvLine(lines[i], delimiter);
+      if (values.length < 2) continue;
 
       const row: Record<string, string> = {};
       headers.forEach((header, idx) => {
-        row[header] = cleanValues[idx] || '';
+        row[header] = values[idx] || '';
       });
       rows.push(row);
     }
@@ -86,7 +104,6 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
   const awayTokens = getTeamTokens(awayTeam);
 
   const matchedRow = rows.find((row) => {
-    // Kombinera hela radens text så att vi hittar data oavsett vad kolumnerna heter
     const fullRowText = Object.values(row).join(' ').toLowerCase();
 
     const hasHome = homeTokens.some(token => fullRowText.includes(token));
@@ -96,7 +113,6 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
   });
 
   if (matchedRow) {
-    // Sök bredare efter pris
     const rawPrice = 
       matchedRow['price'] || 
       matchedRow['price_eur'] || 
@@ -106,7 +122,6 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
       Object.values(matchedRow).find((v: any) => !isNaN(parseFloat(v)) && parseFloat(v) > 10) || 
       '0';
 
-    // Sök bredare efter URL
     const url = 
       matchedRow['destination_url'] || 
       matchedRow['destination url'] || 
