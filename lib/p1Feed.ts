@@ -5,38 +5,13 @@ export interface P1Ticket {
   directUrl: string;
 }
 
-// Rensar lag-namn från FC, CF, citattecken och gör allt till små bokstäver
 function cleanTeamName(name: string): string {
   return name
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Tar bort á, é, ö etc.
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(/\b(fc|cf|afc|sc|club|cd)\b/g, "") // Tar bort FC, CF osv.
+    .replace(/\b(fc|cf|afc|sc|club|cd)\b/g, "")
     .trim();
-}
-
-function parseCSV(text: string) {
-  const lines = text.split('\n');
-  if (lines.length === 0) return [];
-
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-  const results: any[] = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-
-    const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
-    const cleanValues = values.map(v => v.replace(/^"|"$/g, '').trim());
-
-    const row: any = {};
-    headers.forEach((header, index) => {
-      row[header] = cleanValues[index] || '';
-    });
-    results.push(row);
-  }
-
-  return results;
 }
 
 export async function getP1TicketForMatch(homeTeam: string, awayTeam: string): Promise<P1Ticket | null> {
@@ -52,32 +27,53 @@ export async function getP1TicketForMatch(homeTeam: string, awayTeam: string): P
     if (!response.ok) return null;
 
     const csvText = await response.text();
-    const rows = parseCSV(csvText);
+    const lines = csvText.split('\n');
+    if (lines.length < 2) return null;
 
-    const homeClean = cleanTeamName(homeTeam);
-    const awayClean = cleanTeamName(awayTeam);
+    // Läs in rubriker och gör dem till små bokstäver för säker matchning
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
 
-    // Hämta bara det första riktiga ordet för varje lag (t.ex. "atletico" och "malaga")
-    const homeKeyword = homeClean.split(' ')[0];
-    const awayKeyword = awayClean.split(' ')[0];
+    const homeKeyword = cleanTeamName(homeTeam).split(' ')[0];
+    const awayKeyword = cleanTeamName(awayTeam).split(' ')[0];
 
-    const matchedRow = rows.find((row: any) => {
-      const titleClean = cleanTeamName(row.title || row.product_name || '');
-      return titleClean.includes(homeKeyword) && titleClean.includes(awayKeyword);
-    });
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line) continue;
 
-    if (matchedRow) {
-      return {
-        title: matchedRow.title || matchedRow.product_name,
-        price: parseFloat(matchedRow.price) || 0,
-        currency: matchedRow.currency || 'EUR',
-        directUrl: matchedRow.destination_url || matchedRow.link || matchedRow.url || ''
-      };
+      const lineLower = line.toLowerCase();
+
+      // Kolla om båda lagens nyckelord finns på raden
+      if (lineLower.includes(homeKeyword) && lineLower.includes(awayKeyword)) {
+        // Enkel regex för att dela upp CSV-raden och behålla citattecken-grupper
+        const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
+        const cleanValues = values.map(v => v.replace(/^"|"$/g, '').trim());
+
+        const row: Record<string, string> = {};
+        headers.forEach((header, idx) => {
+          row[header] = cleanValues[idx] || '';
+        });
+
+        // Hitta rätt fält oavsett exakt namn i CSV-filen
+        const rawPrice = row['price'] || row['price_sek'] || row['buy_price'] || Object.values(row).find(v => !isNaN(parseFloat(v)) && parseFloat(v) > 10) || '0';
+        const url = row['destination_url'] || row['destination url'] || row['link'] || row['url'] || row['tracking_url'] || '';
+        const title = row['title'] || row['product_name'] || row['name'] || `${homeTeam} vs ${awayTeam}`;
+
+        const priceNum = parseFloat(rawPrice);
+
+        if (priceNum > 0) {
+          return {
+            title,
+            price: priceNum,
+            currency: 'EUR',
+            directUrl: url
+          };
+        }
+      }
     }
 
     return null;
   } catch (error) {
-    console.error("Fel vid hämtning av P1 Feed:", error);
+    console.error("Fel vid parsa av P1 Feed:", error);
     return null;
   }
 }
