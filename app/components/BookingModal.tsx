@@ -46,14 +46,13 @@ export default function BookingModal({ match, offer, quantity, onClose }: Bookin
       match.league
     );
   } else if (offer.merchantName === "P1 Travel") {
-  const directUrl = (offer as any).url;
-
-  if (directUrl) {
-    destinationUrl = `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(directUrl)}`;
-  } else {
-    destinationUrl = getP1TravelUrl(match.homeTeam.name, match.league);
+    // Om offer.url redan har en fungerande url från backend, använd den direkt som den är!
+    if ((offer as any).url) {
+      destinationUrl = (offer as any).url;
+    } else {
+      destinationUrl = getP1TravelUrl(match.homeTeam.name, match.league);
+    }
   }
-}
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" id="booking-modal-overlay">

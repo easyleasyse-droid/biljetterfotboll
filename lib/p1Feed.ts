@@ -5,12 +5,20 @@ export interface P1Ticket {
   directUrl: string;
 }
 
-// Enkel och lättviktig CSV-parser utan externa beroenden
+// Rensar lag-namn från FC, CF, citattecken och gör allt till små bokstäver
+function cleanTeamName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Tar bort á, é, ö etc.
+    .toLowerCase()
+    .replace(/\b(fc|cf|afc|sc|club|cd)\b/g, "") // Tar bort FC, CF osv.
+    .trim();
+}
+
 function parseCSV(text: string) {
   const lines = text.split('\n');
   if (lines.length === 0) return [];
 
-  // Läs in rubrikerna på första raden
   const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
   const results: any[] = [];
 
@@ -18,7 +26,6 @@ function parseCSV(text: string) {
     const line = lines[i].trim();
     if (!line) continue;
 
-    // Hanterar kommatecken inuti citattecken
     const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
     const cleanValues = values.map(v => v.replace(/^"|"$/g, '').trim());
 
@@ -41,20 +48,19 @@ export async function getP1TicketForMatch(homeTeam: string, awayTeam: string): P
   }
 
   try {
-    // Hämtar CSV-filen och cachar i 1 timme
-    const response = await fetch(feedUrl, { next: { revalidate: 3600 } });
+    const response = await fetch(feedUrl, { cache: 'no-store' });
     if (!response.ok) return null;
 
     const csvText = await response.text();
     const rows = parseCSV(csvText);
 
-    const homeLower = homeTeam.toLowerCase();
-    const awayLower = awayTeam.toLowerCase();
+    const homeClean = cleanTeamName(homeTeam);
+    const awayClean = cleanTeamName(awayTeam);
 
-    // Sök efter raden som innehåller båda lagen i titeln
+    // Jämför de städade lagnamnen mot titeln i CSV-filen
     const matchedRow = rows.find((row: any) => {
-      const title = (row.title || row.product_name || '').toLowerCase();
-      return title.includes(homeLower) && title.includes(awayLower);
+      const titleClean = cleanTeamName(row.title || row.product_name || '');
+      return titleClean.includes(homeClean) && titleClean.includes(awayClean);
     });
 
     if (matchedRow) {
@@ -62,7 +68,7 @@ export async function getP1TicketForMatch(homeTeam: string, awayTeam: string): P
         title: matchedRow.title || matchedRow.product_name,
         price: parseFloat(matchedRow.price) || 0,
         currency: matchedRow.currency || 'EUR',
-        directUrl: matchedRow.destination_url || matchedRow.link || ''
+        directUrl: matchedRow.destination_url || matchedRow.link || matchedRow.url || ''
       };
     }
 
