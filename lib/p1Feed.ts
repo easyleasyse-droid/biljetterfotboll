@@ -66,6 +66,12 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
     if (clean.includes("inter") && !clean.includes("miami") && !clean.includes("turku")) {
       return ["inter", "internazionale"];
     }
+    if (clean.includes("atletico") || clean.includes("atletico madrid")) {
+      return ["atletico"];
+    }
+    if (clean.includes("malaga")) {
+      return ["malaga", "málaga"];
+    }
     if (clean.includes("monza")) {
       return ["monza"];
     }
@@ -80,28 +86,38 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
   const awayTokens = getTeamTokens(awayTeam);
 
   const matchedRow = rows.find((row) => {
-    // Sök ENBART i titel-/produktfälten så vi inte råkar träffa fel rad
-    const titleText = (
-      row.title || 
-      row.product_name || 
-      row['product title'] || 
-      row['product_name'] || 
-      row.name || 
-      row.event_title || 
-      ''
-    ).toLowerCase();
+    // Kombinera hela radens text så att vi hittar data oavsett vad kolumnerna heter
+    const fullRowText = Object.values(row).join(' ').toLowerCase();
 
-    const hasHome = homeTokens.some(token => titleText.includes(token));
-    const hasAway = awayTokens.some(token => titleText.includes(token));
+    const hasHome = homeTokens.some(token => fullRowText.includes(token));
+    const hasAway = awayTokens.some(token => fullRowText.includes(token));
 
     return hasHome && hasAway;
   });
 
   if (matchedRow) {
-    const rawPrice = matchedRow['price'] || matchedRow['price_eur'] || matchedRow['price_sek'] || matchedRow['buy_price'] || '0';
-    const url = matchedRow['destination_url'] || matchedRow['destination url'] || matchedRow['deeplink'] || matchedRow['deep_link'] || matchedRow['link'] || matchedRow['url'] || matchedRow['tracking_url'] || '';
-    const title = matchedRow['title'] || matchedRow['product_name'] || `${homeTeam} vs ${awayTeam}`;
+    // Sök bredare efter pris
+    const rawPrice = 
+      matchedRow['price'] || 
+      matchedRow['price_eur'] || 
+      matchedRow['price_sek'] || 
+      matchedRow['buy_price'] || 
+      matchedRow['search_price'] ||
+      Object.values(matchedRow).find((v: any) => !isNaN(parseFloat(v)) && parseFloat(v) > 10) || 
+      '0';
 
+    // Sök bredare efter URL
+    const url = 
+      matchedRow['destination_url'] || 
+      matchedRow['destination url'] || 
+      matchedRow['deeplink'] || 
+      matchedRow['deep_link'] || 
+      matchedRow['link'] || 
+      matchedRow['url'] || 
+      matchedRow['tracking_url'] || 
+      '';
+
+    const title = matchedRow['title'] || matchedRow['product_name'] || matchedRow['name'] || `${homeTeam} vs ${awayTeam}`;
     const priceNum = parseFloat(rawPrice as string);
 
     if (priceNum > 0 && url) {
