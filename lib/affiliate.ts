@@ -10,26 +10,10 @@ export const getAffiliateUrl = (destinationUrl: string): string => {
 // --- TICOMBO (PARTNERIZE) ---
 const TICOMBO_CAMREF = '1100l5Rouq';
 
-// Hjälpfunktion för att göra om lag-namn till Ticombos URL-format
-// Ex: "Atlético Madrid" -> "atletico-de-madrid"
-// Ex: "FC Barcelona" -> "fc-barcelona"
-const slugifyTeam = (teamName: string): string => {
-  return teamName
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Tar bort accenttecken (é, á, ö osv)
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9\s-]/g, "") // Tar bort specialtecken
-    .trim()
-    .replace(/\s+/g, "-"); // Ersätter mellanslag med bindestreck
-};
-
 export const getTicomboSearchUrl = (homeTeam: string, awayTeam?: string, league?: string): string => {
-  const teamSlug = slugifyTeam(homeTeam);
-  
-  // Direktlänk till hemmalagets biljettsida hos Ticombo (t.ex. ticombo.com/en/sports-tickets/football/atletico-de-madrid)
-  const targetUrl = `https://www.ticombo.com/en/sports-tickets/football/${teamSlug}`;
-
+  // Sök enbart på hemmalaget i ren text
+  const targetUrl = `https://www.ticombo.com/en/discover?q=${encodeURIComponent(homeTeam)}`;
   const trackingBase = `https://ticombo.prf.hn/click/camref:${TICOMBO_CAMREF}`;
+  
   return `${trackingBase}/destination:${encodeURIComponent(targetUrl)}`;
 };
