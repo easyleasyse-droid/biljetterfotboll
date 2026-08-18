@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { getP1TicketForMatch } from "@/lib/p1Feed";
+export const dynamic = 'force-dynamic';
 
 const formatTeamName = (key: string) => {
   return key
