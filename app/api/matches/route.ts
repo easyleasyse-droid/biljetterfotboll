@@ -251,7 +251,7 @@ export async function GET() {
 
       const p1Url = p1Data?.directUrl 
         ? `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(p1Data.directUrl)}`
-        : getSearchUrl("P1 Travel", homeName, awayName);
+        : `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(homeName)}`)}`;
 
       const p1PriceSEK = p1Data && p1Data.price 
         ? Math.round(p1Data.price * 11.5) 
