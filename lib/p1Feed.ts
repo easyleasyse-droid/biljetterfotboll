@@ -5,16 +5,17 @@ export interface P1Ticket {
   directUrl: string;
 }
 
+// Rensar bort vanliga klubb-prefix så att "AS Monza" blir "monza" och "FC Internazionale" blir "internazionale"
 function cleanTeamName(name: string): string {
   return name
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u0300-\u036f]/g, "") // Tar bort á, é, ö etc.
     .toLowerCase()
-    .replace(/\b(fc|cf|afc|sc|club|cd)\b/g, "")
+    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us)\b/g, "") // Nu rensar vi även AS, AC, SS osv.
+    .replace(/\s+/g, " ")
     .trim();
 }
 
-// Hämtar hela CSV-feeden EN gång
 export async function fetchP1FeedRows(): Promise<any[]> {
   const feedUrl = process.env.P1_TRAVEL_FEED_URL;
 
@@ -55,39 +56,41 @@ export async function fetchP1FeedRows(): Promise<any[]> {
   }
 }
 
-// Söker i den hämtade feeden med stöd för lag-alias (som Inter / Internazionale)
 export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: string): P1Ticket | null {
   if (!rows || rows.length === 0) return null;
 
-  const getSearchKeywords = (teamName: string): string[] => {
+  // Hämtar nyckelord för lagen utan prefix
+  const getKeywords = (teamName: string): string[] => {
     const clean = cleanTeamName(teamName);
     
     if (clean.includes("inter") && !clean.includes("miami")) {
       return ["inter", "internazionale"];
     }
     if (clean.includes("milan")) {
-      return ["ac milan", "milan"];
+      return ["milan"];
     }
     if (clean.includes("atletico")) {
-      return ["atletico", "atl. madrid", "atletico madrid"];
+      return ["atletico"];
     }
     if (clean.includes("real madrid")) {
-      return ["real madrid", "r. madrid"];
+      return ["real madrid"];
     }
 
-    return [clean.split(' ')[0]];
+    // Standard: Ta det första ordet som är längre än 2 bokstäver
+    const words = clean.split(' ').filter(w => w.length > 2);
+    return words.length > 0 ? [words[0]] : [clean];
   };
 
-  const homeKeywords = getSearchKeywords(homeTeam);
-  const awayKeywords = getSearchKeywords(awayTeam);
+  const homeKeywords = getKeywords(homeTeam);
+  const awayKeywords = getKeywords(awayTeam);
 
   const matchedRow = rows.find((row) => {
     const titleClean = cleanTeamName(row.title || row.product_name || row.name || '');
 
-    const homeMatch = homeKeywords.some(k => titleClean.includes(k));
-    const awayMatch = awayKeywords.some(k => titleClean.includes(k));
+    const hasHome = homeKeywords.some(k => titleClean.includes(k));
+    const hasAway = awayKeywords.some(k => titleClean.includes(k));
 
-    return homeMatch && awayMatch;
+    return hasHome && hasAway;
   });
 
   if (matchedRow) {
