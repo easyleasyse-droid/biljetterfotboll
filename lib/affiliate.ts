@@ -35,14 +35,9 @@ export const getTicomboSearchUrl = (homeTeam: string, awayTeam?: string, league?
 const P1_TRAVEL_CAMREF = '1100l5RoWA';
 
 export const getP1TravelUrl = (homeTeam: string, league?: string): string => {
-  // Grundsida för fotbollsbiljetter hos P1 Travel
-  let targetUrl = 'https://www.p1travel.com/en/sports-tickets/football';
+  // 1. Bygg mål-URL:en hos P1 Travel (sök enbart på hemmalaget för bäst träff)
+  const targetUrl = `https://www.p1travel.com/en/search?q=${encodeURIComponent(homeTeam)}`;
 
-  // Sökning på laget om det finns
-  if (homeTeam) {
-    targetUrl = `https://www.p1travel.com/en/search?q=${encodeURIComponent(homeTeam)}`;
-  }
-
-  const trackingBase = `https://p1travel.prf.hn/click/camref:${P1_TRAVEL_CAMREF}`;
-  return `${trackingBase}/destination:${encodeURIComponent(targetUrl)}`;
+  // 2. Koppla ihop med din Partnerize-länk
+  return `https://p1travel.prf.hn/click/camref:${P1_TRAVEL_CAMREF}/destination:${encodeURIComponent(targetUrl)}`;
 };
