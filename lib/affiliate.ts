@@ -31,3 +31,18 @@ export const getTicomboSearchUrl = (homeTeam: string, awayTeam?: string, league?
   const trackingBase = `https://ticombo.prf.hn/click/camref:${TICOMBO_CAMREF}`;
   return `${trackingBase}/destination:${encodeURIComponent(targetUrl)}`;
 };
+
+const P1_TRAVEL_CAMREF = '1100l5RoWA';
+
+export const getP1TravelUrl = (homeTeam: string, league?: string): string => {
+  // Grundsida för fotbollsbiljetter hos P1 Travel
+  let targetUrl = 'https://www.p1travel.com/en/sports-tickets/football';
+
+  // Sökning på laget om det finns
+  if (homeTeam) {
+    targetUrl = `https://www.p1travel.com/en/search?q=${encodeURIComponent(homeTeam)}`;
+  }
+
+  const trackingBase = `https://p1travel.prf.hn/click/camref:${P1_TRAVEL_CAMREF}`;
+  return `${trackingBase}/destination:${encodeURIComponent(targetUrl)}`;
+};
