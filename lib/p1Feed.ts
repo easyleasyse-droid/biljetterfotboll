@@ -18,7 +18,7 @@ function cleanTeamName(name: string): string {
     .trim();
 }
 
-function parseCsvLine(text: string, delimiter: string): string[] {
+function parseCsvLine(text: string): string[] {
   const result: string[] = [];
   let cur = '';
   let inQuotes = false;
@@ -27,7 +27,7 @@ function parseCsvLine(text: string, delimiter: string): string[] {
     const c = text[i];
     if (c === '"') {
       inQuotes = !inQuotes;
-    } else if (c === delimiter && !inQuotes) {
+    } else if (c === ',' && !inQuotes) {
       result.push(cur.trim().replace(/^"|"$/g, ''));
       cur = '';
     } else {
@@ -38,7 +38,6 @@ function parseCsvLine(text: string, delimiter: string): string[] {
   return result;
 }
 
-// Hämtar och parsar CSV-feeden i minnet – cachas automatiskt i 1 timme av Next.js
 export const fetchP1FeedRows = unstable_cache(
   async (): Promise<any[]> => {
     const feedUrl = process.env.P1_TRAVEL_FEED_URL;
@@ -52,18 +51,22 @@ export const fetchP1FeedRows = unstable_cache(
       const lines = csvText.split(/\r?\n/).filter(line => line.trim().length > 0);
       if (lines.length < 2) return [];
 
-      const delimiter = lines[0].includes(';') ? ';' : ',';
-      const headers = parseCsvLine(lines[0], delimiter).map(h => h.toLowerCase());
+      const headers = parseCsvLine(lines[0]).map(h => h.toLowerCase());
 
       const rows: any[] = [];
       for (let i = 1; i < lines.length; i++) {
-        const values = parseCsvLine(lines[i], delimiter);
-        if (values.length < 2) continue;
+        const values = parseCsvLine(lines[i]);
+        if (values.length < headers.length) continue;
 
         const row: Record<string, string> = {};
         headers.forEach((header, idx) => {
           row[header] = values[idx] || '';
         });
+
+        // Filipera bort allt som inte är fotboll direkt vid inläsning
+        const categories = (row['categories'] || row['subcategories'] || '').toLowerCase();
+        if (categories.includes('motorsports') || categories.includes('formula')) continue;
+
         rows.push(row);
       }
       return rows;
@@ -72,75 +75,43 @@ export const fetchP1FeedRows = unstable_cache(
       return [];
     }
   },
-  ['p1-feed-parsed-rows'],
+  ['p1-feed-parsed-rows-v2'],
   { revalidate: 3600 }
 );
 
 export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: string): P1Ticket | null {
   if (!rows || rows.length === 0) return null;
 
-  const getKeywords = (teamName: string): string[] => {
-    const cleaned = cleanTeamName(teamName);
-    if (cleaned.includes("inter") && !cleaned.includes("miami") && !cleaned.includes("turku")) {
-      return ["inter", "internazionale"];
-    }
-    const words = cleaned.split(' ').filter(w => w.length > 2);
-    return words.length > 0 ? words : [cleaned];
-  };
-
-  const homeKeywords = getKeywords(homeTeam);
-  const awayKeywords = getKeywords(awayTeam);
+  const cleanHome = cleanTeamName(homeTeam);
+  const cleanAway = cleanTeamName(awayTeam);
 
   const matchedRow = rows.find((row) => {
-    const itemTitle = (
-      row.title || 
-      row.product_name || 
-      row['product title'] || 
-      row.name || 
-      Object.values(row).slice(0, 3).join(' ')
-    ).toLowerCase();
+    const p1Home = cleanTeamName(row['home_team_name'] || '');
+    const p1Away = cleanTeamName(row['away_team_name'] || '');
+    const name = cleanTeamName(row['name'] || '');
 
-    // Sortera bort F1 & motorsport
-    if (itemTitle.includes("gp ") || itemTitle.includes("grand prix") || itemTitle.includes("formula") || itemTitle.includes("f1 ")) {
-      return false;
+    // 1. Exakt matchning på home_team_name & away_team_name
+    if (p1Home && p1Away) {
+      const homeMatch = p1Home.includes(cleanHome) || cleanHome.includes(p1Home);
+      const awayMatch = p1Away.includes(cleanAway) || cleanAway.includes(p1Away);
+      if (homeMatch && awayMatch) return true;
     }
 
-    const hasHome = homeKeywords.some(kw => itemTitle.includes(kw));
-    const hasAway = awayKeywords.some(kw => itemTitle.includes(kw));
-
-    return hasHome && hasAway;
+    // 2. Reservsökning i namn-fältet
+    return name.includes(cleanHome) && name.includes(cleanAway);
   });
 
   if (!matchedRow) return null;
 
-  const rawPrice = 
-    matchedRow['price'] || 
-    matchedRow['price_eur'] || 
-    matchedRow['price_sek'] || 
-    matchedRow['buy_price'] || 
-    matchedRow['search_price'] ||
-    Object.values(matchedRow).find((v: any) => !isNaN(parseFloat(v)) && parseFloat(v) > 10) || 
-    '0';
+  const priceNum = parseFloat(matchedRow['price'] || '0');
+  const directUrl = matchedRow['producturl'] || matchedRow['product_url'] || '';
 
-  const url = 
-    matchedRow['destination_url'] || 
-    matchedRow['destination url'] || 
-    matchedRow['deeplink'] || 
-    matchedRow['deep_link'] || 
-    matchedRow['link'] || 
-    matchedRow['url'] || 
-    matchedRow['tracking_url'] || 
-    '';
-
-  const title = matchedRow['title'] || matchedRow['product_name'] || matchedRow['name'] || `${homeTeam} vs ${awayTeam}`;
-  const priceNum = parseFloat(rawPrice as string);
-
-  if (priceNum > 0 && url) {
+  if (priceNum > 0 && directUrl) {
     return {
-      title,
+      title: matchedRow['name'] || `${homeTeam} vs ${awayTeam}`,
       price: priceNum,
       currency: 'EUR',
-      directUrl: url as string
+      directUrl: directUrl
     };
   }
 
