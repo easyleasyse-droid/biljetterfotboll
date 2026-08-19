@@ -1,3 +1,5 @@
+import { unstable_cache } from 'next/cache';
+
 export interface P1Ticket {
   title: string;
   price: number;
@@ -36,55 +38,52 @@ function parseCsvLine(text: string, delimiter: string): string[] {
   return result;
 }
 
-export async function fetchP1FeedRows(): Promise<any[]> {
-  const feedUrl = process.env.P1_TRAVEL_FEED_URL;
+// Hämtar och parsar CSV-feeden i minnet – cachas automatiskt i 1 timme av Next.js
+export const fetchP1FeedRows = unstable_cache(
+  async (): Promise<any[]> => {
+    const feedUrl = process.env.P1_TRAVEL_FEED_URL;
+    if (!feedUrl) return [];
 
-  if (!feedUrl) {
-    console.warn("P1_TRAVEL_FEED_URL saknas.");
-    return [];
-  }
+    try {
+      const response = await fetch(feedUrl, { cache: 'no-store' });
+      if (!response.ok) return [];
 
-  try {
-    const response = await fetch(feedUrl, { cache: 'no-store' });
-    if (!response.ok) return [];
+      const csvText = await response.text();
+      const lines = csvText.split(/\r?\n/).filter(line => line.trim().length > 0);
+      if (lines.length < 2) return [];
 
-    const csvText = await response.text();
-    const lines = csvText.split(/\r?\n/).filter(line => line.trim().length > 0);
-    if (lines.length < 2) return [];
+      const delimiter = lines[0].includes(';') ? ';' : ',';
+      const headers = parseCsvLine(lines[0], delimiter).map(h => h.toLowerCase());
 
-    const delimiter = lines[0].includes(';') ? ';' : ',';
-    const headers = parseCsvLine(lines[0], delimiter).map(h => h.toLowerCase());
+      const rows: any[] = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = parseCsvLine(lines[i], delimiter);
+        if (values.length < 2) continue;
 
-    const rows: any[] = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      const values = parseCsvLine(lines[i], delimiter);
-      if (values.length < 2) continue;
-
-      const row: Record<string, string> = {};
-      headers.forEach((header, idx) => {
-        row[header] = values[idx] || '';
-      });
-      rows.push(row);
+        const row: Record<string, string> = {};
+        headers.forEach((header, idx) => {
+          row[header] = values[idx] || '';
+        });
+        rows.push(row);
+      }
+      return rows;
+    } catch (error) {
+      console.error("Fel vid hämtning av P1 Feed:", error);
+      return [];
     }
-
-    return rows;
-  } catch (error) {
-    console.error("Fel vid hämtning av P1 Feed:", error);
-    return [];
-  }
-}
+  },
+  ['p1-feed-parsed-rows'],
+  { revalidate: 3600 }
+);
 
 export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: string): P1Ticket | null {
   if (!rows || rows.length === 0) return null;
 
   const getKeywords = (teamName: string): string[] => {
     const cleaned = cleanTeamName(teamName);
-
     if (cleaned.includes("inter") && !cleaned.includes("miami") && !cleaned.includes("turku")) {
       return ["inter", "internazionale"];
     }
-
     const words = cleaned.split(' ').filter(w => w.length > 2);
     return words.length > 0 ? words : [cleaned];
   };
@@ -93,7 +92,6 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
   const awayKeywords = getKeywords(awayTeam);
 
   const matchedRow = rows.find((row) => {
-    // Skapa en samlad titel-sträng från de vanligaste namnfälten
     const itemTitle = (
       row.title || 
       row.product_name || 
@@ -102,21 +100,18 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
       Object.values(row).slice(0, 3).join(' ')
     ).toLowerCase();
 
-    // 1. Filtrera Bort Formel 1 & Övriga Icke-Fotbollsevent
+    // Sortera bort F1 & motorsport
     if (itemTitle.includes("gp ") || itemTitle.includes("grand prix") || itemTitle.includes("formula") || itemTitle.includes("f1 ")) {
       return false;
     }
 
-    // 2. Kräv att HUVUDORDEN från BÅDA lagen finns i titeln
     const hasHome = homeKeywords.some(kw => itemTitle.includes(kw));
     const hasAway = awayKeywords.some(kw => itemTitle.includes(kw));
 
     return hasHome && hasAway;
   });
 
-  if (!matchedRow) {
-    return null;
-  }
+  if (!matchedRow) return null;
 
   const rawPrice = 
     matchedRow['price'] || 

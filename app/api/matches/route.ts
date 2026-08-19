@@ -231,10 +231,10 @@ export async function GET() {
     const today = new Date().toISOString().split("T")[0];
     const upcomingMatches = MY_MATCHES.filter((m) => m.date >= today);
 
-    // 1. Hämta hela P1-feeden EN GÅNG för alla matcher
+    // 1. Hämta hela P1-feeden en gång (läses blixtsnabbt från minnet via unstable_cache)
     const p1Rows = await fetchP1FeedRows();
 
-    // 2. Skapa matchobjekten direkt i minnet
+    // 2. Skapa matchobjekten
     const matches = upcomingMatches.map((m, index) => {
       const matchId = `m-${index + 1}`;
       
@@ -246,13 +246,24 @@ export async function GET() {
 
       const basePrice = 1100 + (index * 120) % 750;
 
-      // Slå upp matchen i minnet
+      // Slå upp matchen i P1-feeden
       const p1Data = findP1TicketInRows(p1Rows, homeName, awayName);
 
-      const p1Url = p1Data?.directUrl 
-        ? `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(p1Data.directUrl)}`
-        : `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(homeName)}`)}`;
+      // Bygg korrekta P1-affiliatelänkar
+      let p1Url = `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(homeName)}`)}`;
 
+      if (p1Data?.directUrl) {
+        if (p1Data.directUrl.startsWith('http://') || p1Data.directUrl.startsWith('https://')) {
+          p1Url = p1Data.directUrl.includes('camref') 
+            ? p1Data.directUrl 
+            : `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(p1Data.directUrl)}`;
+        } else {
+          const fullUrl = `https://www.p1travel.com${p1Data.directUrl.startsWith('/') ? '' : '/'}${p1Data.directUrl}`;
+          p1Url = `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(fullUrl)}`;
+        }
+      }
+
+      // Omräkning av levande EUR-pris till SEK
       const p1PriceSEK = p1Data && p1Data.price 
         ? Math.round(p1Data.price * 11.5) 
         : Math.round(basePrice * 1.15);
@@ -361,6 +372,7 @@ export async function GET() {
 
     return NextResponse.json(matches);
   } catch (error: any) {
+    console.error("Fel i matches/route.ts:", error);
     return NextResponse.json({ error: "Kunde inte läsa in matcher" }, { status: 500 });
   }
 }
