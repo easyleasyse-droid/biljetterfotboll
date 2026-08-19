@@ -6,7 +6,7 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import ComparisonDrawer from "../../components/ComparisonDrawer";
 import BookingModal from "../../components/BookingModal";
-import { LEAGUES_DATA } from "../../leagues";
+import { LEAGUES_DATA } from "../../data/leagues";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { Trophy, Globe, Ticket, Info, ShieldCheck, MapPin, ChevronRight, Loader2 } from "lucide-react";
 
