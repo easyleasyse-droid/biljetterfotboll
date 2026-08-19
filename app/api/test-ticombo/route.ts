@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+// Klistra in din Ticombo Feed-länk inom citationstecknen nedan:
+const HARDCODED_TICOMBO_URL = ""; 
+
 export async function GET() {
-  // Ändra om din miljövariabel heter något annat i Vercel
-  const feedUrl = process.env.TICOMBO_FEED_URL || process.env.NEXT_PUBLIC_TICOMBO_FEED_URL || "";
+  const feedUrl = HARDCODED_TICOMBO_URL || process.env.TICOMBO_FEED_URL || process.env.NEXT_PUBLIC_TICOMBO_FEED_URL || "";
 
   if (!feedUrl) {
     return NextResponse.json({
-      error: "TICOMBO_FEED_URL saknas helt i miljövariablerna (ENV) i Vercel.",
+      error: "Ingen Ticombo URL angiven! Klistra in din länk i HARDCODED_TICOMBO_URL i koden.",
     }, { status: 500 });
   }
 
@@ -27,7 +29,7 @@ export async function GET() {
       httpStatus: status,
       contentType: res.headers.get("content-type"),
       contentLength: rawText.length,
-      preview: rawText.substring(0, 1500), // Visar de första 1500 tecknen
+      preview: rawText.substring(0, 1500),
     });
   } catch (error: any) {
     return NextResponse.json({
