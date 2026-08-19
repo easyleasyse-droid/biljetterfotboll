@@ -231,7 +231,7 @@ export async function GET() {
     const today = new Date().toISOString().split("T")[0];
     const upcomingMatches = MY_MATCHES.filter((m) => m.date >= today);
 
-    // 1. Hämta hela P1-feeden en gång (läses blixtsnabbt från minnet via unstable_cache)
+    // 1. Hämta P1-feeden
     const p1Rows = await fetchP1FeedRows();
 
     // 2. Skapa matchobjekten
@@ -246,30 +246,11 @@ export async function GET() {
 
       const basePrice = 1100 + (index * 120) % 750;
 
-      // Slå upp matchen i P1-feeden
+      // Slå upp matchen i P1-feeden med matchdatum
       const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date);
 
-      // Bygg korrekta P1-affiliatelänkar
-      let p1Url = `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(homeName)}`)}`;
-
-      if (p1Data?.directUrl) {
-        if (p1Data.directUrl.startsWith('http://') || p1Data.directUrl.startsWith('https://')) {
-          p1Url = p1Data.directUrl.includes('camref') 
-            ? p1Data.directUrl 
-            : `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(p1Data.directUrl)}`;
-        } else {
-          const fullUrl = `https://www.p1travel.com${p1Data.directUrl.startsWith('/') ? '' : '/'}${p1Data.directUrl}`;
-          p1Url = `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(fullUrl)}`;
-        }
-      }
-
-      // Omräkning av levande EUR-pris till SEK (aktuell växelkurs ca 11.3)
-      const EUR_TO_SEK = 11.3;
-
-      const p1PriceSEK = p1Data && p1Data.price 
-        ? Math.round(p1Data.price * EUR_TO_SEK) 
-        : basePrice;
-      const offers = [
+      // Bygg listan över erbjudanden dynamiskt
+      const offers: any[] = [
         {
           id: `o-${matchId}-se365`,
           merchantName: "Sports Events 365",
@@ -283,8 +264,28 @@ export async function GET() {
           isVerified: true,
           url: getSearchUrl("Sports Events 365", homeName, awayName, (m as any).se365Url),
           type: "ticket"
-        },
-        {
+        }
+      ];
+
+      // ENDAST om P1 faktiskt har verifierade biljetter lägger vi till dem i jämförelsen!
+      if (p1Data) {
+        const EUR_TO_SEK = 11.3;
+        const p1PriceSEK = Math.round(p1Data.price * EUR_TO_SEK);
+
+        let p1Url = `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(homeName)}`)}`;
+
+        if (p1Data.directUrl) {
+          if (p1Data.directUrl.startsWith('http://') || p1Data.directUrl.startsWith('https://')) {
+            p1Url = p1Data.directUrl.includes('camref') 
+              ? p1Data.directUrl 
+              : `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(p1Data.directUrl)}`;
+          } else {
+            const fullUrl = `https://www.p1travel.com${p1Data.directUrl.startsWith('/') ? '' : '/'}${p1Data.directUrl}`;
+            p1Url = `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(fullUrl)}`;
+          }
+        }
+
+        offers.push({
           id: `o-${matchId}-p1travel`,
           merchantName: "P1 Travel",
           rating: 4.9,
@@ -292,12 +293,16 @@ export async function GET() {
           section: "Officiell Långsida",
           category: "Långsida",
           priceSEK: p1PriceSEK,
-          availableQuantity: p1Data ? 8 : 4,
+          availableQuantity: 8,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
           url: p1Url,
           type: "ticket"
-        },
+        });
+      }
+
+      // Lägg till övriga partners (StubHub, Viagogo, Ticombo)
+      offers.push(
         {
           id: `o-${matchId}-stubhub`,
           merchantName: "StubHub",
@@ -340,7 +345,7 @@ export async function GET() {
           url: getSearchUrl("Ticombo", homeName, awayName),
           type: "ticket"
         }
-      ];
+      );
 
       return {
         id: matchId,
