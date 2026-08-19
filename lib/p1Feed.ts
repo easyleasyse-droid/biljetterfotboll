@@ -10,7 +10,6 @@ function cleanTeamName(name: string): string {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    // Ta bort årtal och vanliga klubb-suffix/prefix
     .replace(/\b(18\d\d|19\d\d|20\d\d)\b/g, "")
     .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio)\b/g, "")
     .replace(/\s+/g, " ")
@@ -79,11 +78,9 @@ export async function fetchP1FeedRows(): Promise<any[]> {
 export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: string): P1Ticket | null {
   if (!rows || rows.length === 0) return null;
 
-  // Extrahera viktiga sökord (ord längre än 2 tecken efter städning)
   const getKeywords = (teamName: string): string[] => {
     const cleaned = cleanTeamName(teamName);
 
-    // Specialfall för Inter
     if (cleaned.includes("inter") && !cleaned.includes("miami") && !cleaned.includes("turku")) {
       return ["inter", "internazionale"];
     }
@@ -96,11 +93,23 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
   const awayKeywords = getKeywords(awayTeam);
 
   const matchedRow = rows.find((row) => {
-    const fullRowText = Object.values(row).join(' ').toLowerCase();
+    // Skapa en samlad titel-sträng från de vanligaste namnfälten
+    const itemTitle = (
+      row.title || 
+      row.product_name || 
+      row['product title'] || 
+      row.name || 
+      Object.values(row).slice(0, 3).join(' ')
+    ).toLowerCase();
 
-    // Kräv att MINST ett huvudord från hemmalaget OCH bortalaget finns på raden
-    const hasHome = homeKeywords.some(kw => fullRowText.includes(kw));
-    const hasAway = awayKeywords.some(kw => fullRowText.includes(kw));
+    // 1. Filtrera Bort Formel 1 & Övriga Icke-Fotbollsevent
+    if (itemTitle.includes("gp ") || itemTitle.includes("grand prix") || itemTitle.includes("formula") || itemTitle.includes("f1 ")) {
+      return false;
+    }
+
+    // 2. Kräv att HUVUDORDEN från BÅDA lagen finns i titeln
+    const hasHome = homeKeywords.some(kw => itemTitle.includes(kw));
+    const hasAway = awayKeywords.some(kw => itemTitle.includes(kw));
 
     return hasHome && hasAway;
   });
