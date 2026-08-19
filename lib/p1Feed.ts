@@ -8,12 +8,21 @@ export interface P1Ticket {
 }
 
 function cleanTeamName(name: string): string {
-  return name
+  if (!name) return "";
+  
+  let cleaned = name
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
+    .toLowerCase();
+
+  // Specialhantering för Inter
+  if (cleaned.includes("inter") && !cleaned.includes("miami") && !cleaned.includes("turku")) {
+    return "inter";
+  }
+
+  return cleaned
     .replace(/\b(18\d\d|19\d\d|20\d\d)\b/g, "")
-    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio)\b/g, "")
+    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd|real)\b/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -63,7 +72,7 @@ export const fetchP1FeedRows = unstable_cache(
           row[header] = values[idx] || '';
         });
 
-        // Filipera bort allt som inte är fotboll direkt vid inläsning
+        // Filtrera bort motorsport
         const categories = (row['categories'] || row['subcategories'] || '').toLowerCase();
         if (categories.includes('motorsports') || categories.includes('formula')) continue;
 
@@ -75,11 +84,16 @@ export const fetchP1FeedRows = unstable_cache(
       return [];
     }
   },
-  ['p1-feed-parsed-rows-v2'],
+  ['p1-feed-parsed-rows-v4'],
   { revalidate: 3600 }
 );
 
-export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: string): P1Ticket | null {
+export function findP1TicketInRows(
+  rows: any[], 
+  homeTeam: string, 
+  awayTeam: string, 
+  matchDate?: string
+): P1Ticket | null {
   if (!rows || rows.length === 0) return null;
 
   const cleanHome = cleanTeamName(homeTeam);
@@ -88,17 +102,26 @@ export function findP1TicketInRows(rows: any[], homeTeam: string, awayTeam: stri
   const matchedRow = rows.find((row) => {
     const p1Home = cleanTeamName(row['home_team_name'] || '');
     const p1Away = cleanTeamName(row['away_team_name'] || '');
-    const name = cleanTeamName(row['name'] || '');
+    const p1Date = row['date_start'] || ''; // Format: YYYY-MM-DD
 
-    // 1. Exakt matchning på home_team_name & away_team_name
-    if (p1Home && p1Away) {
-      const homeMatch = p1Home.includes(cleanHome) || cleanHome.includes(p1Home);
-      const awayMatch = p1Away.includes(cleanAway) || cleanAway.includes(p1Away);
-      if (homeMatch && awayMatch) return true;
+    // 1. Datumcheck: Om matchDate skickas med, kontrollera att speldag/månad matchar hyfsat
+    if (matchDate && p1Date) {
+      const matchYearMonth = matchDate.substring(0, 7); // t.ex. "2026-08"
+      const p1YearMonth = p1Date.substring(0, 7);
+      if (matchYearMonth !== p1YearMonth) {
+        return false; // Hoppa över matcher från helt fel år/månad
+      }
     }
 
-    // 2. Reservsökning i namn-fältet
-    return name.includes(cleanHome) && name.includes(cleanAway);
+    // 2. Strikt matchning: Hemmalag MÅSTE vara hemmalag, Bortalag MÅSTE vara bortalag
+    if (p1Home && p1Away) {
+      const isHomeMatch = p1Home === cleanHome || p1Home.includes(cleanHome) || cleanHome.includes(p1Home);
+      const isAwayMatch = p1Away === cleanAway || p1Away.includes(cleanAway) || cleanAway.includes(p1Away);
+
+      return isHomeMatch && isAwayMatch;
+    }
+
+    return false;
   });
 
   if (!matchedRow) return null;

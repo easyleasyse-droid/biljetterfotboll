@@ -247,7 +247,7 @@ export async function GET() {
       const basePrice = 1100 + (index * 120) % 750;
 
       // Slå upp matchen i P1-feeden
-      const p1Data = findP1TicketInRows(p1Rows, homeName, awayName);
+      const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date);
 
       // Bygg korrekta P1-affiliatelänkar
       let p1Url = `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(homeName)}`)}`;
