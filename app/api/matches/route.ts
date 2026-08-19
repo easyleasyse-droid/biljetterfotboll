@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import { TEAMS_SEO_DATA } from "../../data/teams";
+import { MY_MATCHES } from "@/lib/matchesData";
+import { TEAMS_SEO_DATA, formatTeamName } from "@/lib/teamsData";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
-import { fetchTicomboFeedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
+import { fetchTicomboFeedRows, findTicomboTicketInRows } from "@/lib/ticomboFeed";
+import { getSearchUrl } from "@/lib/searchUrls";
+
 export const dynamic = 'force-dynamic';
 
 const formatTeamName = (key: string) => {
@@ -227,35 +230,26 @@ const getSearchUrl = (
   return domainMap[merchantName] || `https://www.google.com/search?q=${query}`;
 };
 
-import { NextResponse } from "next/server";
-import { TEAMS_SEO_DATA } from "../../data/teams";
-import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
-import { fetchTicomboFeedRows, findTicomboTicketInRows } from "@/lib/ticomboFeed";
-
-export const dynamic = 'force-dynamic';
-
 export async function GET() {
   try {
     const today = new Date().toISOString().split("T")[0];
+    const upcomingMatches = MY_MATCHES.filter((m) => m.date >= today);
 
-    // Hämta båda feederna parallellt
+    // 1. Hämta båda feederna parallellt
     const [p1Rows, ticomboRows] = await Promise.all([
       fetchP1FeedRows(),
       fetchTicomboFeedRows()
     ]);
 
-    // Antag att du har dina matcher i MY_MATCHES eller hämtar dem här
-    // (Anpassa om du har variabelnamnet annorlunda)
-    const upcomingMatches = MY_MATCHES.filter((m) => m.date >= today);
-
+    // 2. Skapa matchobjekten
     const matches = upcomingMatches.map((m, index) => {
       const matchId = `m-${index + 1}`;
       
       const homeInfo = TEAMS_SEO_DATA[m.homeKey];
       const awayInfo = TEAMS_SEO_DATA[m.awayKey];
 
-      const homeName = homeInfo?.name || m.homeKey;
-      const awayName = awayInfo?.name || m.awayKey;
+      const homeName = homeInfo?.name || formatTeamName(m.homeKey);
+      const awayName = awayInfo?.name || formatTeamName(m.awayKey);
 
       const basePrice = 1100 + (index * 120) % 750;
       const EUR_TO_SEK = 11.3;
@@ -277,12 +271,12 @@ export async function GET() {
           availableQuantity: 4,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: m.se365Url || `https://www.sportsevents365.com/search?q=${encodeURIComponent(homeName)}`,
+          url: getSearchUrl("Sports Events 365", homeName, awayName, (m as any).se365Url),
           type: "ticket"
         }
       ];
 
-      // ENDAST om P1 faktiskt har verifierade biljetter lägger vi till dem
+      // ENDAST om P1 har biljetter
       if (p1Data) {
         const p1PriceSEK = Math.round(p1Data.price * EUR_TO_SEK);
 
@@ -315,7 +309,7 @@ export async function GET() {
         });
       }
 
-      // ENDAST om Ticombo faktiskt har verifierade biljetter lägger vi till dem
+      // ENDAST om Ticombo har biljetter
       if (ticomboData) {
         const ticomboPriceSEK = ticomboData.currency === 'EUR' 
           ? Math.round(ticomboData.price * EUR_TO_SEK) 
@@ -337,7 +331,7 @@ export async function GET() {
         });
       }
 
-      // Lägg till övriga partners (StubHub & Viagogo)
+      // Övriga partners (StubHub & Viagogo)
       offers.push(
         {
           id: `o-${matchId}-stubhub`,
@@ -350,7 +344,7 @@ export async function GET() {
           availableQuantity: 6,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: m.stubhubUrl || `https://www.stubhub.com/search?q=${encodeURIComponent(homeName)}`,
+          url: getSearchUrl("StubHub", homeName, awayName, (m as any).stubhubUrl),
           type: "ticket"
         },
         {
@@ -364,7 +358,7 @@ export async function GET() {
           availableQuantity: 2,
           deliveryType: "Mobilbiljett",
           isVerified: true,
-          url: `https://www.viagogo.com/search?q=${encodeURIComponent(homeName)}`,
+          url: getSearchUrl("Viagogo", homeName, awayName),
           type: "ticket"
         }
       );
