@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Header from "@/app/components/Header";
-import Footer from "@/app/components/Footer";
-import ComparisonDrawer from "@/app/components/ComparisonDrawer";
-import BookingModal from "@/app/components/BookingModal";
-import { LEAGUES_DATA } from "@/app/leagues";
-import { TEAMS_SEO_DATA } from "@/app/data/teams";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
+import ComparisonDrawer from "../../components/ComparisonDrawer";
+import BookingModal from "../../components/BookingModal";
+import { LEAGUES_DATA } from "../../leagues";
+import { TEAMS_SEO_DATA } from "../../data/teams";
 import { Trophy, Globe, Ticket, Info, ShieldCheck, MapPin, ChevronRight, Loader2 } from "lucide-react";
 
 export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
