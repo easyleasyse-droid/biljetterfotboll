@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
+import { fetchTicomboFeedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
 export const dynamic = 'force-dynamic';
 
 const formatTeamName = (key: string) => {
@@ -226,28 +227,42 @@ const getSearchUrl = (
   return domainMap[merchantName] || `https://www.google.com/search?q=${query}`;
 };
 
+import { NextResponse } from "next/server";
+import { TEAMS_SEO_DATA } from "../../data/teams";
+import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
+import { fetchTicomboFeedRows, findTicomboTicketInRows } from "@/lib/ticomboFeed";
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const today = new Date().toISOString().split("T")[0];
+
+    // Hämta båda feederna parallellt
+    const [p1Rows, ticomboRows] = await Promise.all([
+      fetchP1FeedRows(),
+      fetchTicomboFeedRows()
+    ]);
+
+    // Antag att du har dina matcher i MY_MATCHES eller hämtar dem här
+    // (Anpassa om du har variabelnamnet annorlunda)
     const upcomingMatches = MY_MATCHES.filter((m) => m.date >= today);
 
-    // 1. Hämta P1-feeden
-    const p1Rows = await fetchP1FeedRows();
-
-    // 2. Skapa matchobjekten
     const matches = upcomingMatches.map((m, index) => {
       const matchId = `m-${index + 1}`;
       
       const homeInfo = TEAMS_SEO_DATA[m.homeKey];
       const awayInfo = TEAMS_SEO_DATA[m.awayKey];
 
-      const homeName = homeInfo?.name || formatTeamName(m.homeKey);
-      const awayName = awayInfo?.name || formatTeamName(m.awayKey);
+      const homeName = homeInfo?.name || m.homeKey;
+      const awayName = awayInfo?.name || m.awayKey;
 
       const basePrice = 1100 + (index * 120) % 750;
+      const EUR_TO_SEK = 11.3;
 
-      // Slå upp matchen i P1-feeden med matchdatum
+      // Slå upp biljetter i feederna
       const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date);
+      const ticomboData = findTicomboTicketInRows(ticomboRows, homeName, awayName, m.date);
 
       // Bygg listan över erbjudanden dynamiskt
       const offers: any[] = [
@@ -262,14 +277,13 @@ export async function GET() {
           availableQuantity: 4,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: getSearchUrl("Sports Events 365", homeName, awayName, (m as any).se365Url),
+          url: m.se365Url || `https://www.sportsevents365.com/search?q=${encodeURIComponent(homeName)}`,
           type: "ticket"
         }
       ];
 
-      // ENDAST om P1 faktiskt har verifierade biljetter lägger vi till dem i jämförelsen!
+      // ENDAST om P1 faktiskt har verifierade biljetter lägger vi till dem
       if (p1Data) {
-        const EUR_TO_SEK = 11.3;
         const p1PriceSEK = Math.round(p1Data.price * EUR_TO_SEK);
 
         let p1Url = `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(homeName)}`)}`;
@@ -301,7 +315,29 @@ export async function GET() {
         });
       }
 
-      // Lägg till övriga partners (StubHub, Viagogo, Ticombo)
+      // ENDAST om Ticombo faktiskt har verifierade biljetter lägger vi till dem
+      if (ticomboData) {
+        const ticomboPriceSEK = ticomboData.currency === 'EUR' 
+          ? Math.round(ticomboData.price * EUR_TO_SEK) 
+          : Math.round(ticomboData.price);
+
+        offers.push({
+          id: `o-${matchId}-ticombo`,
+          merchantName: "Ticombo",
+          rating: 4.7,
+          reviewsCount: 1540,
+          section: "Verifierad Säljare",
+          category: "Standard / VIP",
+          priceSEK: ticomboPriceSEK,
+          availableQuantity: 4,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: ticomboData.directUrl,
+          type: "ticket"
+        });
+      }
+
+      // Lägg till övriga partners (StubHub & Viagogo)
       offers.push(
         {
           id: `o-${matchId}-stubhub`,
@@ -314,7 +350,7 @@ export async function GET() {
           availableQuantity: 6,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: getSearchUrl("StubHub", homeName, awayName, (m as any).stubhubUrl),
+          url: m.stubhubUrl || `https://www.stubhub.com/search?q=${encodeURIComponent(homeName)}`,
           type: "ticket"
         },
         {
@@ -328,21 +364,7 @@ export async function GET() {
           availableQuantity: 2,
           deliveryType: "Mobilbiljett",
           isVerified: true,
-          url: getSearchUrl("Viagogo", homeName, awayName),
-          type: "ticket"
-        },
-        {
-          id: `o-${matchId}-ticombo`,
-          merchantName: "Ticombo",
-          rating: 4.7,
-          reviewsCount: 1540,
-          section: "VIP / Hospitality",
-          category: "VIP",
-          priceSEK: Math.round(basePrice * 2.1),
-          availableQuantity: 2,
-          deliveryType: "E-biljett (Direkt)",
-          isVerified: true,
-          url: getSearchUrl("Ticombo", homeName, awayName),
+          url: `https://www.viagogo.com/search?q=${encodeURIComponent(homeName)}`,
           type: "ticket"
         }
       );
