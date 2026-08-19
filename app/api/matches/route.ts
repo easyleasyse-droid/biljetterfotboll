@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import { MY_MATCHES } from "@/lib/matchesData";
-import { TEAMS_SEO_DATA, formatTeamName } from "../../data/teams";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboFeedRows, findTicomboTicketInRows } from "@/lib/ticomboFeed";
-import { getSearchUrl } from "@/lib/searchUrls";
+import { TEAMS_SEO_DATA } from "../../data/teams";
 
 export const dynamic = 'force-dynamic';
 
 const formatTeamName = (key: string) => {
+  if (!key) return "";
   return key
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -210,8 +209,8 @@ const MY_MATCHES = [
 ];
 
 const getSearchUrl = (
-  merchantName: string, 
-  homeTeam: string, 
+  merchantName: string,
+  homeTeam: string,
   awayTeam: string,
   customUrl?: string
 ): string => {
@@ -220,12 +219,12 @@ const getSearchUrl = (
   const query = encodeURIComponent(`${homeTeam} ${awayTeam}`);
 
   const domainMap: Record<string, string> = {
-  "Viagogo": `https://www.viagogo.se/Search?q=${query}`,
-  "StubHub": `https://www.stubhub.se/`,
-  "Ticombo": `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent('https://www.ticombo.com/en/sports-tickets/football')}`,
-  "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${query}`)}`,
-  "Sports Events 365": `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`
-};
+    "Viagogo": `https://www.viagogo.se/Search?q=${query}`,
+    "StubHub": `https://www.stubhub.se/`,
+    "Ticombo": `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent('https://www.ticombo.com/en/sports-tickets/football')}`,
+    "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${query}`)}`,
+    "Sports Events 365": `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`
+  };
 
   return domainMap[merchantName] || `https://www.google.com/search?q=${query}`;
 };
@@ -237,16 +236,16 @@ export async function GET() {
 
     // 1. Hämta båda feederna parallellt
     const [p1Rows, ticomboRows] = await Promise.all([
-      fetchP1FeedRows(),
-      fetchTicomboFeedRows()
+      fetchP1FeedRows().catch(() => []),
+      fetchTicomboFeedRows().catch(() => [])
     ]);
 
     // 2. Skapa matchobjekten
     const matches = upcomingMatches.map((m, index) => {
       const matchId = `m-${index + 1}`;
-      
-      const homeInfo = TEAMS_SEO_DATA[m.homeKey];
-      const awayInfo = TEAMS_SEO_DATA[m.awayKey];
+
+      const homeInfo = (TEAMS_SEO_DATA as any)?.[m.homeKey];
+      const awayInfo = (TEAMS_SEO_DATA as any)?.[m.awayKey];
 
       const homeName = homeInfo?.name || formatTeamName(m.homeKey);
       const awayName = awayInfo?.name || formatTeamName(m.awayKey);
@@ -284,8 +283,8 @@ export async function GET() {
 
         if (p1Data.directUrl) {
           if (p1Data.directUrl.startsWith('http://') || p1Data.directUrl.startsWith('https://')) {
-            p1Url = p1Data.directUrl.includes('camref') 
-              ? p1Data.directUrl 
+            p1Url = p1Data.directUrl.includes('camref')
+              ? p1Data.directUrl
               : `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(p1Data.directUrl)}`;
           } else {
             const fullUrl = `https://www.p1travel.com${p1Data.directUrl.startsWith('/') ? '' : '/'}${p1Data.directUrl}`;
@@ -311,9 +310,14 @@ export async function GET() {
 
       // ENDAST om Ticombo har biljetter
       if (ticomboData) {
-        const ticomboPriceSEK = ticomboData.currency === 'EUR' 
-          ? Math.round(ticomboData.price * EUR_TO_SEK) 
+        const ticomboPriceSEK = ticomboData.currency === 'EUR'
+          ? Math.round(ticomboData.price * EUR_TO_SEK)
           : Math.round(ticomboData.price);
+
+        let ticomboUrl = ticomboData.directUrl;
+        if (ticomboUrl && !ticomboUrl.includes("camref")) {
+          ticomboUrl = `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent(ticomboUrl)}`;
+        }
 
         offers.push({
           id: `o-${matchId}-ticombo`,
@@ -326,7 +330,7 @@ export async function GET() {
           availableQuantity: 4,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: ticomboData.directUrl,
+          url: ticomboUrl || getSearchUrl("Ticombo", homeName, awayName),
           type: "ticket"
         });
       }
@@ -365,21 +369,21 @@ export async function GET() {
 
       return {
         id: matchId,
-        homeTeam: { 
-          name: homeName, 
-          shortName: homeName.substring(0, 3).toUpperCase(), 
+        homeTeam: {
+          name: homeName,
+          shortName: homeName.substring(0, 3).toUpperCase(),
           logo: homeInfo?.logo || `/logos/${m.homeKey}.png`,
-          primaryColor: "#111827", 
-          secondaryColor: "#FFFFFF", 
-          emoji: "⚽" 
+          primaryColor: "#111827",
+          secondaryColor: "#FFFFFF",
+          emoji: "⚽"
         },
-        awayTeam: { 
-          name: awayName, 
-          shortName: awayName.substring(0, 3).toUpperCase(), 
+        awayTeam: {
+          name: awayName,
+          shortName: awayName.substring(0, 3).toUpperCase(),
           logo: awayInfo?.logo || `/logos/${m.awayKey}.png`,
-          primaryColor: "#4B5563", 
-          secondaryColor: "#FFFFFF", 
-          emoji: "⚽" 
+          primaryColor: "#4B5563",
+          secondaryColor: "#FFFFFF",
+          emoji: "⚽"
         },
         league: homeInfo?.league || "Fotboll",
         date: m.date,
