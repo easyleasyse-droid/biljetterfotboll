@@ -99,7 +99,6 @@ export function findP1TicketInRows(
   const cleanHome = cleanTeamName(homeTeam);
   const cleanAway = cleanTeamName(awayTeam);
 
-  // Tvätta matchDate så vi säkert har YYYY-MM-DD
   let targetDate = '';
   if (matchDate) {
     const d = new Date(matchDate);
@@ -108,36 +107,42 @@ export function findP1TicketInRows(
     }
   }
 
-  const matchedRow = rows.find((row) => {
+  // Sök ut ALLA giltiga rader för matchen
+  const matchingRows = rows.filter((row) => {
     const p1Home = cleanTeamName(row['home_team_name'] || '');
     const p1Away = cleanTeamName(row['away_team_name'] || '');
-    const p1Date = (row['date_start'] || '').split(' ')[0].split('T')[0]; // YYYY-MM-DD
+    const p1Date = (row['date_start'] || '').split(' ')[0].split('T')[0];
 
-    // 1. Om vi har datum, kräva att speldagen stämmer (eller skiljer max 2 dagar pga schemaläggning)
     if (targetDate && p1Date) {
       const diffDays = Math.abs((new Date(targetDate).getTime() - new Date(p1Date).getTime()) / (1000 * 3600 * 24));
-      if (diffDays > 3) return false; // Skippa om matchen skiljer mer än 3 dagar
+      if (diffDays > 3) return false;
     }
 
-    // 2. EXAKT matchning på Hemmalag vs Bortalag
     if (p1Home && p1Away) {
       const isHomeMatch = p1Home === cleanHome || p1Home.includes(cleanHome) || cleanHome.includes(p1Home);
       const isAwayMatch = p1Away === cleanAway || p1Away.includes(cleanAway) || cleanAway.includes(p1Away);
-
       return isHomeMatch && isAwayMatch;
     }
 
     return false;
   });
 
-  if (!matchedRow) return null;
+  if (matchingRows.length === 0) return null;
 
-  const priceNum = parseFloat(matchedRow['price'] || '0');
-  const directUrl = matchedRow['producturl'] || matchedRow['product_url'] || '';
+  // Sortera så att vi alltid väljer den BILLIGASTE biljetten
+  matchingRows.sort((a, b) => {
+    const priceA = parseFloat(a['price'] || '99999');
+    const priceB = parseFloat(b['price'] || '99999');
+    return priceA - priceB;
+  });
+
+  const cheapestRow = matchingRows[0];
+  const priceNum = parseFloat(cheapestRow['price'] || '0');
+  const directUrl = cheapestRow['producturl'] || cheapestRow['product_url'] || '';
 
   if (priceNum > 0 && directUrl) {
     return {
-      title: matchedRow['name'] || `${homeTeam} vs ${awayTeam}`,
+      title: cheapestRow['name'] || `${homeTeam} vs ${awayTeam}`,
       price: priceNum,
       currency: 'EUR',
       directUrl: directUrl
