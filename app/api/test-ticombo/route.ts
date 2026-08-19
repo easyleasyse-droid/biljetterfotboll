@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 // Klistra in din Ticombo Feed-länk inom citationstecknen nedan:
-const HARDCODED_TICOMBO_URL = ""; 
+const HARDCODED_TICOMBO_URL = "https://feeds.performancehorizon.com/biljetterfotboll/1011l6399/a1f3f49c2e6d13ca6d33d24088acc238"; 
 
 export async function GET() {
   const feedUrl = HARDCODED_TICOMBO_URL || process.env.TICOMBO_FEED_URL || process.env.NEXT_PUBLIC_TICOMBO_FEED_URL || "";
