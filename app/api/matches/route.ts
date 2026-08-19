@@ -263,11 +263,12 @@ export async function GET() {
         }
       }
 
-      // Omräkning av levande EUR-pris till SEK
-      const p1PriceSEK = p1Data && p1Data.price 
-        ? Math.round(p1Data.price * 11.5) 
-        : Math.round(basePrice * 1.15);
+      // Omräkning av levande EUR-pris till SEK (aktuell växelkurs ca 11.3)
+      const EUR_TO_SEK = 11.3;
 
+      const p1PriceSEK = p1Data && p1Data.price 
+        ? Math.round(p1Data.price * EUR_TO_SEK) 
+        : basePrice;
       const offers = [
         {
           id: `o-${matchId}-se365`,

@@ -22,7 +22,7 @@ function cleanTeamName(name: string): string {
 
   return cleaned
     .replace(/\b(18\d\d|19\d\d|20\d\d)\b/g, "")
-    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd|real)\b/g, "")
+    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd|real|atletico|atletico de)\b/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -84,7 +84,7 @@ export const fetchP1FeedRows = unstable_cache(
       return [];
     }
   },
-  ['p1-feed-parsed-rows-v4'],
+  ['p1-feed-parsed-rows-v5'],
   { revalidate: 3600 }
 );
 
@@ -99,21 +99,27 @@ export function findP1TicketInRows(
   const cleanHome = cleanTeamName(homeTeam);
   const cleanAway = cleanTeamName(awayTeam);
 
+  // Tvätta matchDate så vi säkert har YYYY-MM-DD
+  let targetDate = '';
+  if (matchDate) {
+    const d = new Date(matchDate);
+    if (!isNaN(d.getTime())) {
+      targetDate = d.toISOString().split('T')[0];
+    }
+  }
+
   const matchedRow = rows.find((row) => {
     const p1Home = cleanTeamName(row['home_team_name'] || '');
     const p1Away = cleanTeamName(row['away_team_name'] || '');
-    const p1Date = row['date_start'] || ''; // Format: YYYY-MM-DD
+    const p1Date = (row['date_start'] || '').split(' ')[0].split('T')[0]; // YYYY-MM-DD
 
-    // 1. Datumcheck: Om matchDate skickas med, kontrollera att speldag/månad matchar hyfsat
-    if (matchDate && p1Date) {
-      const matchYearMonth = matchDate.substring(0, 7); // t.ex. "2026-08"
-      const p1YearMonth = p1Date.substring(0, 7);
-      if (matchYearMonth !== p1YearMonth) {
-        return false; // Hoppa över matcher från helt fel år/månad
-      }
+    // 1. Om vi har datum, kräva att speldagen stämmer (eller skiljer max 2 dagar pga schemaläggning)
+    if (targetDate && p1Date) {
+      const diffDays = Math.abs((new Date(targetDate).getTime() - new Date(p1Date).getTime()) / (1000 * 3600 * 24));
+      if (diffDays > 3) return false; // Skippa om matchen skiljer mer än 3 dagar
     }
 
-    // 2. Strikt matchning: Hemmalag MÅSTE vara hemmalag, Bortalag MÅSTE vara bortalag
+    // 2. EXAKT matchning på Hemmalag vs Bortalag
     if (p1Home && p1Away) {
       const isHomeMatch = p1Home === cleanHome || p1Home.includes(cleanHome) || cleanHome.includes(p1Home);
       const isAwayMatch = p1Away === cleanAway || p1Away.includes(cleanAway) || cleanAway.includes(p1Away);
