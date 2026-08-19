@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { MY_MATCHES } from "@/lib/matchesData";
-import { TEAMS_SEO_DATA, formatTeamName } from "@/lib/teamsData";
+import { TEAMS_SEO_DATA, formatTeamName } from "../../data/teams";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboFeedRows, findTicomboTicketInRows } from "@/lib/ticomboFeed";
 import { getSearchUrl } from "@/lib/searchUrls";
