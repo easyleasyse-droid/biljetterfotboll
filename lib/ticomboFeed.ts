@@ -27,14 +27,9 @@ export const fetchTicomboRawFeed = unstable_cache(
       "https://feeds.performancehorizon.com/biljetterfotboll/1011l6399/a1f3f49c2e6d13ca6d33d24088acc238";
 
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
-
       const response = await fetch(feedUrl, { 
-        next: { revalidate: 3600 },
-        signal: controller.signal
+        next: { revalidate: 3600 }
       });
-      clearTimeout(timeoutId);
 
       if (!response.ok) return "";
       return await response.text();
@@ -42,7 +37,7 @@ export const fetchTicomboRawFeed = unstable_cache(
       return "";
     }
   },
-  ['ticombo-raw-feed-v2'],
+  ['ticombo-raw-feed-stable'],
   { revalidate: 3600 }
 );
 
@@ -57,40 +52,44 @@ export function findTicomboTicketInRaw(
   const cleanHome = cleanTeamName(homeTeam);
   const cleanAway = cleanTeamName(awayTeam);
 
-  if (!cleanHome || !cleanAway) return null;
+  const homeWords = cleanHome.split(' ').filter(w => w.length > 2);
+  const awayWords = cleanAway.split(' ').filter(w => w.length > 2);
+
+  if (homeWords.length === 0 || awayWords.length === 0) return null;
 
   const lines = rawCsv.split(/\r?\n/);
   
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
     if (!line) continue;
-
     const lineLower = line.toLowerCase();
 
-    // Snabbsökning: Båda lagens namn måste finnas på raden
-    if (lineLower.includes(cleanHome) && lineLower.includes(cleanAway)) {
-      // Dela upp kolumnerna korrekt
-      const cols = line.split('","').map(c => c.replace(/^"|"$/g, ''));
+    const hasHome = homeWords.every(w => lineLower.includes(w));
+    const hasAway = awayWords.every(w => lineLower.includes(w));
 
-      // Ticombo-feeden brukar ha URL i en kolumn och pris i en annan (oftast pris runt kolumn 5-9)
-      const directUrl = cols.find(c => c.startsWith('http://') || c.startsWith('https://')) || "";
+    if (hasHome && hasAway) {
+      const urlMatch = line.match(/https?:\/\/[^\s",]+/);
       
-      // Hitta ett rimligt pris (siffervärde under 100 000 EUR för att undvika ID-nummer)
+      // Sök alla siffervärden och välj det första rimliga priset (10 - 5000 EUR)
+      const allNumbers = line.match(/\b\d+(\.\d+)?\b/g);
       let price = 0;
-      for (const col of cols) {
-        const parsed = parseFloat(col);
-        if (!isNaN(parsed) && parsed > 5 && parsed < 50000 && !col.includes('-')) {
-          price = parsed;
-          break;
+
+      if (allNumbers) {
+        for (const numStr of allNumbers) {
+          const val = parseFloat(numStr);
+          if (val >= 10 && val <= 5000) {
+            price = val;
+            break;
+          }
         }
       }
 
-      if (directUrl && price > 0) {
+      if (urlMatch && price > 0) {
         return {
           title: `${homeTeam} vs ${awayTeam}`,
           price: price,
           currency: 'EUR',
-          directUrl: directUrl
+          directUrl: urlMatch[0]
         };
       }
     }
