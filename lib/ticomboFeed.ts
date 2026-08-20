@@ -86,7 +86,7 @@ export const fetchTicomboFeedRows = unstable_cache(
       return [];
     }
   },
-  ['ticombo-feed-parsed-rows-v6'], // Ny cache-nyckel
+  ['ticombo-feed-parsed-rows-v7'], // Uppdaterad cache-nyckel
   { revalidate: 3600 }
 );
 
@@ -113,9 +113,11 @@ export function findTicomboTicketInRows(
     const rawEventName = row['event_name'] || row['event_full_name'] || '';
     const rawDeepLink = row['deep_link'] || '';
     
+    // Slå ihop event_name och deep_link så vi hittar bortalag som bara finns i URL:en
     const fullSearchText = cleanTeamName(`${rawEventName} ${rawDeepLink}`);
     const ticomboDate = (row['event_start_date'] || '').split('T')[0];
 
+    // Datumkontroll (max 3 dagars diff)
     if (targetDate && ticomboDate) {
       const diffDays = Math.abs((new Date(targetDate).getTime() - new Date(ticomboDate).getTime()) / (1000 * 3600 * 24));
       if (diffDays > 3) return false;
@@ -144,26 +146,29 @@ export function findTicomboTicketInRows(
   let rawUrl = cheapestRow['deep_link'] || '';
   let finalAffiliateUrl = rawUrl;
 
-  // Bygg en ren och korrekt Partnerize-länk direkt till eventet
   if (rawUrl) {
     try {
       let dest = rawUrl;
 
-      // Avkoda URL:en om den innehåller destination-parametern
+      // Extrahera den faktiska Ticombo-webbadressen ur Partnerize-länken
       if (rawUrl.includes('destination:')) {
         dest = decodeURIComponent(rawUrl.split('destination:')[1]);
       } else if (rawUrl.includes('destination=')) {
         dest = decodeURIComponent(rawUrl.split('destination=')[1]);
       }
 
-      // Säkerställ att vi pekar på den specifika event-sidan
+      // Om vi har en event-URL, säkerställ rätt format med avslutande snedstreck
       if (dest.includes('/discover/event/')) {
-        const eventSlug = dest.split('/discover/event/')[1].split('?')[0];
-        const cleanEventUrl = `https://www.ticombo.com/en/discover/event/${eventSlug}`;
+        const parts = dest.split('/discover/event/')[1].split('?')[0].split('/');
+        const eventSlug = parts[0];
         
-        // Återuppbygg Partnerize-prefixet med ren URL-kodning
+        // Ticombos struktur kräver /en/discover/event/SLUG/
+        const targetEventUrl = `https://www.ticombo.com/en/discover/event/${eventSlug}/`;
+        
         const partnerizePrefix = "https://ticombo.prf.hn/click/camref:1100l5Rouq/creativeref:1011l158184/destination:";
-        finalAffiliateUrl = partnerizePrefix + encodeURIComponent(cleanEventUrl);
+        const encodedDestination = encodeURIComponent(targetEventUrl);
+        
+        finalAffiliateUrl = `${partnerizePrefix}${encodedDestination}`;
       }
     } catch (e) {
       finalAffiliateUrl = rawUrl;
