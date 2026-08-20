@@ -20,9 +20,10 @@ function cleanTeamName(name: string): string {
     return "inter";
   }
 
+  // OBS: Vi har tagit bort 'atletico' och 'real' från rensningen så att lag som Atletico Madrid / Real Madrid inte blir enbart 'madrid'
   return cleaned
     .replace(/\b(18\d\d|19\d\d|20\d\d)\b/g, "")
-    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd|real|atletico|atletico de)\b/g, "")
+    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd|atletico de)\b/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -87,7 +88,7 @@ export const fetchTicomboFeedRows = unstable_cache(
       return [];
     }
   },
-  ['ticombo-feed-parsed-rows-v2'], // Uppdaterad cache-nyckel
+  ['ticombo-feed-parsed-rows-v3'], // Ny cache-nyckel
   { revalidate: 3600 }
 );
 
@@ -121,7 +122,7 @@ export function findTicomboTicketInRows(
       if (diffDays > 3) return false;
     }
 
-    // Matchning på ordnivå om exakt matchning missar
+    // Matchning: Både hemmalag och bortalag måste finnas med i event-namnet
     const hasHome = cleanEvent.includes(cleanHome) || cleanHome.split(' ').some(word => word.length > 3 && cleanEvent.includes(word));
     const hasAway = cleanEvent.includes(cleanAway) || cleanAway.split(' ').some(word => word.length > 3 && cleanEvent.includes(word));
 
@@ -141,14 +142,20 @@ export function findTicomboTicketInRows(
   const priceNum = parseFloat(cheapestRow['min_final_sell_price'] || cheapestRow['min_sell_price'] || '0');
   
   let rawUrl = cheapestRow['deep_link'] || '';
-  
-  // FIX FÖR DIREKTLÄNK: Avkoda URL:en så att besökaren hamnar direkt på matchen
-  if (rawUrl) {
-    try {
-      rawUrl = decodeURIComponent(rawUrl);
-    } catch (e) {
-      // Om avkodning misslyckas behåller vi ursprunglig URL
+
+  // KORREKT HANDSKE FÖR TICOMBO/PARTNERIZE DEEPLINKS:
+  // Vi extraherar och säkerställer att destination-URL:en är rätt formaterad och kodad.
+  if (rawUrl && rawUrl.includes('destination:')) {
+    const parts = rawUrl.split('destination:');
+    const prefix = parts[0] + 'destination:';
+    let dest = decodeURIComponent(parts[1]);
+
+    // Om länken saknar språkkod t.ex. /discover/event/, lägg till /en/
+    if (dest.includes('/discover/event/') && !dest.includes('/en/discover/event/')) {
+      dest = dest.replace('/discover/event/', '/en/discover/event/');
     }
+
+    rawUrl = prefix + encodeURIComponent(dest);
   }
 
   if (priceNum > 0 && rawUrl) {
