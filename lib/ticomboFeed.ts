@@ -37,7 +37,7 @@ export const fetchTicomboRawFeed = unstable_cache(
       return "";
     }
   },
-  ['ticombo-raw-feed-exact-v2'], // Rensar cachen direkt
+  ['ticombo-raw-feed-exact-v3'],
   { revalidate: 3600 }
 );
 
@@ -72,7 +72,6 @@ export function findTicomboTicketInRaw(
 
     const lineLower = line.toLowerCase();
 
-    // Söker stenhårt på att BÅDA lagen finns på exakt samma rad
     if (lineLower.includes(cleanHome) && lineLower.includes(cleanAway)) {
       const cols = line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
 
@@ -87,14 +86,13 @@ export function findTicomboTicketInRaw(
           price: price,
           currency: currency,
           directUrl: directUrl
-        };
+        });
       }
     }
   }
 
   if (matches.length === 0) return null;
 
-  // Sorterar och plockar det lägsta RIKTIGA slutpriset (min_final_sell_price)
   matches.sort((a, b) => a.price - b.price);
   return matches[0];
 }
