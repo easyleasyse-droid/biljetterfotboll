@@ -37,7 +37,7 @@ export const fetchTicomboRawFeed = unstable_cache(
       return "";
     }
   },
-  ['ticombo-raw-feed-exact-v1'],
+  ['ticombo-raw-feed-exact-csv-v1'],
   { revalidate: 3600 }
 );
 
@@ -58,39 +58,51 @@ export function findTicomboTicketInRaw(
   if (homeWords.length === 0 || awayWords.length === 0) return null;
 
   const lines = rawCsv.split(/\r?\n/);
-  
+  if (lines.length < 2) return null;
+
+  // Läs rubrikraden för att hitta exakta kolumnindex
+  const headerCols = lines[0].split(',').map(c => c.trim().toLowerCase());
+  const nameIdx = headerCols.indexOf('event_name');
+  const fullNameIdx = headerCols.indexOf('event_full_name');
+  const linkIdx = headerCols.indexOf('deep_link');
+  const priceIdx = headerCols.indexOf('min_final_sell_price') !== -1 
+    ? headerCols.indexOf('min_final_sell_price') 
+    : headerCols.indexOf('min_sell_price');
+  const currencyIdx = headerCols.indexOf('currency');
+
+  // Om vi av någon anledning inte hittar kolumnerna via rubriken, falla tillbaka på fasta index
+  const finalNameIdx = nameIdx !== -1 ? nameIdx : 1;
+  const finalFullNameIdx = fullNameIdx !== -1 ? fullNameIdx : 2;
+  const finalLinkIdx = linkIdx !== -1 ? linkIdx : 7;
+  const finalPriceIdx = priceIdx !== -1 ? priceIdx : 11;
+  const finalCurrencyIdx = currencyIdx !== -1 ? currencyIdx : 12;
+
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
     if (!line) continue;
+
     const lineLower = line.toLowerCase();
 
-    const hasHome = homeWords.every(w => lineLower.includes(w));
-    const hasAway = awayWords.every(w => lineLower.includes(w));
+    // Kolla om båda lagen finns med på raden
+    const hasHome = homeWords.some(w => lineLower.includes(w));
+    const hasAway = awayWords.every(w => lineLower.includes(w)) || awayWords.some(w => lineLower.includes(w));
 
     if (hasHome && hasAway) {
-      const urlMatch = line.match(/https?:\/\/[^\s",]+/);
-      
-      // Precis som i vår första version: hitta alla tal inom citationstecken
-      const quotedNumbers = line.match(/"(\d+(\.\d+)?)"/g);
-      let price = 0;
+      // Dela raden på kommatecken
+      const cols = line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
 
-      if (quotedNumbers) {
-        for (const qn of quotedNumbers) {
-          const val = parseFloat(qn.replace(/"/g, ''));
-          // Tar första talet som faktiskt är ett biljettpris (mellan 50 och 2000 EUR)
-          if (val >= 50 && val <= 2000) {
-            price = val;
-            break;
-          }
-        }
-      }
+      const directUrl = cols[finalLinkIdx] || "";
+      const priceRaw = cols[finalPriceIdx];
+      const currency = cols[finalCurrencyIdx] || "EUR";
 
-      if (urlMatch && price > 0) {
+      const price = parseFloat(priceRaw);
+
+      if (directUrl && !isNaN(price) && price > 0) {
         return {
           title: `${homeTeam} vs ${awayTeam}`,
           price: price,
-          currency: 'EUR',
-          directUrl: urlMatch[0]
+          currency: currency,
+          directUrl: directUrl
         };
       }
     }
