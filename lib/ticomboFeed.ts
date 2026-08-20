@@ -37,7 +37,7 @@ export const fetchTicomboRawFeed = unstable_cache(
       return "";
     }
   },
-  ['ticombo-raw-feed-stable'],
+  ['ticombo-raw-feed-lowest-price'],
   { revalidate: 3600 }
 );
 
@@ -58,6 +58,7 @@ export function findTicomboTicketInRaw(
   if (homeWords.length === 0 || awayWords.length === 0) return null;
 
   const lines = rawCsv.split(/\r?\n/);
+  const matchedTickets: TicomboTicket[] = [];
   
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
@@ -70,30 +71,33 @@ export function findTicomboTicketInRaw(
     if (hasHome && hasAway) {
       const urlMatch = line.match(/https?:\/\/[^\s",]+/);
       
-      // Sök alla siffervärden och välj det första rimliga priset (10 - 5000 EUR)
+      // Hämta alla siffervärden
       const allNumbers = line.match(/\b\d+(\.\d+)?\b/g);
-      let price = 0;
+      
+      if (urlMatch && allNumbers) {
+        // Filtrera fram alla rimliga priser (mellanskillnad från ID-nummer)
+        const validPrices = allNumbers
+          .map(n => parseFloat(n))
+          .filter(n => n >= 15 && n <= 1500); // Riktiga biljettpriser ligger mellan 15 och 1500 EUR
 
-      if (allNumbers) {
-        for (const numStr of allNumbers) {
-          const val = parseFloat(numStr);
-          if (val >= 10 && val <= 5000) {
-            price = val;
-            break;
-          }
+        if (validPrices.length > 0) {
+          // Välj det lägsta priset på raden
+          const lowestPriceOnLine = Math.min(...validPrices);
+          
+          matchedTickets.push({
+            title: `${homeTeam} vs ${awayTeam}`,
+            price: lowestPriceOnLine,
+            currency: 'EUR',
+            directUrl: urlMatch[0]
+          });
         }
-      }
-
-      if (urlMatch && price > 0) {
-        return {
-          title: `${homeTeam} vs ${awayTeam}`,
-          price: price,
-          currency: 'EUR',
-          directUrl: urlMatch[0]
-        };
       }
     }
   }
 
-  return null;
+  if (matchedTickets.length === 0) return null;
+
+  // Sortera alla hittade biljetter för matchen och returnera det absolut lägsta erbjudandet
+  matchedTickets.sort((a, b) => a.price - b.price);
+  return matchedTickets[0];
 }
