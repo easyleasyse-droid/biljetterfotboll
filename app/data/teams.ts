@@ -284,7 +284,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
       }
     ]
   },
-  "ac-milan": {
+  "milan": {
     name: "AC Milan",
     stadiumName: "San Siro",
     logo: "/logos/milan.png",

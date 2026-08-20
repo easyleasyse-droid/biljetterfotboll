@@ -9,16 +9,40 @@ export interface TicomboTicket {
 
 function cleanTeamName(name: string): string {
   if (!name) return "";
-  
   return name
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    // Ta bara bort rena suffix som fc, cf, ac, ss – behåll ord som Real, Atletico, Inter, Milan
-    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd)\b/g, "")
+    .replace(/\./g, "") // Rensar punkter så "A.C. Milan" blir "ac milan" innan "ac" skalas av
+    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd|de)\b/g, "")
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function parseCsvLine(text: string): string[] {
+  const result: string[] = [];
+  let cur = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') {
+      if (inQuotes && text[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (c === ',' && !inQuotes) {
+      result.push(cur.trim());
+      cur = '';
+    } else {
+      cur += c;
+    }
+  }
+  result.push(cur.trim());
+  return result;
 }
 
 export const fetchTicomboRawFeed = unstable_cache(
@@ -38,7 +62,7 @@ export const fetchTicomboRawFeed = unstable_cache(
       return "";
     }
   },
-  ['ticombo-raw-feed-strict-match-v1'],
+  ['ticombo-raw-feed-verified-v2'], // Ny cache-nyckel för att säkerställa omstart
   { revalidate: 3600 }
 );
 
@@ -58,14 +82,17 @@ export function findTicomboTicketInRaw(
   const lines = rawCsv.split(/\r?\n/);
   if (lines.length < 2) return null;
 
-  const headerCols = lines[0].split(',').map(c => c.trim().toLowerCase());
-  const nameIdx = headerCols.indexOf('event_name') !== -1 ? headerCols.indexOf('event_name') : 1;
-  const fullNameIdx = headerCols.indexOf('event_full_name') !== -1 ? headerCols.indexOf('event_full_name') : 2;
-  const linkIdx = headerCols.indexOf('deep_link') !== -1 ? headerCols.indexOf('deep_link') : 7;
+  const headerCols = parseCsvLine(lines[0]).map(c => c.toLowerCase());
+  
+  const nameIdx = headerCols.indexOf('event_name');
+  const fullNameIdx = headerCols.indexOf('event_full_name');
+  const linkIdx = headerCols.indexOf('deep_link');
   const priceIdx = headerCols.indexOf('min_final_sell_price') !== -1 
     ? headerCols.indexOf('min_final_sell_price') 
-    : (headerCols.indexOf('min_sell_price') !== -1 ? headerCols.indexOf('min_sell_price') : 11);
-  const currencyIdx = headerCols.indexOf('currency') !== -1 ? headerCols.indexOf('currency') : 12;
+    : headerCols.indexOf('min_sell_price');
+  const currencyIdx = headerCols.indexOf('currency');
+
+  if (linkIdx === -1 || priceIdx === -1) return null;
 
   const matches: TicomboTicket[] = [];
 
@@ -73,19 +100,24 @@ export function findTicomboTicketInRaw(
     const line = lines[i];
     if (!line) continue;
 
-    const lineLower = line.toLowerCase();
+    const cols = parseCsvLine(line);
 
-    // Kräv att BÅDA lagen finns på raden
-    // För lag som "Real Madrid" krävs nu hela strängen "real madrid" och inte bara "real"
-    if (lineLower.includes(cleanHome) && lineLower.includes(cleanAway)) {
-      const cols = line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
+    // Säkra upp att vi inte läser utanför index
+    const eventName = nameIdx !== -1 && nameIdx < cols.length ? cols[nameIdx] : "";
+    const eventFullName = fullNameIdx !== -1 && fullNameIdx < cols.length ? cols[fullNameIdx] : "";
+    const rawTitle = `${eventName} ${eventFullName}`;
+    const cleanTitle = cleanTeamName(rawTitle);
 
-      const directUrl = cols[linkIdx] || "";
-      const priceRaw = cols[priceIdx];
-      const currency = cols[currencyIdx] || "EUR";
+    // Kräver att BÅDA lagen finns med i själva matchtiteln
+    if (cleanTitle.includes(cleanHome) && cleanTitle.includes(cleanAway)) {
+      const rawUrl = linkIdx < cols.length ? cols[linkIdx] : "";
+      const priceRaw = priceIdx < cols.length ? cols[priceIdx] : "";
+      const currency = (currencyIdx !== -1 && currencyIdx < cols.length && cols[currencyIdx]) ? cols[currencyIdx] : "EUR";
       const price = parseFloat(priceRaw);
 
-      if (directUrl && !isNaN(price) && price > 0) {
+      const directUrl = rawUrl.replace(/^"|"$/g, '');
+
+      if (directUrl.startsWith("http") && !isNaN(price) && price > 0) {
         matches.push({
           title: `${homeTeam} vs ${awayTeam}`,
           price: price,
@@ -98,7 +130,7 @@ export function findTicomboTicketInRaw(
 
   if (matches.length === 0) return null;
 
-  // Sortera så att vi tar lägsta giltiga priset för exakt rätt match
+  // Sorterar och väljer det lägsta priset för den specifika matchen
   matches.sort((a, b) => a.price - b.price);
   return matches[0];
 }
