@@ -15,15 +15,14 @@ function cleanTeamName(name: string): string {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 
-  // Specialhantering för Inter
   if (cleaned.includes("inter") && !cleaned.includes("miami") && !cleaned.includes("turku")) {
     return "inter";
   }
 
-  // Bevarar 'atletico' och 'real' så att lag som Atletico Madrid inte skalas ner till enbart 'madrid'
   return cleaned
     .replace(/\b(18\d\d|19\d\d|20\d\d)\b/g, "")
     .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd|atletico de)\b/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -74,7 +73,6 @@ export const fetchTicomboFeedRows = unstable_cache(
           row[header] = values[idx] || '';
         });
 
-        // Filtrera bort allt som inte har med sport/fotboll att göra
         const category = (row['category'] || '').toLowerCase();
         if (!category.includes('sport') && !category.includes('football') && !category.includes('soccer')) {
           continue;
@@ -88,7 +86,7 @@ export const fetchTicomboFeedRows = unstable_cache(
       return [];
     }
   },
-  ['ticombo-feed-parsed-rows-v4'], // Uppdaterad cache-nyckel
+  ['ticombo-feed-parsed-rows-v5'], // Ny cache-nyckel
   { revalidate: 3600 }
 );
 
@@ -113,7 +111,10 @@ export function findTicomboTicketInRows(
 
   const matchingRows = rows.filter((row) => {
     const rawEventName = row['event_name'] || row['event_full_name'] || '';
-    const cleanEvent = cleanTeamName(rawEventName);
+    const rawDeepLink = row['deep_link'] || '';
+    
+    // Slå ihop event_name och deep_link så vi hittar bortalag som bara finns i URL:en
+    const fullSearchText = cleanTeamName(`${rawEventName} ${rawDeepLink}`);
     const ticomboDate = (row['event_start_date'] || '').split('T')[0];
 
     // Datumkontroll (max 3 dagars diff)
@@ -122,19 +123,17 @@ export function findTicomboTicketInRows(
       if (diffDays > 3) return false;
     }
 
-    // Matchning baserad på ordnivå för att fånga upp variationer i lagnamn
     const homeWords = cleanHome.split(' ').filter(w => w.length > 2);
     const awayWords = cleanAway.split(' ').filter(w => w.length > 2);
 
-    const hasHome = homeWords.length > 0 && homeWords.every(w => cleanEvent.includes(w));
-    const hasAway = awayWords.length > 0 && awayWords.every(w => cleanEvent.includes(w));
+    const hasHome = homeWords.length > 0 && homeWords.every(w => fullSearchText.includes(w));
+    const hasAway = awayWords.length > 0 && awayWords.every(w => fullSearchText.includes(w));
 
     return hasHome && hasAway;
   });
 
   if (matchingRows.length === 0) return null;
 
-  // Sortera för att hitta lägsta priset
   matchingRows.sort((a, b) => {
     const priceA = parseFloat(a['min_final_sell_price'] || a['min_sell_price'] || '99999');
     const priceB = parseFloat(b['min_final_sell_price'] || b['min_sell_price'] || '99999');
@@ -144,28 +143,7 @@ export function findTicomboTicketInRows(
   const cheapestRow = matchingRows[0];
   const priceNum = parseFloat(cheapestRow['min_final_sell_price'] || cheapestRow['min_sell_price'] || '0');
   
-  let feedUrl = cheapestRow['deep_link'] || '';
-  let finalAffiliateUrl = feedUrl;
-
-  // Korrigerar och säkerställer giltig URL-kodning i Partnerize-länken
-  if (feedUrl) {
-    try {
-      let destUrl = feedUrl;
-      if (feedUrl.includes('destination:')) {
-        destUrl = decodeURIComponent(feedUrl.split('destination:')[1]);
-      }
-
-      if (destUrl.includes('/discover/event/')) {
-        const eventSlug = destUrl.split('/discover/event/')[1];
-        destUrl = `https://www.ticombo.com/en/discover/event/${eventSlug}`;
-      }
-
-      const partnerizePrefix = "https://ticombo.prf.hn/click/camref:1100l5Rouq/creativeref:1011l158184/destination:";
-      finalAffiliateUrl = partnerizePrefix + encodeURIComponent(destUrl);
-    } catch (e) {
-      finalAffiliateUrl = feedUrl;
-    }
-  }
+  let finalAffiliateUrl = cheapestRow['deep_link'] || '';
 
   if (priceNum > 0 && finalAffiliateUrl) {
     return {
