@@ -48,9 +48,9 @@ function parseCsvLine(text: string): string[] {
 
 export const fetchTicomboFeedRows = unstable_cache(
   async (): Promise<any[]> => {
-    // Direkt URL utan .env-beroende
-    const feedUrl = process.env.TICOMBO_FEED_URL || "https://feeds.performancehorizon.com/biljetterfotboll/1011l6399/a1f3f49c2e6d13ca6d33d24088acc238";
-    if (!feedUrl) return [];
+    const feedUrl =
+      process.env.TICOMBO_FEED_URL ||
+      "https://feeds.performancehorizon.com/biljetterfotboll/1011l6399/a1f3f49c2e6d13ca6d33d24088acc238";
 
     try {
       const response = await fetch(feedUrl, { cache: 'no-store' });
@@ -71,6 +71,12 @@ export const fetchTicomboFeedRows = unstable_cache(
         headers.forEach((header, idx) => {
           row[header] = values[idx] || '';
         });
+
+        // Filtrera bort allt som inte har med sport/fotboll att göra
+        const category = (row['category'] || '').toLowerCase();
+        if (!category.includes('sport') && !category.includes('football') && !category.includes('soccer')) {
+          continue;
+        }
 
         rows.push(row);
       }
@@ -103,47 +109,42 @@ export function findTicomboTicketInRows(
     }
   }
 
+  // Sök ut alla rader som matchar lagen och datumet
   const matchingRows = rows.filter((row) => {
-    const tHome = cleanTeamName(row['home_team_name'] || row['home_team'] || '');
-    const tAway = cleanTeamName(row['away_team_name'] || row['away_team'] || '');
-    const tDate = (row['date_start'] || row['event_date'] || row['date'] || '').split(' ')[0].split('T')[0];
+    const eventName = cleanTeamName(row['event_name'] || row['event_full_name'] || '');
+    const ticomboDate = (row['event_start_date'] || '').split('T')[0];
 
-    // Max 3 dagars förskjutning på datum
-    if (targetDate && tDate) {
-      const diffDays = Math.abs((new Date(targetDate).getTime() - new Date(tDate).getTime()) / (1000 * 3600 * 24));
+    // Datumkontroll (max 3 dagars diff)
+    if (targetDate && ticomboDate) {
+      const diffDays = Math.abs((new Date(targetDate).getTime() - new Date(ticomboDate).getTime()) / (1000 * 3600 * 24));
       if (diffDays > 3) return false;
     }
 
-    if (tHome && tAway) {
-      const isHome = tHome === cleanHome || tHome.includes(cleanHome) || cleanHome.includes(tHome);
-      const isAway = tAway === cleanAway || tAway.includes(cleanAway) || cleanAway.includes(tAway);
-      return isHome && isAway;
-    }
+    // Matchning på lagnamn i event_name (ex: "Arsenal vs Chelsea")
+    const hasHome = eventName.includes(cleanHome);
+    const hasAway = eventName.includes(cleanAway);
 
-    // Fallback om enskilda lagkolumner saknas i Ticombos feed
-    const fullName = cleanTeamName(row['name'] || row['title'] || '');
-    return fullName.includes(cleanHome) && fullName.includes(cleanAway);
+    return hasHome && hasAway;
   });
 
   if (matchingRows.length === 0) return null;
 
-  // Sortera för att alltid välja den BILLIGASTE biljetten
+  // Sortera för att hitta lägsta slutpriset
   matchingRows.sort((a, b) => {
-    const priceA = parseFloat(a['price'] || a['price_amount'] || '99999');
-    const priceB = parseFloat(b['price'] || b['price_amount'] || '99999');
+    const priceA = parseFloat(a['min_final_sell_price'] || a['min_sell_price'] || '99999');
+    const priceB = parseFloat(b['min_final_sell_price'] || b['min_sell_price'] || '99999');
     return priceA - priceB;
   });
 
-  const cheapest = matchingRows[0];
-  const priceNum = parseFloat(cheapest['price'] || cheapest['price_amount'] || '0');
-  const directUrl = cheapest['producturl'] || cheapest['product_url'] || cheapest['deeplink'] || cheapest['link'] || '';
-  const currency = (cheapest['currency'] || 'EUR').toUpperCase();
+  const cheapestRow = matchingRows[0];
+  const priceNum = parseFloat(cheapestRow['min_final_sell_price'] || cheapestRow['min_sell_price'] || '0');
+  const directUrl = cheapestRow['deep_link'] || '';
 
   if (priceNum > 0 && directUrl) {
     return {
-      title: cheapest['name'] || cheapest['title'] || `${homeTeam} vs ${awayTeam}`,
+      title: cheapestRow['event_name'] || `${homeTeam} vs ${awayTeam}`,
       price: priceNum,
-      currency: currency,
+      currency: cheapestRow['currency'] || 'EUR',
       directUrl: directUrl
     };
   }
