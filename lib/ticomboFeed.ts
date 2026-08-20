@@ -15,6 +15,7 @@ function cleanTeamName(name: string): string {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 
+  // Specialhantering för Inter
   if (cleaned.includes("inter") && !cleaned.includes("miami") && !cleaned.includes("turku")) {
     return "inter";
   }
@@ -86,7 +87,7 @@ export const fetchTicomboFeedRows = unstable_cache(
       return [];
     }
   },
-  ['ticombo-feed-parsed-rows-v1'],
+  ['ticombo-feed-parsed-rows-v2'], // Uppdaterad cache-nyckel
   { revalidate: 3600 }
 );
 
@@ -109,9 +110,9 @@ export function findTicomboTicketInRows(
     }
   }
 
-  // Sök ut alla rader som matchar lagen och datumet
   const matchingRows = rows.filter((row) => {
-    const eventName = cleanTeamName(row['event_name'] || row['event_full_name'] || '');
+    const rawEventName = row['event_name'] || row['event_full_name'] || '';
+    const cleanEvent = cleanTeamName(rawEventName);
     const ticomboDate = (row['event_start_date'] || '').split('T')[0];
 
     // Datumkontroll (max 3 dagars diff)
@@ -120,16 +121,16 @@ export function findTicomboTicketInRows(
       if (diffDays > 3) return false;
     }
 
-    // Matchning på lagnamn i event_name (ex: "Arsenal vs Chelsea")
-    const hasHome = eventName.includes(cleanHome);
-    const hasAway = eventName.includes(cleanAway);
+    // Matchning på ordnivå om exakt matchning missar
+    const hasHome = cleanEvent.includes(cleanHome) || cleanHome.split(' ').some(word => word.length > 3 && cleanEvent.includes(word));
+    const hasAway = cleanEvent.includes(cleanAway) || cleanAway.split(' ').some(word => word.length > 3 && cleanEvent.includes(word));
 
     return hasHome && hasAway;
   });
 
   if (matchingRows.length === 0) return null;
 
-  // Sortera för att hitta lägsta slutpriset
+  // Sortera ut lägsta priset
   matchingRows.sort((a, b) => {
     const priceA = parseFloat(a['min_final_sell_price'] || a['min_sell_price'] || '99999');
     const priceB = parseFloat(b['min_final_sell_price'] || b['min_sell_price'] || '99999');
@@ -138,14 +139,24 @@ export function findTicomboTicketInRows(
 
   const cheapestRow = matchingRows[0];
   const priceNum = parseFloat(cheapestRow['min_final_sell_price'] || cheapestRow['min_sell_price'] || '0');
-  const directUrl = cheapestRow['deep_link'] || '';
+  
+  let rawUrl = cheapestRow['deep_link'] || '';
+  
+  // FIX FÖR DIREKTLÄNK: Avkoda URL:en så att besökaren hamnar direkt på matchen
+  if (rawUrl) {
+    try {
+      rawUrl = decodeURIComponent(rawUrl);
+    } catch (e) {
+      // Om avkodning misslyckas behåller vi ursprunglig URL
+    }
+  }
 
-  if (priceNum > 0 && directUrl) {
+  if (priceNum > 0 && rawUrl) {
     return {
       title: cheapestRow['event_name'] || `${homeTeam} vs ${awayTeam}`,
       price: priceNum,
       currency: cheapestRow['currency'] || 'EUR',
-      directUrl: directUrl
+      directUrl: rawUrl
     };
   }
 
