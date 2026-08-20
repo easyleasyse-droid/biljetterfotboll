@@ -14,7 +14,7 @@ function cleanTeamName(name: string): string {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd|atletico de)\b/g, "")
+    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd|atletico de|atletico)\b/g, "")
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -37,7 +37,7 @@ export const fetchTicomboRawFeed = unstable_cache(
       return "";
     }
   },
-  ['ticombo-raw-feed-exact-csv-v1'],
+  ['ticombo-raw-feed-exact-v2'], // Rensar cachen direkt
   { revalidate: 3600 }
 );
 
@@ -52,30 +52,19 @@ export function findTicomboTicketInRaw(
   const cleanHome = cleanTeamName(homeTeam);
   const cleanAway = cleanTeamName(awayTeam);
 
-  const homeWords = cleanHome.split(' ').filter(w => w.length > 2);
-  const awayWords = cleanAway.split(' ').filter(w => w.length > 2);
-
-  if (homeWords.length === 0 || awayWords.length === 0) return null;
+  if (!cleanHome || !cleanAway) return null;
 
   const lines = rawCsv.split(/\r?\n/);
   if (lines.length < 2) return null;
 
-  // Läs rubrikraden för att hitta exakta kolumnindex
   const headerCols = lines[0].split(',').map(c => c.trim().toLowerCase());
-  const nameIdx = headerCols.indexOf('event_name');
-  const fullNameIdx = headerCols.indexOf('event_full_name');
-  const linkIdx = headerCols.indexOf('deep_link');
+  const linkIdx = headerCols.indexOf('deep_link') !== -1 ? headerCols.indexOf('deep_link') : 7;
   const priceIdx = headerCols.indexOf('min_final_sell_price') !== -1 
     ? headerCols.indexOf('min_final_sell_price') 
-    : headerCols.indexOf('min_sell_price');
-  const currencyIdx = headerCols.indexOf('currency');
+    : (headerCols.indexOf('min_sell_price') !== -1 ? headerCols.indexOf('min_sell_price') : 11);
+  const currencyIdx = headerCols.indexOf('currency') !== -1 ? headerCols.indexOf('currency') : 12;
 
-  // Om vi av någon anledning inte hittar kolumnerna via rubriken, falla tillbaka på fasta index
-  const finalNameIdx = nameIdx !== -1 ? nameIdx : 1;
-  const finalFullNameIdx = fullNameIdx !== -1 ? fullNameIdx : 2;
-  const finalLinkIdx = linkIdx !== -1 ? linkIdx : 7;
-  const finalPriceIdx = priceIdx !== -1 ? priceIdx : 11;
-  const finalCurrencyIdx = currencyIdx !== -1 ? currencyIdx : 12;
+  const matches: TicomboTicket[] = [];
 
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
@@ -83,22 +72,17 @@ export function findTicomboTicketInRaw(
 
     const lineLower = line.toLowerCase();
 
-    // Kolla om båda lagen finns med på raden
-    const hasHome = homeWords.some(w => lineLower.includes(w));
-    const hasAway = awayWords.every(w => lineLower.includes(w)) || awayWords.some(w => lineLower.includes(w));
-
-    if (hasHome && hasAway) {
-      // Dela raden på kommatecken
+    // Söker stenhårt på att BÅDA lagen finns på exakt samma rad
+    if (lineLower.includes(cleanHome) && lineLower.includes(cleanAway)) {
       const cols = line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
 
-      const directUrl = cols[finalLinkIdx] || "";
-      const priceRaw = cols[finalPriceIdx];
-      const currency = cols[finalCurrencyIdx] || "EUR";
-
+      const directUrl = cols[linkIdx] || "";
+      const priceRaw = cols[priceIdx];
+      const currency = cols[currencyIdx] || "EUR";
       const price = parseFloat(priceRaw);
 
       if (directUrl && !isNaN(price) && price > 0) {
-        return {
+        matches.push({
           title: `${homeTeam} vs ${awayTeam}`,
           price: price,
           currency: currency,
@@ -108,5 +92,9 @@ export function findTicomboTicketInRaw(
     }
   }
 
-  return null;
+  if (matches.length === 0) return null;
+
+  // Sorterar och plockar det lägsta RIKTIGA slutpriset (min_final_sell_price)
+  matches.sort((a, b) => a.price - b.price);
+  return matches[0];
 }
