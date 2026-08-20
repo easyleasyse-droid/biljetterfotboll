@@ -54,7 +54,16 @@ export const fetchTicomboFeedRows = unstable_cache(
       "https://feeds.performancehorizon.com/biljetterfotboll/1011l6399/a1f3f49c2e6d13ca6d33d24088acc238";
 
     try {
-      const response = await fetch(feedUrl, { cache: 'no-store' });
+      // AbortController sätter en hård timeout på 2.5 sekunder så sidan aldrig fryser
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+      const response = await fetch(feedUrl, { 
+        next: { revalidate: 3600 },
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
       if (!response.ok) return [];
 
       const csvText = await response.text();
@@ -65,7 +74,15 @@ export const fetchTicomboFeedRows = unstable_cache(
 
       const rows: any[] = [];
       for (let i = 1; i < lines.length; i++) {
-        const values = parseCsvLine(lines[i]);
+        const line = lines[i];
+        
+        // Snabb-gallring innan tung parsing: ignorera rader som inte rör fotboll/sport
+        const lineLower = line.toLowerCase();
+        if (!lineLower.includes('sport') && !lineLower.includes('football') && !lineLower.includes('soccer')) {
+          continue;
+        }
+
+        const values = parseCsvLine(line);
         if (values.length < headers.length) continue;
 
         const row: Record<string, string> = {};
@@ -73,20 +90,15 @@ export const fetchTicomboFeedRows = unstable_cache(
           row[header] = values[idx] || '';
         });
 
-        const category = (row['category'] || '').toLowerCase();
-        if (!category.includes('sport') && !category.includes('football') && !category.includes('soccer')) {
-          continue;
-        }
-
         rows.push(row);
       }
       return rows;
     } catch (error) {
-      console.error("Fel vid hämtning av Ticombo Feed:", error);
+      // Om anropet tajmar ut eller misslyckas, returnera tom lista direkt utan att krascha
       return [];
     }
   },
-  ['ticombo-feed-parsed-rows-v7'], // Uppdaterad cache-nyckel
+  ['ticombo-feed-parsed-rows-prod'], // Stabil cache-nyckel
   { revalidate: 3600 }
 );
 
@@ -113,11 +125,9 @@ export function findTicomboTicketInRows(
     const rawEventName = row['event_name'] || row['event_full_name'] || '';
     const rawDeepLink = row['deep_link'] || '';
     
-    // Slå ihop event_name och deep_link så vi hittar bortalag som bara finns i URL:en
     const fullSearchText = cleanTeamName(`${rawEventName} ${rawDeepLink}`);
     const ticomboDate = (row['event_start_date'] || '').split('T')[0];
 
-    // Datumkontroll (max 3 dagars diff)
     if (targetDate && ticomboDate) {
       const diffDays = Math.abs((new Date(targetDate).getTime() - new Date(ticomboDate).getTime()) / (1000 * 3600 * 24));
       if (diffDays > 3) return false;
@@ -142,45 +152,14 @@ export function findTicomboTicketInRows(
 
   const cheapestRow = matchingRows[0];
   const priceNum = parseFloat(cheapestRow['min_final_sell_price'] || cheapestRow['min_sell_price'] || '0');
-  
-  let rawUrl = cheapestRow['deep_link'] || '';
-  let finalAffiliateUrl = rawUrl;
+  const rawUrl = cheapestRow['deep_link'] || '';
 
-  if (rawUrl) {
-    try {
-      let dest = rawUrl;
-
-      // Extrahera den faktiska Ticombo-webbadressen ur Partnerize-länken
-      if (rawUrl.includes('destination:')) {
-        dest = decodeURIComponent(rawUrl.split('destination:')[1]);
-      } else if (rawUrl.includes('destination=')) {
-        dest = decodeURIComponent(rawUrl.split('destination=')[1]);
-      }
-
-      // Om vi har en event-URL, säkerställ rätt format med avslutande snedstreck
-      if (dest.includes('/discover/event/')) {
-        const parts = dest.split('/discover/event/')[1].split('?')[0].split('/');
-        const eventSlug = parts[0];
-        
-        // Ticombos struktur kräver /en/discover/event/SLUG/
-        const targetEventUrl = `https://www.ticombo.com/en/discover/event/${eventSlug}/`;
-        
-        const partnerizePrefix = "https://ticombo.prf.hn/click/camref:1100l5Rouq/creativeref:1011l158184/destination:";
-        const encodedDestination = encodeURIComponent(targetEventUrl);
-        
-        finalAffiliateUrl = `${partnerizePrefix}${encodedDestination}`;
-      }
-    } catch (e) {
-      finalAffiliateUrl = rawUrl;
-    }
-  }
-
-  if (priceNum > 0 && finalAffiliateUrl) {
+  if (priceNum > 0 && rawUrl) {
     return {
       title: cheapestRow['event_name'] || `${homeTeam} vs ${awayTeam}`,
       price: priceNum,
       currency: cheapestRow['currency'] || 'EUR',
-      directUrl: finalAffiliateUrl
+      directUrl: rawUrl
     };
   }
 
