@@ -14,7 +14,8 @@ function cleanTeamName(name: string): string {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd|atletico de|atletico)\b/g, "")
+    // Ta bara bort rena suffix som fc, cf, ac, ss – behåll ord som Real, Atletico, Inter, Milan
+    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd)\b/g, "")
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -37,7 +38,7 @@ export const fetchTicomboRawFeed = unstable_cache(
       return "";
     }
   },
-  ['ticombo-raw-feed-exact-v3'],
+  ['ticombo-raw-feed-strict-match-v1'],
   { revalidate: 3600 }
 );
 
@@ -58,6 +59,8 @@ export function findTicomboTicketInRaw(
   if (lines.length < 2) return null;
 
   const headerCols = lines[0].split(',').map(c => c.trim().toLowerCase());
+  const nameIdx = headerCols.indexOf('event_name') !== -1 ? headerCols.indexOf('event_name') : 1;
+  const fullNameIdx = headerCols.indexOf('event_full_name') !== -1 ? headerCols.indexOf('event_full_name') : 2;
   const linkIdx = headerCols.indexOf('deep_link') !== -1 ? headerCols.indexOf('deep_link') : 7;
   const priceIdx = headerCols.indexOf('min_final_sell_price') !== -1 
     ? headerCols.indexOf('min_final_sell_price') 
@@ -72,6 +75,8 @@ export function findTicomboTicketInRaw(
 
     const lineLower = line.toLowerCase();
 
+    // Kräv att BÅDA lagen finns på raden
+    // För lag som "Real Madrid" krävs nu hela strängen "real madrid" och inte bara "real"
     if (lineLower.includes(cleanHome) && lineLower.includes(cleanAway)) {
       const cols = line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
 
@@ -93,6 +98,7 @@ export function findTicomboTicketInRaw(
 
   if (matches.length === 0) return null;
 
+  // Sortera så att vi tar lägsta giltiga priset för exakt rätt match
   matches.sort((a, b) => a.price - b.price);
   return matches[0];
 }
