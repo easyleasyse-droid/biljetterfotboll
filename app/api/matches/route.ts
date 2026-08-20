@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
-import { getTicomboTicket } from "@/lib/ticomboFeed";
+import { fetchTicomboRawFeed, findTicomboTicketInRaw } from "@/lib/ticomboFeed";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 
 export const dynamic = 'force-dynamic';
@@ -235,9 +235,9 @@ export async function GET() {
     const upcomingMatches = MY_MATCHES.filter((m) => m.date >= today);
 
     // 1. Hämta båda feederna parallellt
-    const [p1Rows, ticomboRows] = await Promise.all([
+    const [p1Rows, ticomboRaw] = await Promise.all([
       fetchP1FeedRows().catch(() => []),
-      fetchTicomboFeedRows().catch(() => [])
+      fetchTicomboRawFeed().catch(() => "")
     ]);
 
     // 2. Skapa matchobjekten
@@ -255,7 +255,7 @@ export async function GET() {
 
       // Slå upp biljetter i feederna
       const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date);
-      const ticomboData = await getTicomboTicket(homeName, awayName, m.date);
+      const ticomboData = findTicomboTicketInRaw(ticomboRaw, homeName, awayName, m.date);
 
       // Bygg listan över erbjudanden dynamiskt
       const offers: any[] = [

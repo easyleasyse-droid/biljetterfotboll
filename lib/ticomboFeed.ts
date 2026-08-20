@@ -27,7 +27,6 @@ function cleanTeamName(name: string): string {
     .trim();
 }
 
-// Hämtar och cachar enbart RÅTEXTEN (blixtsnabbt, inga 16 000 rader som parsas i förväg)
 export const fetchTicomboRawFeed = unstable_cache(
   async (): Promise<string> => {
     const feedUrl =
@@ -36,7 +35,7 @@ export const fetchTicomboRawFeed = unstable_cache(
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
 
       const response = await fetch(feedUrl, { 
         next: { revalidate: 3600 },
@@ -54,12 +53,12 @@ export const fetchTicomboRawFeed = unstable_cache(
   { revalidate: 3600 }
 );
 
-export async function getTicomboTicket(
+export function findTicomboTicketInRaw(
+  rawCsv: string,
   homeTeam: string, 
   awayTeam: string, 
   matchDate?: string
-): Promise<TicomboTicket | null> {
-  const rawCsv = await fetchTicomboRawFeed();
+): TicomboTicket | null {
   if (!rawCsv) return null;
 
   const cleanHome = cleanTeamName(homeTeam);
@@ -70,25 +69,18 @@ export async function getTicomboTicket(
 
   if (homeWords.length === 0 || awayWords.length === 0) return null;
 
-  // Dela endast upp filen i rader utan tung CSV-parsing
   const lines = rawCsv.split(/\r?\n/);
   
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
     const lineLower = line.toLowerCase();
 
-    // Snabbkoll: Innehåller raden båda lagens nyckelord?
     const hasHome = homeWords.every(w => lineLower.includes(w));
     const hasAway = awayWords.every(w => lineLower.includes(w));
 
     if (hasHome && hasAway) {
-      // Först när vi hittar en matchande rad plockar vi ut priser och länkar
-      const parts = line.split(',');
-      if (parts.length < 5) continue;
-
-      // Hitta priser och deep_link ur raden
-      const priceMatch = line.match(/"(\d+(\.\d+)?)"/g) || line.match(/\b\d+(\.\d+)?\b/g);
       const urlMatch = line.match(/https?:\/\/[^\s",]+/);
+      const priceMatch = line.match(/"(\d+(\.\d+)?)"/g) || line.match(/\b\d+(\.\d+)?\b/g);
 
       if (urlMatch) {
         return {
