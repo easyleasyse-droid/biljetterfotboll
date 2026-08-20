@@ -37,7 +37,7 @@ export const fetchTicomboRawFeed = unstable_cache(
       return "";
     }
   },
-  ['ticombo-raw-feed-lowest-price'],
+  ['ticombo-raw-feed-exact-v1'],
   { revalidate: 3600 }
 );
 
@@ -58,7 +58,6 @@ export function findTicomboTicketInRaw(
   if (homeWords.length === 0 || awayWords.length === 0) return null;
 
   const lines = rawCsv.split(/\r?\n/);
-  const matchedTickets: TicomboTicket[] = [];
   
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
@@ -71,33 +70,31 @@ export function findTicomboTicketInRaw(
     if (hasHome && hasAway) {
       const urlMatch = line.match(/https?:\/\/[^\s",]+/);
       
-      // Hämta alla siffervärden
-      const allNumbers = line.match(/\b\d+(\.\d+)?\b/g);
-      
-      if (urlMatch && allNumbers) {
-        // Filtrera fram alla rimliga priser (mellanskillnad från ID-nummer)
-        const validPrices = allNumbers
-          .map(n => parseFloat(n))
-          .filter(n => n >= 15 && n <= 1500); // Riktiga biljettpriser ligger mellan 15 och 1500 EUR
+      // Precis som i vår första version: hitta alla tal inom citationstecken
+      const quotedNumbers = line.match(/"(\d+(\.\d+)?)"/g);
+      let price = 0;
 
-        if (validPrices.length > 0) {
-          // Välj det lägsta priset på raden
-          const lowestPriceOnLine = Math.min(...validPrices);
-          
-          matchedTickets.push({
-            title: `${homeTeam} vs ${awayTeam}`,
-            price: lowestPriceOnLine,
-            currency: 'EUR',
-            directUrl: urlMatch[0]
-          });
+      if (quotedNumbers) {
+        for (const qn of quotedNumbers) {
+          const val = parseFloat(qn.replace(/"/g, ''));
+          // Tar första talet som faktiskt är ett biljettpris (mellan 50 och 2000 EUR)
+          if (val >= 50 && val <= 2000) {
+            price = val;
+            break;
+          }
         }
+      }
+
+      if (urlMatch && price > 0) {
+        return {
+          title: `${homeTeam} vs ${awayTeam}`,
+          price: price,
+          currency: 'EUR',
+          directUrl: urlMatch[0]
+        };
       }
     }
   }
 
-  if (matchedTickets.length === 0) return null;
-
-  // Sortera alla hittade biljetter för matchen och returnera det absolut lägsta erbjudandet
-  matchedTickets.sort((a, b) => a.price - b.price);
-  return matchedTickets[0];
+  return null;
 }
