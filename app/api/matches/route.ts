@@ -504,8 +504,26 @@ export async function GET() {
         });
       }
 
-      // Övriga partners (StubHub & Viagogo)
+      // Övriga partners (LiveFootballTickets, StubHub & Viagogo)
+      const lftQuery = encodeURIComponent(`${homeName} ${awayName}`);
+      const lftTargetUrl = `https://www.livefootballtickets.com/search.html?q=${lftQuery}`;
+      const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
+
       offers.push(
+        {
+          id: `o-${matchId}-lft`,
+          merchantName: "LiveFootballTickets",
+          rating: 4.8,
+          reviewsCount: 2450,
+          section: "Verifierad Marknadsplats",
+          category: "Standard / VIP",
+          priceSEK: Math.round(basePrice * 0.98),
+          availableQuantity: 12,
+          deliveryType: "E-biljett / Mobil",
+          isVerified: true,
+          url: lftAwinUrl,
+          type: "ticket"
+        },
         {
           id: `o-${matchId}-stubhub`,
           merchantName: "StubHub",
