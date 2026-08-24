@@ -504,9 +504,8 @@ export async function GET() {
         });
       }
 
-      // LiveFootballTickets (Söklänk med bindestreck)
-         const cleanHomeName = homeName.toLowerCase().replace(/\s+/g, "-");
-         const lftTargetUrl = `https://www.livefootballtickets.com/search.html?q=${cleanHomeName}`;
+      // LiveFootballTickets (Skicka till startsidan)
+         const lftTargetUrl = "https://www.livefootballtickets.com/";
          const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
         
       
