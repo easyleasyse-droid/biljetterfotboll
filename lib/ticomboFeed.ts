@@ -71,7 +71,7 @@ export function findTicomboTicketInRaw(
   rawCsv: string,
   homeTeam: string, 
   awayTeam: string, 
-  matchDate?: string
+  matchDate?: string // Förväntar sig t.ex. "2026-10-25" eller ISO-sträng
 ): TicomboTicket | null {
   if (!rawCsv) return null;
 
@@ -85,7 +85,6 @@ export function findTicomboTicketInRaw(
 
   const headers = parseCsvLineStrict(lines[0]).map(h => h.toLowerCase().trim());
 
-  // Exakta kolumn-index från er rådata
   const nameIdx = headers.indexOf('event_name');
   const fullNameIdx = headers.indexOf('event_full_name');
   const categoryIdx = headers.indexOf('category');
@@ -98,6 +97,9 @@ export function findTicomboTicketInRaw(
 
   if (linkIdx === -1 || priceIdx === -1) return null;
 
+  // Formatera om inkommande matchDate till YYYY-MM-DD om det finns
+  const targetDateStr = matchDate ? matchDate.split('T')[0] : null;
+
   const matches: TicomboTicket[] = [];
 
   for (let i = 1; i < lines.length; i++) {
@@ -106,29 +108,25 @@ export function findTicomboTicketInRaw(
 
     const lineLower = line.toLowerCase();
 
-    // Snabbt förfilter: Kräver att båda lagnamnen överhuvudtaget finns på raden
     if (lineLower.includes(cleanHome) && lineLower.includes(cleanAway)) {
-      
       const cols = parseCsvLineStrict(line);
 
-      // Säkra upp källkategorin om den finns (filtrera bort konserter/musik ifall de råkar ha samma namn)
       const category = categoryIdx !== -1 && categoryIdx < cols.length ? cols[categoryIdx].toLowerCase() : "";
-      if (category && category.includes("music")) {
-        continue;
-      }
+      if (category && category.includes("music")) continue;
 
       const eventName = nameIdx !== -1 && nameIdx < cols.length ? cols[nameIdx] : "";
       const eventFullName = fullNameIdx !== -1 && fullNameIdx < cols.length ? cols[fullNameIdx] : "";
       const cleanTitle = cleanTeamName(`${eventName} ${eventFullName}`);
 
-      // Kräver att BÅDA lagen ingår i själva eventtiteln
       if (cleanTitle.includes(cleanHome) && cleanTitle.includes(cleanAway)) {
         
-        // Valfri datumkontroll om matchDate skickas med (format YYYY-MM-DD)
-        if (matchDate && dateIdx !== -1 && dateIdx < cols.length) {
-          const rowDate = cols[dateIdx]; // T.ex. "2026-09-29T16:00:00.000Z"
-          if (rowDate && !rowDate.startsWith(matchDate)) {
-            continue; // Datumet stämmer inte med denna specifika match
+        // DATUMKONTROLL: Om datum skickats med, KRÄV att datumet i CSV-feeden matchar exakt
+        if (targetDateStr && dateIdx !== -1 && dateIdx < cols.length) {
+          const rowDateRaw = cols[dateIdx]; // Exempel: "2026-09-29T16:00:00.000Z"
+          const rowDateStr = rowDateRaw ? rowDateRaw.split('T')[0] : "";
+
+          if (rowDateStr !== targetDateStr) {
+            continue; // Hoppa över om datumet inte stämmer
           }
         }
 
@@ -137,7 +135,6 @@ export function findTicomboTicketInRaw(
         const currency = (currencyIdx !== -1 && currencyIdx < cols.length && cols[currencyIdx]) ? cols[currencyIdx] : "EUR";
         const price = parseFloat(priceRaw);
 
-        // Tvätta länken helt fri från citattecken
         const directUrl = rawUrl.replace(/^"|"$/g, '');
 
         if (directUrl.startsWith("http") && !isNaN(price) && price > 0) {
@@ -154,7 +151,6 @@ export function findTicomboTicketInRaw(
 
   if (matches.length === 0) return null;
 
-  // Sortera så att lägsta giltiga biljetter visas
   matches.sort((a, b) => a.price - b.price);
   return matches[0];
 }
