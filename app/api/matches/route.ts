@@ -504,10 +504,11 @@ export async function GET() {
         });
       }
 
-      // Övriga partners (LiveFootballTickets, StubHub & Viagogo)
-      const lftQuery = encodeURIComponent(`${homeName} ${awayName}`);
-      const lftTargetUrl = `https://www.livefootballtickets.com/search.html?q=${lftQuery}`;
-      const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
+      // LiveFootballTickets (Sök enbart på hemmalaget för garanterad träff)
+        const lftQuery = encodeURIComponent(homeName);
+        const lftTargetUrl = `https://www.livefootballtickets.com/search.html?q=${lftQuery}`;
+        const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
+      
 
       offers.push(
         {
