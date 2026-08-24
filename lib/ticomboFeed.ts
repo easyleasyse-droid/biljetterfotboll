@@ -20,7 +20,6 @@ function cleanTeamName(name: string): string {
     .trim();
 }
 
-// Robust CSV-parser som hanterar nästlade citattecken som ("Sports hall ""Arena Sofia""")
 function parseCsvLineStrict(text: string): string[] {
   const result: string[] = [];
   let cur = '';
@@ -46,111 +45,111 @@ function parseCsvLineStrict(text: string): string[] {
   return result;
 }
 
-export const fetchTicomboRawFeed = unstable_cache(
-  async (): Promise<string> => {
+// 1. Parsa hela CSV-filen EN GÅNG och spara de färdiga objekten i minnescachen
+export const fetchTicomboParsedRows = unstable_cache(
+  async (): Promise<any[]> => {
     const feedUrl =
       process.env.TICOMBO_FEED_URL ||
       "https://feeds.performancehorizon.com/biljetterfotboll/1011l6399/a1f3f49c2e6d13ca6d33d24088acc238";
 
     try {
-      const response = await fetch(feedUrl, { 
-        next: { revalidate: 3600 }
-      });
+      const response = await fetch(feedUrl, { next: { revalidate: 3600 } });
+      if (!response.ok) return [];
 
-      if (!response.ok) return "";
-      return await response.text();
-    } catch {
-      return "";
+      const rawCsv = await response.text();
+      const lines = rawCsv.split(/\r?\n/);
+      if (lines.length < 2) return [];
+
+      const headers = parseCsvLineStrict(lines[0]).map(h => h.toLowerCase().trim());
+
+      const nameIdx = headers.indexOf('event_name');
+      const fullNameIdx = headers.indexOf('event_full_name');
+      const categoryIdx = headers.indexOf('category');
+      const linkIdx = headers.indexOf('deep_link');
+      const priceIdx = headers.indexOf('min_final_sell_price') !== -1 
+        ? headers.indexOf('min_final_sell_price') 
+        : headers.indexOf('min_sell_price');
+      const currencyIdx = headers.indexOf('currency');
+      const dateIdx = headers.indexOf('event_start_date');
+
+      const rows: any[] = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line || line.trim().length === 0) continue;
+
+        const cols = parseCsvLineStrict(line);
+
+        // Skala bort allt som inte är sport/fotboll direkt i cachen
+        const category = categoryIdx !== -1 && categoryIdx < cols.length ? cols[categoryIdx].toLowerCase() : "";
+        if (category && category.includes("music")) continue;
+
+        const eventName = nameIdx !== -1 && nameIdx < cols.length ? cols[nameIdx] : "";
+        const eventFullName = fullNameIdx !== -1 && fullNameIdx < cols.length ? cols[fullNameIdx] : "";
+        const rawUrl = linkIdx < cols.length ? cols[linkIdx] : "";
+        const priceRaw = priceIdx < cols.length ? cols[priceIdx] : "";
+
+        if (!rawUrl || !priceRaw) continue;
+
+        rows.push({
+          title: `${eventName} ${eventFullName}`,
+          cleanTitle: cleanTeamName(`${eventName} ${eventFullName}`),
+          date: dateIdx !== -1 && dateIdx < cols.length ? cols[dateIdx] : "",
+          price: parseFloat(priceRaw),
+          currency: (currencyIdx !== -1 && currencyIdx < cols.length && cols[currencyIdx]) ? cols[currencyIdx] : "EUR",
+          url: rawUrl.replace(/^"|"$/g, '')
+        });
+      }
+
+      return rows;
+    } catch (error) {
+      console.error("Fel vid laddning av Ticombo:", error);
+      return [];
     }
   },
-  ['ticombo-raw-feed-exact-inspector-v1'],
+  ['ticombo-parsed-rows-v1'],
   { revalidate: 3600 }
 );
 
-export function findTicomboTicketInRaw(
-  rawCsv: string,
+// 2. Sökningen mot färdiga objekt går på under 1 millisekund per match
+export function findTicomboTicketInRows(
+  rows: any[],
   homeTeam: string, 
   awayTeam: string, 
-  matchDate?: string // Förväntar sig t.ex. "2026-10-25" eller ISO-sträng
+  matchDate?: string
 ): TicomboTicket | null {
-  if (!rawCsv) return null;
+  if (!rows || rows.length === 0) return null;
 
   const cleanHome = cleanTeamName(homeTeam);
   const cleanAway = cleanTeamName(awayTeam);
-
   if (!cleanHome || !cleanAway) return null;
 
-  const lines = rawCsv.split(/\r?\n/);
-  if (lines.length < 2) return null;
-
-  const headers = parseCsvLineStrict(lines[0]).map(h => h.toLowerCase().trim());
-
-  const nameIdx = headers.indexOf('event_name');
-  const fullNameIdx = headers.indexOf('event_full_name');
-  const categoryIdx = headers.indexOf('category');
-  const linkIdx = headers.indexOf('deep_link');
-  const priceIdx = headers.indexOf('min_final_sell_price') !== -1 
-    ? headers.indexOf('min_final_sell_price') 
-    : headers.indexOf('min_sell_price');
-  const currencyIdx = headers.indexOf('currency');
-  const dateIdx = headers.indexOf('event_start_date');
-
-  if (linkIdx === -1 || priceIdx === -1) return null;
-
-  // Formatera om inkommande matchDate till YYYY-MM-DD om det finns
   const targetDateStr = matchDate ? matchDate.split('T')[0] : null;
 
-  const matches: TicomboTicket[] = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    if (!line) continue;
-
-    const lineLower = line.toLowerCase();
-
-    if (lineLower.includes(cleanHome) && lineLower.includes(cleanAway)) {
-      const cols = parseCsvLineStrict(line);
-
-      const category = categoryIdx !== -1 && categoryIdx < cols.length ? cols[categoryIdx].toLowerCase() : "";
-      if (category && category.includes("music")) continue;
-
-      const eventName = nameIdx !== -1 && nameIdx < cols.length ? cols[nameIdx] : "";
-      const eventFullName = fullNameIdx !== -1 && fullNameIdx < cols.length ? cols[fullNameIdx] : "";
-      const cleanTitle = cleanTeamName(`${eventName} ${eventFullName}`);
-
-      if (cleanTitle.includes(cleanHome) && cleanTitle.includes(cleanAway)) {
-        
-        // DATUMKONTROLL: Om datum skickats med, KRÄV att datumet i CSV-feeden matchar exakt
-        if (targetDateStr && dateIdx !== -1 && dateIdx < cols.length) {
-          const rowDateRaw = cols[dateIdx]; // Exempel: "2026-09-29T16:00:00.000Z"
-          const rowDateStr = rowDateRaw ? rowDateRaw.split('T')[0] : "";
-
-          if (rowDateStr !== targetDateStr) {
-            continue; // Hoppa över om datumet inte stämmer
-          }
-        }
-
-        const rawUrl = linkIdx < cols.length ? cols[linkIdx] : "";
-        const priceRaw = priceIdx < cols.length ? cols[priceIdx] : "";
-        const currency = (currencyIdx !== -1 && currencyIdx < cols.length && cols[currencyIdx]) ? cols[currencyIdx] : "EUR";
-        const price = parseFloat(priceRaw);
-
-        const directUrl = rawUrl.replace(/^"|"$/g, '');
-
-        if (directUrl.startsWith("http") && !isNaN(price) && price > 0) {
-          matches.push({
-            title: `${homeTeam} vs ${awayTeam}`,
-            price: price,
-            currency: currency,
-            directUrl: directUrl
-          });
-        }
-      }
+  const matches = rows.filter(row => {
+    // Kräver båda lagen i titeln
+    if (!row.cleanTitle.includes(cleanHome) || !row.cleanTitle.includes(cleanAway)) {
+      return false;
     }
-  }
+
+    // Datumkontroll om datum skickats med
+    if (targetDateStr && row.date) {
+      const rowDateStr = row.date.split('T')[0];
+      if (rowDateStr !== targetDateStr) return false;
+    }
+
+    return !isNaN(row.price) && row.price > 0 && row.url.startsWith("http");
+  });
 
   if (matches.length === 0) return null;
 
   matches.sort((a, b) => a.price - b.price);
-  return matches[0];
+  const best = matches[0];
+
+  return {
+    title: `${homeTeam} vs ${awayTeam}`,
+    price: best.price,
+    currency: best.currency,
+    directUrl: best.url
+  };
 }
