@@ -504,10 +504,11 @@ export async function GET() {
         });
       }
 
-      // LiveFootballTickets (Sök enbart på hemmalaget för garanterad träff)
-        const lftQuery = encodeURIComponent(homeName);
-        const lftTargetUrl = `https://www.livefootballtickets.com/search.html?q=${lftQuery}`;
-        const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
+      // LiveFootballTickets (Söklänk med bindestreck)
+         const cleanHomeName = homeName.toLowerCase().replace(/\s+/g, "-");
+         const lftTargetUrl = `https://www.livefootballtickets.com/search.html?q=${cleanHomeName}`;
+         const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
+        
       
 
       offers.push(
