@@ -1418,13 +1418,6 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     location: "Prag, Tjeckien",
     logo: "/logos/slavia-prague.png"
   },
-  "leipzig": {
-    name: "RB Leipzig",
-    league: "Bundesliga",
-    stadiumName: "Red Bull Arena",
-    location: "Leipzig, Tyskland",
-    logo: "/logos/leipzig.png"
-  },
   "sabah": {
     name: "Sabah FK",
     league: "Azerbajdzjanska Premjer Liqasy",
