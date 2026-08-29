@@ -1418,13 +1418,6 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     location: "Prag, Tjeckien",
     logo: "/logos/slavia-prague.png"
   },
-  "lens": {
-    name: "RC Lens",
-    league: "Ligue 1",
-    stadiumName: "Stade Bollaert-Delelis",
-    location: "Lens, Frankrike",
-    logo: "/logos/lens.png"
-  },
   "leipzig": {
     name: "RB Leipzig",
     league: "Bundesliga",
