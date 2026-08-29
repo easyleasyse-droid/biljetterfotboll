@@ -1333,5 +1333,110 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     stadiumName: "711 Stadion",
     location: "Velsen-Zuid, Nederländerna",
     logo: "/logos/telstar.png"
+  },
+  "club-brugge": {
+    name: "Club Brugge",
+    league: "Pro League",
+    stadiumName: "Jan Breydel Stadium",
+    location: "Brygge, Belgien",
+    logo: "/logos/club-brugge.png"
+  },
+  "aek-athens": {
+    name: "AEK Aten",
+    league: "Super League Greece",
+    stadiumName: "Agia Sofia Stadium",
+    location: "Aten, Grekland",
+    logo: "/logos/aek-athens.png"
+  },
+  "lask-linz": {
+    name: "LASK Linz",
+    league: "Austrian Bundesliga",
+    stadiumName: "Raiffeisen Arena",
+    location: "Linz, Österrike",
+    logo: "/logos/lask-linz.png"
+  },
+  "porto": {
+    name: "FC Porto",
+    league: "Primeira Liga",
+    stadiumName: "Estádio do Dragão",
+    location: "Porto, Portugal",
+    logo: "/logos/porto.png"
+  },
+  "viking": {
+    name: "Viking FK",
+    league: "Eliteserien",
+    stadiumName: "SR-Bank Arena",
+    location: "Stavanger, Norge",
+    logo: "/logos/viking.png"
+  },
+  "slovan-bratislava": {
+    name: "Slovan Bratislava",
+    league: "Slovak Super Liga",
+    stadiumName: "Tehelné pole",
+    location: "Bratislava, Slovakien",
+    logo: "/logos/slovan-bratislava.png"
+  },
+  "sporting": {
+    name: "Sporting CP",
+    league: "Primeira Liga",
+    stadiumName: "Estádio José Alvalade",
+    location: "Lissabon, Portugal",
+    logo: "/logos/sporting.png"
+  },
+  "galatasaray": {
+    name: "Galatasaray",
+    league: "Süper Lig",
+    stadiumName: "Rams Park",
+    location: "Istanbul, Turkiet",
+    logo: "/logos/galatasaray.png"
+  },
+  "fenerbahce": {
+    name: "Fenerbahçe",
+    league: "Süper Lig",
+    stadiumName: "Şükrü Saracoğlu Stadium",
+    location: "Istanbul, Turkiet",
+    logo: "/logos/fenerbahce.png"
+  },
+  "shakhtar": {
+    name: "Sjachtar Donetsk",
+    league: "Ukrainska Premier League",
+    stadiumName: "Arena Lviv",
+    location: "Lviv, Ukraina",
+    logo: "/logos/shakhtar.png"
+  },
+  "bodo-glimt": {
+    name: "Bodö/Glimt",
+    league: "Eliteserien",
+    stadiumName: "Aspmyra Stadion",
+    location: "Bodø, Norge",
+    logo: "/logos/bodo-glimt.png"
+  },
+  "slavia-prague": {
+    name: "Slavia Prag",
+    league: "Fortuna Liga",
+    stadiumName: "Fortuna Arena",
+    location: "Prag, Tjeckien",
+    logo: "/logos/slavia-prague.png"
+  },
+  "lens": {
+    name: "RC Lens",
+    league: "Ligue 1",
+    stadiumName: "Stade Bollaert-Delelis",
+    location: "Lens, Frankrike",
+    logo: "/logos/lens.png"
+  },
+  "leipzig": {
+    name: "RB Leipzig",
+    league: "Bundesliga",
+    stadiumName: "Red Bull Arena",
+    location: "Leipzig, Tyskland",
+    logo: "/logos/leipzig.png"
+  },
+  "sabah": {
+    name: "Sabah FK",
+    league: "Azerbajdzjanska Premjer Liqasy",
+    stadiumName: "Bank Respublika Arena",
+    location: "Masazır, Azerbajdzjan",
+    logo: "/logos/sabah.png"
   }
 };
