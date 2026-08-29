@@ -591,7 +591,7 @@ export async function GET() {
           secondaryColor: "#FFFFFF",
           emoji: "⚽"
         },
-        league: homeInfo?.league || "Fotboll",
+        league: (m as any).league || homeInfo?.league || "Fotboll",
         date: m.date,
         time: m.time,
         stadium: homeInfo?.stadiumName || "Stadion",
