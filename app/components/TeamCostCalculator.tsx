@@ -35,10 +35,12 @@ export function TeamCostCalculator({
   const selectedMatch = validMatches[selectedIndex] || validMatches[0];
   const ticketPriceSEK = selectedMatch.priceFrom || 0;
 
+  // Prioritera matchens faktiska spelort (för bortamatcher etc.)
   const targetCity =
     selectedMatch.cityName ||
     selectedMatch.venueCity ||
     selectedMatch.location ||
+    selectedMatch.awayTeam?.city ||
     selectedMatch.homeTeam?.city ||
     cityName;
 
@@ -53,7 +55,7 @@ export function TeamCostCalculator({
   const hotelPerPerson = persons === 2 ? totalHotel / 2 : totalHotel;
   const totalPricePerPerson = ticketPriceSEK + flight + hotelPerPerson + transport;
 
-  const encodedCity = encodeURIComponent(targetCity.split(",")[0].trim());
+  const encodedCity = encodeURIComponent(cleanCity);
   const flightSearchUrl = `https://www.google.com/travel/flights?q=flyg+till+${encodedCity}`;
   const hotelSearchUrl = `https://www.google.com/travel/hotels/${encodedCity}`;
 
