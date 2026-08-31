@@ -21,6 +21,7 @@ export function TotalCostCalculator({
   const hotelTotal = benchmark.hotelPerNightSEK * nights;
   const flightTotal = benchmark.flightEstimateSEK;
   const transitTotal = benchmark.transitSEK;
+  const cleanCity = cityName.split(",")[0].trim();
   
   // Totalpris per person (hotell delas på 2 om man är fler än 1 resenär)
   const hotelPerPerson = travelers > 1 ? hotelTotal / 2 : hotelTotal;
@@ -117,15 +118,20 @@ export function TotalCostCalculator({
         {/* Direktbokning */}
         <div className="flex items-center gap-2 shrink-0">
           <a
-            href={`https://www.skyscanner.se/transporter/flyg/stoa/${encodeURIComponent(cityName.toLowerCase())}`}
+            href={`https://www.google.com/travel/flights?q=flyg+till+${encodeURIComponent(cleanCity)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 transition-colors flex items-center gap-1.5"
+            className="bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-3 py-2 rounded-xl border border-sky-500 transition-colors flex items-center gap-1.5"
           >
             <span>✈️ Sök flyg</span>
           </a>
           <a
-            href={`https://www.booking.com/searchresults.sv.html?ss=${encodeURIComponent(cityName)}`}
+            href={`https://www.booking.com/searchresults.sv.html?ss=${encodeURIComponent(cleanCity)}`}
+              ``` *(det enda som ändras här är `cityName` till `cleanCity`)*
+
+              ---
+
+              Då kommer flyglänken öppna en fungerande sökning på Google Flights och Booking söker direkt på enbart stadsnamnet!
             target="_blank"
             rel="noopener noreferrer"
             className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl border border-blue-500 transition-colors flex items-center gap-1.5"
