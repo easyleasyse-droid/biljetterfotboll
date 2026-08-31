@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { getCityBenchmark } from "@/lib/cityBenchmarks";
+import { teams } from "@/data/teams";
 
 interface Match {
   id?: string | number;
@@ -22,11 +23,12 @@ interface TeamCostCalculatorProps {
 }
 
 function resolveMatchCity(match: Match, defaultCity: string): string {
-  // 1. Om direkt stadsdata finns i matchen
+  // 1. Om matchen redan har en specifik stad angiven
   if (match.cityName) return match.cityName;
   if (match.venueCity) return match.venueCity;
   if (match.location) return match.location;
 
+  // Hämta hemmalagets namn
   const homeName =
     typeof match.homeTeam === "string"
       ? match.homeTeam
@@ -37,46 +39,25 @@ function resolveMatchCity(match: Match, defaultCity: string): string {
 
   if (homeCity) return homeCity;
 
-  // 2. Mappa vanliga europeiska och brittiska klubbar till deras städer
-  const lowerHome = homeName.toLowerCase();
+  // 2. Slå upp hemmalaget dynamiskt i data/teams.ts
+  if (homeName) {
+    const lowerHome = homeName.toLowerCase().trim();
 
-  // Spanska lag
-  if (lowerHome.includes("real betis") || lowerHome.includes("sevilla")) return "Sevilla";
-  if (lowerHome.includes("barcelona")) return "Barcelona";
-  if (lowerHome.includes("real madrid") || lowerHome.includes("atletico madrid") || lowerHome.includes("atletico de madrid")) return "Madrid";
-  if (lowerHome.includes("valencia")) return "Valencia";
-  if (lowerHome.includes("villarreal")) return "Villarreal";
-  if (lowerHome.includes("athletic") || lowerHome.includes("bilbao")) return "Bilbao";
-  if (lowerHome.includes("sociedad")) return "San Sebastian";
+    const teamsArray = Array.isArray(teams) ? teams : Object.values(teams);
+    const foundTeam = teamsArray.find((t: any) => {
+      const nameMatch = t.name?.toLowerCase().trim() === lowerHome;
+      const idMatch = t.id?.toLowerCase().trim() === lowerHome;
+      return nameMatch || idMatch;
+    }) as any;
 
-  // Italienska lag
-  if (lowerHome.includes("inter") || lowerHome.includes("milan")) return "Milano";
-  if (lowerHome.includes("roma") || lowerHome.includes("lazio")) return "Rom";
-  if (lowerHome.includes("juventus")) return "Turin";
-  if (lowerHome.includes("napoli")) return "Neapel";
+    if (foundTeam?.location) return foundTeam.location;
+    if (foundTeam?.city) return foundTeam.city;
+  }
 
-  // Brittiska lag
-  if (lowerHome.includes("aston villa") || lowerHome.includes("birmingham")) return "Birmingham";
-  if (lowerHome.includes("manchester")) return "Manchester";
-  if (lowerHome.includes("liverpool") || lowerHome.includes("everton")) return "Liverpool";
-  if (lowerHome.includes("newcastle")) return "Newcastle";
-  if (lowerHome.includes("leeds")) return "Leeds";
-  if (lowerHome.includes("brighton")) return "Brighton";
-  if (lowerHome.includes("southampton")) return "Southampton";
-  if (lowerHome.includes("nottingham")) return "Nottingham";
-  if (lowerHome.includes("wolves") || lowerHome.includes("wolverhampton")) return "Wolverhampton";
-  if (lowerHome.includes("leicester")) return "Leicester";
-
-  // Tyska & övriga
-  if (lowerHome.includes("bayern") || lowerHome.includes("münchen") || lowerHome.includes("munich")) return "München";
-  if (lowerHome.includes("dortmund")) return "Dortmund";
-  if (lowerHome.includes("paris") || lowerHome.includes("psg")) return "Paris";
-
-  // 3. Om hemmalaget är ett okänt lag, gissa stad utifrån sista ordet i lagnamnet om det matchar en stad, annars default
+  // 3. Fallback till sidans generella stad
   return defaultCity;
 }
 
-// Hjälpfunktion för att formatera datum snyggt
 function formatMatchDate(dateString?: string): string {
   if (!dateString) return "";
   try {
@@ -133,7 +114,6 @@ export function TeamCostCalculator({
 
   return (
     <div className="my-8 bg-gradient-to-br from-indigo-50/40 via-white to-slate-50 rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md transition-shadow text-slate-800">
-      {/* Header med matchväljare */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/60 pb-5 mb-5">
         <div>
           <span className="inline-block px-2.5 py-0.5 mb-1.5 text-[11px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 rounded-md border border-indigo-100">
@@ -147,7 +127,6 @@ export function TeamCostCalculator({
           </p>
         </div>
 
-        {/* Matchväljare med datum */}
         <div className="min-w-[300px] bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
           <label className="block text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1">
             Välj match att beräkna för:
@@ -167,9 +146,7 @@ export function TeamCostCalculator({
       </div>
 
       <div className="space-y-4 text-xs">
-        {/* Reglage-rad för nätter och resenärer */}
         <div className="flex flex-wrap items-center gap-4 bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs">
-          {/* Nätter */}
           <div className="flex items-center gap-2">
             <span className="font-semibold text-slate-700">Antal nätter:</span>
             <div className="flex gap-1 bg-slate-100/80 p-0.5 rounded-lg border border-slate-200/60">
@@ -191,7 +168,6 @@ export function TeamCostCalculator({
 
           <div className="hidden sm:block h-4 w-[1px] bg-slate-200" />
 
-          {/* Resenärer */}
           <div className="flex items-center gap-2">
             <span className="font-semibold text-slate-700">Resenärer:</span>
             <div className="flex gap-1 bg-slate-100/80 p-0.5 rounded-lg border border-slate-200/60">
@@ -219,7 +195,6 @@ export function TeamCostCalculator({
           </div>
         </div>
 
-        {/* Prisdetaljer */}
         <div className="bg-white/60 rounded-xl p-3 border border-slate-200/50 space-y-2 text-slate-600">
           <div className="flex justify-between items-center">
             <span>Matchbiljett (lägsta pris):</span>
@@ -239,7 +214,6 @@ export function TeamCostCalculator({
           </div>
         </div>
 
-        {/* Total och sökknappar */}
         <div className="border-t border-slate-200/80 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <span className="text-slate-500 font-medium text-xs">Totalt per person ca:</span>
