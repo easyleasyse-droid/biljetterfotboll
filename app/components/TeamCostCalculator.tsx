@@ -44,9 +44,9 @@ export function TeamCostCalculator({
 
   const benchmark = getCityBenchmark(targetCity);
 
-  const flight = benchmark?.flightCostSEK || 1200;
+  const flight = benchmark?.flightEstimateSEK || benchmark?.flightCostSEK || 1200;
   const hotelPerNight = benchmark?.hotelPerNightSEK || 1600;
-  const transport = benchmark?.transportCostSEK || 450;
+  const transport = benchmark?.transitSEK || benchmark?.transportCostSEK || 450;
 
   const totalHotel = hotelPerNight * nights;
   const hotelPerPerson = persons === 2 ? totalHotel / 2 : totalHotel;
