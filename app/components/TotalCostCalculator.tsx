@@ -127,11 +127,6 @@ export function TotalCostCalculator({
           </a>
           <a
             href={`https://www.booking.com/searchresults.sv.html?ss=${encodeURIComponent(cleanCity)}`}
-              ``` *(det enda som ändras här är `cityName` till `cleanCity`)*
-
-              ---
-
-              Då kommer flyglänken öppna en fungerande sökning på Google Flights och Booking söker direkt på enbart stadsnamnet!
             target="_blank"
             rel="noopener noreferrer"
             className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl border border-blue-500 transition-colors flex items-center gap-1.5"
