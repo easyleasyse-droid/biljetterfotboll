@@ -35,13 +35,13 @@ export function TeamCostCalculator({
   const selectedMatch = validMatches[selectedIndex] || validMatches[0];
   const ticketPriceSEK = selectedMatch.priceFrom || 0;
 
-  // Prioritera matchens faktiska spelort (för bortamatcher etc.)
+  // Om hemmalaget i matchen inte är vår klubb (eller om vi vill kolla arenastad via lag),
+  // kolla homeTeam.city först eftersom det är de som har hemmaplan i matchen!
   const targetCity =
     selectedMatch.cityName ||
     selectedMatch.venueCity ||
     selectedMatch.location ||
-    selectedMatch.awayTeam?.city ||
-    selectedMatch.homeTeam?.city ||
+    selectedMatch.homeTeam?.city || // Hemmalagets stad för just denna matchen (t.ex. Aston Villa -> Birmingham)
     cityName;
 
   const cleanCity = targetCity ? targetCity.split(",")[0].trim() : "London";
