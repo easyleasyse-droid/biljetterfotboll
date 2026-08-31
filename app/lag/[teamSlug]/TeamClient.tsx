@@ -8,6 +8,7 @@ import ComparisonDrawer from "../../components/ComparisonDrawer";
 import BookingModal from "../../components/BookingModal";
 import Footer from "../../components/Footer";
 import { TEAMS_SEO_DATA } from "../../data/teams";
+import { TeamCostCalculator } from "../../components/TeamCostCalculator";
 import { 
   Calendar, MapPin, Trophy, ChevronDown, ChevronUp, Ticket, Building2, Hotel, Info, Loader2
 } from "lucide-react";
@@ -155,6 +156,14 @@ const filteredMatches = matches.filter((match: any) => {
             </div>
           )}
         </section>
+
+                  {!loading && filteredMatches.length > 0 && (
+            <TeamCostCalculator
+              teamName={teamName}
+              cityName={seoData?.location || "London, England"}
+              matches={filteredMatches}
+            />
+          )}
 
         {/* Info-Grid */}
         {seoData && (

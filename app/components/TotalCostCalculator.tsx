@@ -121,7 +121,7 @@ export function TotalCostCalculator({
             href={`https://www.google.com/travel/flights?q=flyg+till+${encodeURIComponent(cleanCity)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-3 py-2 rounded-xl border border-sky-500 transition-colors flex items-center gap-1.5"
+            className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl border border-blue-500 transition-colors flex items-center gap-1.5"
           >
             <span>✈️ Sök flyg</span>
           </a>
