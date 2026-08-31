@@ -102,18 +102,36 @@ export function TotalCostCalculator({
         </div>
       </div>
 
-      {/* Totalsumma */}
-      <div className="mt-6 pt-4 border-t border-slate-700 flex items-center justify-between">
+        {/* Totalsumma & Snabblänkar */}
+      <div className="mt-6 pt-4 border-t border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-xs text-slate-400 block">Totalt per person ca:</span>
+          <span className="text-xs text-slate-400 block font-bold">Totalt per person ca:</span>
           <span className="text-2xl font-black text-emerald-400">
             {Math.round(totalPerPerson).toLocaleString("sv-SE")} kr
           </span>
-        </div>
-        <div className="text-right">
-          <p className="text-[10px] text-slate-500 max-w-[180px]">
-            *Priserna är uppskattade riktmärken för resan utöver matchbiljetten.
+          <p className="text-[10px] text-slate-500 mt-1 max-w-[280px]">
+            *Uppskattad totalkostnad inkl. matchbiljett, boende, flyg &amp; lokal transport.
           </p>
+        </div>
+
+        {/* Direktbokning */}
+        <div className="flex items-center gap-2 shrink-0">
+          <a
+            href={`https://www.skyscanner.se/transporter/flyg/stoa/${encodeURIComponent(cityName.toLowerCase())}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 transition-colors flex items-center gap-1.5"
+          >
+            <span>✈️ Sök flyg</span>
+          </a>
+          <a
+            href={`https://www.booking.com/searchresults.sv.html?ss=${encodeURIComponent(cityName)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl border border-blue-500 transition-colors flex items-center gap-1.5"
+          >
+            <span>🏨 Sök hotell</span>
+          </a>
         </div>
       </div>
     </div>
