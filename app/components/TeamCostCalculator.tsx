@@ -34,7 +34,6 @@ export function TeamCostCalculator({
   const selectedMatch = validMatches[selectedIndex] || validMatches[0];
   const ticketPrice = selectedMatch.priceFrom || 0;
 
-  // Bestäm rätt stad baserat på var matchen faktiskt spelas
   const targetCity =
     selectedMatch.venueCity ||
     selectedMatch.cityName ||
@@ -45,23 +44,23 @@ export function TeamCostCalculator({
   const benchmark = getCityBenchmark(targetCity);
 
   return (
-    <div className="my-8">
-      {/* Kompakt header med dropdown */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 px-1">
+    <div className="my-8 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+      {/* Tajtare header med integrerad dropdown */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-4">
         <div>
-          <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            📊 Beräkna totalkostnad för fotbollsresan
+          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            ✈️ Resekalkylator – {targetCity}
           </h3>
-          <p className="text-xs text-slate-500">
-            Välj match för att se estimerad resbudget inkl. flyg & boende.
+          <p className="text-xs text-slate-500 mt-0.5">
+            Beräkna uppskattad totalkostnad för fotbollsresan inkl. flyg & boende.
           </p>
         </div>
 
-        <div className="min-w-[240px]">
+        <div className="min-w-[250px]">
           <select
             value={selectedIndex}
             onChange={(e) => setSelectedIndex(Number(e.target.value))}
-            className="w-full bg-white text-slate-800 font-semibold text-xs py-2 px-3 rounded-xl border border-slate-300 shadow-sm focus:outline-none focus:border-blue-500 cursor-pointer"
+            className="w-full bg-slate-50 text-slate-800 font-semibold text-xs py-2 px-3 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-600 cursor-pointer"
           >
             {validMatches.map((m, idx) => (
               <option key={m.id || idx} value={idx}>
@@ -72,11 +71,12 @@ export function TeamCostCalculator({
         </div>
       </div>
 
-      {/* Kalkylatorn i full synlighet utan dubbla svarta ramar */}
+      {/* Kalkylatorn */}
       <TotalCostCalculator
         ticketPriceSEK={ticketPrice}
         benchmark={benchmark}
         cityName={targetCity}
+        theme="light" // Kräver en snabbjustering i TotalCostCalculator om du vill styra temat via prop
       />
     </div>
   );
