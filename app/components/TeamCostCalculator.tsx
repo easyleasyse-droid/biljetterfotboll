@@ -45,7 +45,6 @@ export function TeamCostCalculator({
 
   return (
     <div className="my-8 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-      {/* Tajtare header med integrerad dropdown */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-4">
         <div>
           <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -71,12 +70,10 @@ export function TeamCostCalculator({
         </div>
       </div>
 
-      {/* Kalkylatorn */}
       <TotalCostCalculator
         ticketPriceSEK={ticketPrice}
         benchmark={benchmark}
         cityName={targetCity}
-        theme="light" // Kräver en snabbjustering i TotalCostCalculator om du vill styra temat via prop
       />
     </div>
   );
