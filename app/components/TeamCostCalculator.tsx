@@ -84,18 +84,20 @@ export function TeamCostCalculator({
         </div>
       </div>
 
-      <div className="space-y-3 text-xs">
-        {/* Kompakt rad för filter */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-semibold text-slate-600">Nätter:</span>
-            <div className="flex gap-1 bg-white p-0.5 rounded-lg border border-slate-200">
+      <div className="space-y-4 text-xs">
+        {/* Två kompakta block bredvid varandra istället för utdraget */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+          
+          {/* Nätter */}
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-slate-600">Antal nätter:</span>
+            <div className="flex gap-1 bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
               {[1, 2, 3].map((n) => (
                 <button
                   key={n}
                   onClick={() => setNights(n)}
-                  className={`px-2.5 py-1 font-semibold rounded-md transition-all ${
-                    nights === n ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
+                  className={`px-3 py-1 font-semibold rounded-md transition-all ${
+                    nights === n ? "bg-indigo-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   {n}
@@ -104,27 +106,29 @@ export function TeamCostCalculator({
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-2">
+          {/* Resenärer */}
+          <div className="flex items-center justify-between">
             <span className="font-semibold text-slate-600">Resenärer:</span>
-            <div className="flex gap-1 bg-white p-0.5 rounded-lg border border-slate-200">
+            <div className="flex gap-1 bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
               <button
                 onClick={() => setPersons(1)}
-                className={`px-2.5 py-1 font-semibold rounded-md transition-all ${
-                  persons === 1 ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
+                className={`px-3 py-1 font-semibold rounded-md transition-all ${
+                  persons === 1 ? "bg-indigo-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 1 pers
               </button>
               <button
                 onClick={() => setPersons(2)}
-                className={`px-2.5 py-1 font-semibold rounded-md transition-all ${
-                  persons === 2 ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
+                className={`px-3 py-1 font-semibold rounded-md transition-all ${
+                  persons === 2 ? "bg-indigo-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 2 pers (delat)
               </button>
             </div>
           </div>
+
         </div>
 
         {/* Prisdetaljer */}
