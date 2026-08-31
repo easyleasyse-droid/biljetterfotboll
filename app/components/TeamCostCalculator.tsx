@@ -36,17 +36,18 @@ export function TeamCostCalculator({
   const ticketPriceSEK = selectedMatch.priceFrom || 0;
 
   const targetCity =
-    selectedMatch.venueCity ||
     selectedMatch.cityName ||
+    selectedMatch.venueCity ||
     selectedMatch.location ||
     selectedMatch.homeTeam?.city ||
     cityName;
 
-  const benchmark: any = getCityBenchmark(targetCity);
+  const cleanCity = targetCity ? targetCity.split(",")[0].trim() : "London";
+  const benchmark: any = getCityBenchmark(cleanCity);
 
-  const flight = benchmark?.flightEstimateSEK || benchmark?.flightCostSEK || 1200;
+  const flight = benchmark?.flightEstimateSEK || 1200;
   const hotelPerNight = benchmark?.hotelPerNightSEK || 1600;
-  const transport = benchmark?.transitSEK || benchmark?.transportCostSEK || 450;
+  const transport = benchmark?.transitSEK || 450;
 
   const totalHotel = hotelPerNight * nights;
   const hotelPerPerson = persons === 2 ? totalHotel / 2 : totalHotel;
