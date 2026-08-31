@@ -42,7 +42,7 @@ export function TeamCostCalculator({
     selectedMatch.homeTeam?.city ||
     cityName;
 
-  const benchmark = getCityBenchmark(targetCity);
+  const benchmark = getCityBenchmark(targetCity) as any;
 
   const flight = benchmark?.flightEstimateSEK || benchmark?.flightCostSEK || 1200;
   const hotelPerNight = benchmark?.hotelPerNightSEK || 1600;
