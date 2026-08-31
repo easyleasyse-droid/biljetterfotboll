@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { getCityBenchmark } from "@/lib/cityBenchmarks";
-import { teams } from "@/data/teams";
+import { teams } from "../data/teams";
 
 interface Match {
   id?: string | number;
