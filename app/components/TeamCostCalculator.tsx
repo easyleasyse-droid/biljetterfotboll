@@ -22,6 +22,7 @@ interface TeamCostCalculatorProps {
 }
 
 function resolveMatchCity(match: Match, defaultCity: string): string {
+  // 1. Om direkt stadsdata finns i matchen
   if (match.cityName) return match.cityName;
   if (match.venueCity) return match.venueCity;
   if (match.location) return match.location;
@@ -36,11 +37,28 @@ function resolveMatchCity(match: Match, defaultCity: string): string {
 
   if (homeCity) return homeCity;
 
+  // 2. Mappa vanliga europeiska och brittiska klubbar till deras städer
   const lowerHome = homeName.toLowerCase();
-  if (lowerHome.includes("aston villa")) return "Birmingham";
-  if (lowerHome.includes("birmingham")) return "Birmingham";
+
+  // Spanska lag
+  if (lowerHome.includes("real betis") || lowerHome.includes("sevilla")) return "Sevilla";
+  if (lowerHome.includes("barcelona")) return "Barcelona";
+  if (lowerHome.includes("real madrid") || lowerHome.includes("atletico madrid") || lowerHome.includes("atletico de madrid")) return "Madrid";
+  if (lowerHome.includes("valencia")) return "Valencia";
+  if (lowerHome.includes("villarreal")) return "Villarreal";
+  if (lowerHome.includes("athletic") || lowerHome.includes("bilbao")) return "Bilbao";
+  if (lowerHome.includes("sociedad")) return "San Sebastian";
+
+  // Italienska lag
+  if (lowerHome.includes("inter") || lowerHome.includes("milan")) return "Milano";
+  if (lowerHome.includes("roma") || lowerHome.includes("lazio")) return "Rom";
+  if (lowerHome.includes("juventus")) return "Turin";
+  if (lowerHome.includes("napoli")) return "Neapel";
+
+  // Brittiska lag
+  if (lowerHome.includes("aston villa") || lowerHome.includes("birmingham")) return "Birmingham";
   if (lowerHome.includes("manchester")) return "Manchester";
-  if (lowerHome.includes("liverpool")) return "Liverpool";
+  if (lowerHome.includes("liverpool") || lowerHome.includes("everton")) return "Liverpool";
   if (lowerHome.includes("newcastle")) return "Newcastle";
   if (lowerHome.includes("leeds")) return "Leeds";
   if (lowerHome.includes("brighton")) return "Brighton";
@@ -49,6 +67,12 @@ function resolveMatchCity(match: Match, defaultCity: string): string {
   if (lowerHome.includes("wolves") || lowerHome.includes("wolverhampton")) return "Wolverhampton";
   if (lowerHome.includes("leicester")) return "Leicester";
 
+  // Tyska & övriga
+  if (lowerHome.includes("bayern") || lowerHome.includes("münchen") || lowerHome.includes("munich")) return "München";
+  if (lowerHome.includes("dortmund")) return "Dortmund";
+  if (lowerHome.includes("paris") || lowerHome.includes("psg")) return "Paris";
+
+  // 3. Om hemmalaget är ett okänt lag, gissa stad utifrån sista ordet i lagnamnet om det matchar en stad, annars default
   return defaultCity;
 }
 
