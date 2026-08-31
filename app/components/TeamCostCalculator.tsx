@@ -52,6 +52,21 @@ function resolveMatchCity(match: Match, defaultCity: string): string {
   return defaultCity;
 }
 
+// Hjälpfunktion för att formatera datum snyggt
+function formatMatchDate(dateString?: string): string {
+  if (!dateString) return "";
+  try {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return dateString;
+    return d.toLocaleDateString("sv-SE", {
+      day: "numeric",
+      month: "short",
+    });
+  } catch {
+    return dateString;
+  }
+}
+
 export function TeamCostCalculator({
   teamName,
   cityName,
@@ -87,7 +102,9 @@ export function TeamCostCalculator({
   const getMatchTitle = (m: Match) => {
     const hName = typeof m.homeTeam === "string" ? m.homeTeam : m.homeTeam?.name || "";
     const aName = typeof m.awayTeam === "string" ? m.awayTeam : m.awayTeam?.name || "";
-    return `${hName} vs ${aName}`;
+    const dateFormatted = formatMatchDate(m.date);
+    const datePrefix = dateFormatted ? `${dateFormatted}: ` : "";
+    return `${datePrefix}${hName} vs ${aName}`;
   };
 
   return (
@@ -106,15 +123,15 @@ export function TeamCostCalculator({
           </p>
         </div>
 
-        {/* Matchväljare med tydlig etikett */}
-        <div className="min-w-[280px] bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
+        {/* Matchväljare med datum */}
+        <div className="min-w-[300px] bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
           <label className="block text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1">
             Välj match att beräkna för:
           </label>
           <select
             value={selectedIndex}
             onChange={(e) => setSelectedIndex(Number(e.target.value))}
-            className="w-full bg-slate-50 text-slate-900 font-semibold text-xs py-2 px-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 cursor-pointer"
+            className="w-full bg-slate-50 text-slate-900 font-semibold text-xs py-2 px-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 cursor-pointer truncate"
           >
             {validMatches.map((m, idx) => (
               <option key={m.id || idx} value={idx}>
