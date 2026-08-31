@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { getCityBenchmark } from "@/lib/cityBenchmarks";
-import { teams } from "../data/teams";
+import { TEAMS_SEO_DATA } from "../data/teams";
 
 interface Match {
   id?: string | number;
@@ -39,15 +39,19 @@ function resolveMatchCity(match: Match, defaultCity: string): string {
 
   if (homeCity) return homeCity;
 
-  // 2. Slå upp hemmalaget dynamiskt i data/teams.ts
+  // 2. Slå upp hemmalaget dynamiskt i app/data/teams.ts
   if (homeName) {
     const lowerHome = homeName.toLowerCase().trim();
 
-    const teamsArray = Array.isArray(teams) ? teams : Object.values(teams);
+    const teamsArray = Array.isArray(TEAMS_SEO_DATA)
+      ? TEAMS_SEO_DATA
+      : Object.values(TEAMS_SEO_DATA);
+
     const foundTeam = teamsArray.find((t: any) => {
       const nameMatch = t.name?.toLowerCase().trim() === lowerHome;
       const idMatch = t.id?.toLowerCase().trim() === lowerHome;
-      return nameMatch || idMatch;
+      const titleMatch = t.title?.toLowerCase().trim() === lowerHome;
+      return nameMatch || idMatch || titleMatch;
     }) as any;
 
     if (foundTeam?.location) return foundTeam.location;
