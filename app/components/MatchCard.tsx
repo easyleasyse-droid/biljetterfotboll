@@ -3,10 +3,6 @@ import { Match } from "../types";
 import TeamBadge from "./TeamBadge";
 import { Calendar, MapPin, ChevronRight } from "lucide-react";
 
-// Importera kalkylatorn och stads-benchmarks
-import { TotalCostCalculator } from "./TotalCostCalculator";
-import { getCityBenchmark } from "@/lib/cityBenchmarks";
-
 interface MatchCardProps {
   key?: React.Key;
   match: Match;
@@ -14,9 +10,6 @@ interface MatchCardProps {
 }
 
 export default function MatchCard({ match, onSelect }: MatchCardProps) {
-  // Hämta riktmärke för matchens stad
-  const benchmark = getCityBenchmark(match.city);
-
   // Helper to format date into Swedish
   const getSwedishDate = (dateStr: string) => {
     try {
@@ -107,7 +100,7 @@ export default function MatchCard({ match, onSelect }: MatchCardProps) {
         </h4>
 
         {/* Stadium & City details */}
-        <div className="space-y-1.5 border-t border-slate-150 pt-4 text-slate-600 mb-4">
+        <div className="space-y-1.5 border-t border-slate-150 pt-4 text-slate-600">
           <div className="flex items-center gap-2 text-xs font-semibold">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
             <span>{getSwedishDate(match.date)} • Kl. {match.time}</span>
@@ -117,13 +110,6 @@ export default function MatchCard({ match, onSelect }: MatchCardProps) {
             <span className="truncate">{match.stadium}, {match.city}</span>
           </div>
         </div>
-
-        {/* Total Cost Calculator */}
-        <TotalCostCalculator
-          ticketPriceSEK={match.priceFrom}
-          benchmark={benchmark}
-          cityName={match.city || "Europa"}
-        />
       </div>
 
       {/* Card Footer (Price & CTA Button) */}

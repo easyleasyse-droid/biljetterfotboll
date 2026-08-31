@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { Match, TicketOffer } from "../types";
 import StadiumMap from "./StadiumMap";
 import { X, Calendar, MapPin, Shield, Star, Info, Zap, Mail, Trash2, ArrowRight, Ticket, Hotel, Plane } from "lucide-react";
+import { TotalCostCalculator } from "./TotalCostCalculator";
+import { getCityBenchmark } from "@/lib/cityBenchmarks";
 
 interface ComparisonDrawerProps {
   match: Match | null;
@@ -208,6 +210,13 @@ export default function ComparisonDrawer({ match, onClose, onBookOffer }: Compar
             </div>
           </div>
 
+          {/* Total Resebudget Kalkylator */}
+          <TotalCostCalculator
+            ticketPriceSEK={match.priceFrom}
+            benchmark={getCityBenchmark(match.city)}
+            cityName={match.city || "Europa"}
+          />
+          
           {/* Table list of available comparative offers */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between text-slate-500 text-xs px-1">
