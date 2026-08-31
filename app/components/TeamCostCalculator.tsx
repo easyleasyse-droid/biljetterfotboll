@@ -5,11 +5,12 @@ import { getCityBenchmark } from "@/lib/cityBenchmarks";
 
 interface Match {
   id?: string | number;
-  homeTeam: { name: string; city?: string };
-  awayTeam: { name: string; city?: string };
+  homeTeam: { name: string; city?: string } | string;
+  awayTeam: { name: string; city?: string } | string;
   cityName?: string;
   location?: string;
   venueCity?: string;
+  venue?: string;
   priceFrom?: number;
   date?: string;
 }
@@ -18,6 +19,42 @@ interface TeamCostCalculatorProps {
   teamName: string;
   cityName: string;
   matches: Match[];
+}
+
+// Hjälpfunktion för att tvinga fram rätt spelort utifrån lag och arena om API-data saknas
+function resolveMatchCity(match: Match, defaultCity: string): string {
+  // 1. Om direkt stadsdata finns på matchen
+  if (match.cityName) return match.cityName;
+  if (match.venueCity) return match.venueCity;
+  if (match.location) return match.location;
+
+  // Hämta hemmalagets namn oavsett om det är ett objekt eller en sträng
+  const homeName =
+    typeof match.homeTeam === "string"
+      ? match.homeTeam
+      : match.homeTeam?.name || "";
+
+  const homeCity =
+    typeof match.homeTeam === "object" ? match.homeTeam?.city : undefined;
+
+  if (homeCity) return homeCity;
+
+  // 2. Identifiera stad utifrån hemmalagets namn (fångar t.ex. Aston Villa -> Birmingham)
+  const lowerHome = homeName.toLowerCase();
+  if (lowerHome.includes("aston villa")) return "Birmingham";
+  if (lowerHome.includes("birmingham")) return "Birmingham";
+  if (lowerHome.includes("manchester")) return "Manchester";
+  if (lowerHome.includes("liverpool")) return "Liverpool";
+  if (lowerHome.includes("newcastle")) return "Newcastle";
+  if (lowerHome.includes("leeds")) return "Leeds";
+  if (lowerHome.includes("brighton")) return "Brighton";
+  if (lowerHome.includes("southampton")) return "Southampton";
+  if (lowerHome.includes("nottingham")) return "Nottingham";
+  if (lowerHome.includes("wolves") || lowerHome.includes("wolverhampton")) return "Wolverhampton";
+  if (lowerHome.includes("leicester")) return "Leicester";
+
+  // 3. Fallback till sidans generella stad
+  return defaultCity;
 }
 
 export function TeamCostCalculator({
@@ -35,21 +72,16 @@ export function TeamCostCalculator({
   const selectedMatch = validMatches[selectedIndex] || validMatches[0];
   const ticketPriceSEK = selectedMatch.priceFrom || 0;
 
-  // Om hemmalaget i matchen inte är vår klubb (eller om vi vill kolla arenastad via lag),
-  // kolla homeTeam.city först eftersom det är de som har hemmaplan i matchen!
-  const targetCity =
-    selectedMatch.cityName ||
-    selectedMatch.venueCity ||
-    selectedMatch.location ||
-    selectedMatch.homeTeam?.city || // Hemmalagets stad för just denna matchen (t.ex. Aston Villa -> Birmingham)
-    cityName;
+  // Hitta den garanterat korrekta spelorten
+  const rawCity = resolveMatchCity(selectedMatch, cityName);
+  const cleanCity = rawCity.split(",")[0].trim();
 
-  const cleanCity = targetCity ? targetCity.split(",")[0].trim() : "London";
+  // Hämta samma benchmark som biljettsidan
   const benchmark: any = getCityBenchmark(cleanCity);
 
   const flight = benchmark?.flightEstimateSEK || 1200;
   const hotelPerNight = benchmark?.hotelPerNightSEK || 1600;
-  const transport = benchmark?.transitSEK || 450;
+  const transport = benchmark?.transitSEK || benchmark?.transportCostSEK || 450;
 
   const totalHotel = hotelPerNight * nights;
   const hotelPerPerson = persons === 2 ? totalHotel / 2 : totalHotel;
@@ -59,13 +91,20 @@ export function TeamCostCalculator({
   const flightSearchUrl = `https://www.google.com/travel/flights?q=flyg+till+${encodedCity}`;
   const hotelSearchUrl = `https://www.google.com/travel/hotels/${encodedCity}`;
 
+  // Snygg namnhantering för drop-down menyn
+  const getMatchTitle = (m: Match) => {
+    const hName = typeof m.homeTeam === "string" ? m.homeTeam : m.homeTeam?.name || "";
+    const aName = typeof m.awayTeam === "string" ? m.awayTeam : m.awayTeam?.name || "";
+    return `${hName} vs ${aName}`;
+  };
+
   return (
     <div className="my-8 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-slate-800">
       {/* Header med matchväljare */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-4">
         <div>
           <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            ✈️ Resekalkylator – {targetCity}
+            ✈️ Resekalkylator – {cleanCity}
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
             Beräkna uppskattad totalkostnad för fotbollsresan inkl. flyg & boende.
@@ -80,7 +119,7 @@ export function TeamCostCalculator({
           >
             {validMatches.map((m, idx) => (
               <option key={m.id || idx} value={idx}>
-                {m.homeTeam.name} vs {m.awayTeam.name} ({m.priceFrom?.toLocaleString("sv-SE")} kr)
+                {getMatchTitle(m)} ({m.priceFrom?.toLocaleString("sv-SE")} kr)
               </option>
             ))}
           </select>
@@ -88,7 +127,7 @@ export function TeamCostCalculator({
       </div>
 
       <div className="space-y-3 text-xs">
-        {/* Kompakt rad där reglagen ligger samlade till vänster */}
+        {/* Kompakt rad med knapparna */}
         <div className="flex flex-wrap items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
           
           {/* Nätter */}
