@@ -42,7 +42,7 @@ export function TeamCostCalculator({
     selectedMatch.homeTeam?.city ||
     cityName;
 
-  const benchmark = getCityBenchmark(targetCity) as any;
+  const benchmark: any = getCityBenchmark(targetCity);
 
   const flight = benchmark?.flightEstimateSEK || benchmark?.flightCostSEK || 1200;
   const hotelPerNight = benchmark?.hotelPerNightSEK || 1600;
@@ -84,20 +84,20 @@ export function TeamCostCalculator({
         </div>
       </div>
 
-      <div className="space-y-4 text-xs">
-        {/* Två kompakta block bredvid varandra istället för utdraget */}
+      <div className="space-y-3 text-xs">
+        {/* Kompakt tvåspaltig box där label ligger tätt intill knapparna */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200/80">
           
           {/* Nätter */}
           <div className="flex items-center justify-between">
             <span className="font-semibold text-slate-600">Antal nätter:</span>
-            <div className="flex gap-1 bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
+            <div className="flex gap-1 bg-white p-0.5 rounded-lg border border-slate-200">
               {[1, 2, 3].map((n) => (
                 <button
                   key={n}
                   onClick={() => setNights(n)}
                   className={`px-3 py-1 font-semibold rounded-md transition-all ${
-                    nights === n ? "bg-indigo-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                    nights === n ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   {n}
@@ -109,11 +109,11 @@ export function TeamCostCalculator({
           {/* Resenärer */}
           <div className="flex items-center justify-between">
             <span className="font-semibold text-slate-600">Resenärer:</span>
-            <div className="flex gap-1 bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
+            <div className="flex gap-1 bg-white p-0.5 rounded-lg border border-slate-200">
               <button
                 onClick={() => setPersons(1)}
                 className={`px-3 py-1 font-semibold rounded-md transition-all ${
-                  persons === 1 ? "bg-indigo-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                  persons === 1 ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 1 pers
@@ -121,7 +121,7 @@ export function TeamCostCalculator({
               <button
                 onClick={() => setPersons(2)}
                 className={`px-3 py-1 font-semibold rounded-md transition-all ${
-                  persons === 2 ? "bg-indigo-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                  persons === 2 ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 2 pers (delat)
