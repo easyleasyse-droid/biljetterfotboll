@@ -32,7 +32,7 @@ export function TotalCostCalculator({
         <h3 className="text-lg font-bold flex items-center gap-2">
           ✈️ Resekalkylator – {cityName}
         </h3>
-        <span className="text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded">
+        <span className="text-[10px] font-black uppercase tracking-wider text-blue-300 bg-blue-900/80 px-3 py-1 rounded-full border border-blue-500/40 shadow-sm">
           Estimerat totalpris
         </span>
       </div>
