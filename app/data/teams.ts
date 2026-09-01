@@ -2941,7 +2941,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
         answer: "Även om det skiljer i storlek, anses mötena mot Bayern München vara de stora derbyna i regionen ('Bayern-Derby') och drar alltid fullt hus."
       }
     ]
-  }
+  },
   "schalke": {
     name: "FC Schalke 04",
     league: "2. Bundesliga",
