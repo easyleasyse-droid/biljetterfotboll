@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { Match, TicketOffer } from "../types";
 import StadiumMap from "./StadiumMap";
 import { X, Calendar, MapPin, Shield, Star, Info, Zap, Mail, Trash2, ArrowRight, Ticket, Hotel, Plane } from "lucide-react";
+import { TotalCostCalculator } from "./TotalCostCalculator";
+import { getCityBenchmark } from "@/lib/cityBenchmarks";
 
 interface ComparisonDrawerProps {
   match: Match | null;
@@ -18,6 +20,7 @@ export default function ComparisonDrawer({ match, onClose, onBookOffer }: Compar
   
   // Nytt state för Paket-filtreringen (Matchar din referensbild)
   const [packageFilter, setPackageFilter] = useState<"all" | "ticket" | "hotel" | "flight">("all");
+  const [showCalculator, setShowCalculator] = useState(false);
 
   const packageFilters = [
     { id: "all", label: "Visa alla", icon: Zap },
@@ -206,6 +209,39 @@ export default function ComparisonDrawer({ match, onClose, onBookOffer }: Compar
                 );
               })}
             </div>
+          </div>
+
+                  {/* Hopfällbar Resekalkylator */}
+          <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-900 text-white overflow-hidden shadow-sm">
+          <button 
+            onClick={() => setShowCalculator(!showCalculator)}
+            className="w-full px-4 py-3.5 flex items-center justify-between text-left hover:bg-slate-800/80 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-lg">✈️</span>
+              <div>
+                <p className="text-xs font-black uppercase tracking-wider text-slate-200">
+                  Uppskatta total resebudget ({match.city || "Europa"})
+                </p>
+                <p className="text-[11px] text-slate-400 font-medium">
+                  Räkna ut vad hela resan med matchbiljett, flyg & hotell landar på
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-bold text-blue-400 bg-blue-950/80 px-3 py-1.5 rounded-lg border border-blue-800/50 shrink-0">
+              {showCalculator ? "Stäng ×" : "Öppna kalkylator +"}
+            </span>
+          </button>
+
+          {showCalculator && (
+            <div className="p-4 border-t border-slate-800 bg-slate-950">
+              <TotalCostCalculator
+                ticketPriceSEK={match.priceFrom}
+                benchmark={getCityBenchmark(match.city)}
+                cityName={match.city || "Europa"}
+              />
+            </div>
+          )}
           </div>
 
           {/* Table list of available comparative offers */}
