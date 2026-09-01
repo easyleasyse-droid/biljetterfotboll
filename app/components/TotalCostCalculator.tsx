@@ -133,8 +133,35 @@ export function TotalCostCalculator({
           >
             <span>🏨 Sök hotell</span>
           </a>
-        </div>
       </div>
+    </div>
+
+      {/* JSON-LD för AI & Sökmotorer */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Totalkalkylator för Fotbollsresor",
+            "url": "https://biljetterfotboll.se",
+            "applicationCategory": "TravelApplication",
+            "operatingSystem": "All",
+            "description": "Beräkna den totala kostnaden för din fotbollsresa inklusive biljetter, flyg, hotell och lokal transport i Europa.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "SEK"
+            },
+            "featureList": [
+              "Jämförelse av biljettpriser",
+              "Uppskattning av flygkostnader",
+              "Beräkning av hotellkostnader per natt",
+              "Lokal transportberäkning"
+            ]
+          })
+        }}
+      />
     </div>
   );
 }
