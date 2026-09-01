@@ -253,11 +253,11 @@ export function TeamCostCalculator({
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebApplication",
-            "name": `Resekalkylator för ${teamName || "fotbollslag"},
+            "name": "Resekalkylator för " + (teamName || "fotbollslag"),
             "url": "https://biljetterfotboll.se",
             "applicationCategory": "TravelApplication",
             "operatingSystem": "All",
-            "description": `Beräkna den totala kostnaden för en fotbollsresa för att se ${teamName || "ditt favoritlag"} inklusive biljetter, flyg, hotell och lokal transport.,
+            "description": "Beräkna den totala kostnaden för en fotbollsresa för att se " + (teamName || "ditt favoritlag") + " inklusive biljetter, flyg, hotell och lokal transport.",
             "offers": {
               "@type": "Offer",
               "price": "0",
