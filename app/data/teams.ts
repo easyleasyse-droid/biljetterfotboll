@@ -3263,7 +3263,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
         answer: "Slovan Bratislava är den enda klubben från det tidigare Tjeckoslovakien som har vunnit en europeisk storcup (Cupvinnarcupen 1969 efter seger mot FC Barcelona)."
       }
     ]
-  }
+  },
   "sporting": {
     name: "Sporting CP",
     league: "Primeira Liga",
