@@ -1,77 +1,158 @@
 export interface CityBenchmark {
   cityName: string;
-  flightEstimateSEK: number; // Schablon tur/retur från Sverige
-  hotelPerNightSEK: number;  // Medelklasshotell per rum/natt
-  transitSEK: number;        // Lokaltrafik/taxi flygplats & arena
+  flightEstimateSEK: number;
+  hotelPerNightSEK: number;
+  transitSEK: number;
 }
 
 export const CITY_BENCHMARKS: Record<string, CityBenchmark> = {
-  "london": {
-    cityName: "London",
-    flightEstimateSEK: 1200,
-    hotelPerNightSEK: 1600,
+  // Spanien
+  madrid: {
+    cityName: "Madrid",
+    flightEstimateSEK: 3200, // Direkt/smidig mellanlandning helg
+    hotelPerNightSEK: 2200,
     transitSEK: 450,
   },
-  "madrid": {
-    cityName: "Madrid",
-    flightEstimateSEK: 1400,
-    hotelPerNightSEK: 1100,
-    transitSEK: 300,
-  },
-  "barcelona": {
+  barcelona: {
     cityName: "Barcelona",
-    flightEstimateSEK: 1300,
-    hotelPerNightSEK: 1200,
-    transitSEK: 300,
-  },
-  "manchester": {
-    cityName: "Manchester",
-    flightEstimateSEK: 1500,
-    hotelPerNightSEK: 1300,
-    transitSEK: 350,
-  },
-  "milano": {
-    cityName: "Milano",
-    flightEstimateSEK: 1300,
-    hotelPerNightSEK: 1400,
-    transitSEK: 350,
-  },
-  "paris": {
-    cityName: "Paris",
-    flightEstimateSEK: 1400,
-    hotelPerNightSEK: 1700,
+    flightEstimateSEK: 2800,
+    hotelPerNightSEK: 2100,
     transitSEK: 400,
   },
-  "münchen": {
-    cityName: "München",
-    flightEstimateSEK: 1600,
-    hotelPerNightSEK: 1300,
+  sevilla: {
+    cityName: "Sevilla",
+    flightEstimateSEK: 3500,
+    hotelPerNightSEK: 1800,
     transitSEK: 350,
   },
-  "dortmund": {
-    cityName: "Dortmund",
-    flightEstimateSEK: 1200, // Ofta flyg till Düsseldorf/Köln
-    hotelPerNightSEK: 1000,
-    transitSEK: 300,
+
+  // England
+  london: {
+    cityName: "London",
+    flightEstimateSEK: 2400,
+    hotelPerNightSEK: 2500,
+    transitSEK: 600, // Express-tåg / Underground
   },
-  // Standardvärden om staden saknas i listan ovan
-  "default": {
-    cityName: "Europa",
-    flightEstimateSEK: 1400,
-    hotelPerNightSEK: 1300,
+  manchester: {
+    cityName: "Manchester",
+    flightEstimateSEK: 2900,
+    hotelPerNightSEK: 2000,
+    transitSEK: 400,
+  },
+  liverpool: {
+    cityName: "Liverpool",
+    flightEstimateSEK: 3100,
+    hotelPerNightSEK: 2100,
+    transitSEK: 400,
+  },
+  birmingham: {
+    cityName: "Birmingham",
+    flightEstimateSEK: 2800,
+    hotelPerNightSEK: 1700,
+    transitSEK: 350,
+  },
+
+  // Italien
+  milano: {
+    cityName: "Milano",
+    flightEstimateSEK: 2500,
+    hotelPerNightSEK: 2200,
+    transitSEK: 450,
+  },
+  milan: {
+    cityName: "Milano",
+    flightEstimateSEK: 2500,
+    hotelPerNightSEK: 2200,
+    transitSEK: 450,
+  },
+  rom: {
+    cityName: "Rom",
+    flightEstimateSEK: 2700,
+    hotelPerNightSEK: 2000,
+    transitSEK: 400,
+  },
+  roma: {
+    cityName: "Rom",
+    flightEstimateSEK: 2700,
+    hotelPerNightSEK: 2000,
+    transitSEK: 400,
+  },
+  neapel: {
+    cityName: "Neapel",
+    flightEstimateSEK: 3200,
+    hotelPerNightSEK: 1600,
+    transitSEK: 350,
+  },
+  napoli: {
+    cityName: "Neapel",
+    flightEstimateSEK: 3200,
+    hotelPerNightSEK: 1600,
+    transitSEK: 350,
+  },
+  turin: {
+    cityName: "Turin",
+    flightEstimateSEK: 3000,
+    hotelPerNightSEK: 1700,
+    transitSEK: 350,
+  },
+
+  // Tyskland
+  münchen: {
+    cityName: "München",
+    flightEstimateSEK: 2600,
+    hotelPerNightSEK: 2300,
+    transitSEK: 400,
+  },
+  munich: {
+    cityName: "München",
+    flightEstimateSEK: 2600,
+    hotelPerNightSEK: 2300,
+    transitSEK: 400,
+  },
+  dortmund: {
+    cityName: "Dortmund",
+    flightEstimateSEK: 2400, // Ofta flyg till Düsseldorf
+    hotelPerNightSEK: 1700,
+    transitSEK: 450,
+  },
+  berlin: {
+    cityName: "Berlin",
+    flightEstimateSEK: 2100,
+    hotelPerNightSEK: 1800,
+    transitSEK: 350,
+  },
+
+  // Frankrike & Övriga Europa
+  paris: {
+    cityName: "Paris",
+    flightEstimateSEK: 2600,
+    hotelPerNightSEK: 2400,
+    transitSEK: 500,
+  },
+  amsterdam: {
+    cityName: "Amsterdam",
+    flightEstimateSEK: 2200,
+    hotelPerNightSEK: 2500,
+    transitSEK: 400,
+  },
+  lissabon: {
+    cityName: "Lissabon",
+    flightEstimateSEK: 3100,
+    hotelPerNightSEK: 1800,
     transitSEK: 350,
   },
 };
 
-/**
- * Hjälpfunktion för att hämta benchmark baserat på stad.
- * Hanterar även gemener/versaler och trimning av mellanslag.
- */
-export function getCityBenchmark(cityInput?: string): CityBenchmark {
-  if (!cityInput) return CITY_BENCHMARKS["default"];
-  
-  // Rensa stadsnamnet (t.ex. "London, Storbritannien" -> "london")
-  const cleanCity = cityInput.split(",")[0].trim().toLowerCase();
-  
-  return CITY_BENCHMARKS[cleanCity] || CITY_BENCHMARKS["default"];
+// Fallback om staden saknas i listan
+export const DEFAULT_BENCHMARK: CityBenchmark = {
+  cityName: "Europa",
+  flightEstimateSEK: 2800,
+  hotelPerNightSEK: 1900,
+  transitSEK: 400,
+};
+
+export function getCityBenchmark(cityName: string): CityBenchmark {
+  if (!cityName) return DEFAULT_BENCHMARK;
+  const key = cityName.toLowerCase().trim();
+  return CITY_BENCHMARKS[key] || DEFAULT_BENCHMARK;
 }
