@@ -30,25 +30,33 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     stadiumDescription: "Emirates Stadium, som slog upp portarna 2006 i norra London, är ett arkitektoniskt mästerverk och en av världens mest lönsamma och moderna arenor. Med en kapacitet på 60 704 åskådare erbjuder den enastående siktlinjer från varenda stol, rymliga concourses under läktarna och en helt fantastisk gräsmatta som ofta kallas för världens bästa. Arenan är uppdelad i fyra etage och är känd för att vara extremt tillgänglig och bekväm, även om purister ibland saknar atmosfären från gamla Highbury. Under de senaste åren, i takt med lagets sportsliga framgångar, har stämningen dock lyft till helt nya höjder, särskilt på den södra läktaren (The Clock End) där de mest röststarka fansen samlas.",
     location: "London, England",
     league: "Premier League",
-    aboutTickets: "Hitta auktoriserade biljetter till Arsenal på Emirates Stadium. Vi jämför priser för allt från prisvärda kortsidesbiljetter till exklusiva Club Level-paket med mat och dryck inkluderat.",
+    aboutTickets: "Biljetter till Arsenals matcher på Emirates Stadium i London är mycket eftertraktade. Priserna varierar från ca 900 SEK för ordinarie ligamatcher upp till 3 500 SEK för storkamper mot till exempel Tottenham eller Manchester City.",
     heroImage: "/stadiums/emirates-stadium-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=600&auto=format&fit=crop", // Arenastrålkastare/matchmiljö
     stadiumLayoutImage: "/stadiums/emirates-stadium-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2480.24584281729!2d-0.10842242337777176!3d51.5548884718247!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48761b764bf00001%3A0x12e9491176b9117a!2sEmirates%20Stadium!5e0!3m2!1ssv!2sse!4v1710000000000!5m2!1ssv!2sse",
-    howToBuy: "Att köpa biljetter direkt via Arsenals officiella kanaler kräver i princip alltid ett betalt medlemskap (Red Membership, ca £35/år) per biljett. Biljetterna släpps exakt två månader före match via ett digitalt kösystem där chanserna är små för populära helgmatcher. För internationella resenärer är det betydligt tryggare och smidigare att köpa via auktoriserade 'Official Overseas Travel Agents' som säljer officiella hospitality-biljetter i kombination med hotell eller louloger, helt utan krav på medlemskap. Vi listar enbart verifierade aktörer så att du slipper oroa dig för falska biljetter på andrahandsmarknaden.",
+    howToBuy: "Att köpa biljetter direkt via Arsenals officiella kanaler kräver i princip alltid ett betalt medlemskap (Red Membership, ca £35/år) per biljett. Biljetterna släpps exakt två månader före match via ett digitalt kösystem där chanserna är små för populära helgmatcher. För internationella resenärer är det betydligt tryggare och smidigare att köpa via verifierade återförsäljare och partners som P1 Travel och Ticombo som säljer officiella match- och hotellpaket helt utan krav på medlemskap.",
     sectionsAndPrices: "Priserna är uppdelade i Kategori A (t.ex. Tottenham, Chelsea, Man Utd), Kategori B (t.ex. Aston Villa, Newcastle) och Kategori C (t.ex. nykomlingar). Upper Tier (övre etage) ger en fantastisk taktisk vy över spelet och är billigast, men du sitter högt upp. Lower Tier (nedre etage) tar dig så nära spelarna att du kan höra dem prata, men sikten kan bli lidande vid kortsidorna när bollen är på andra sidan. För den ultimata upplevelsen rekommenderas Club Level (mellanetaget) – här sitter du på vadderade lyxsäten och har tillgång till exklusiva barer, restauranger och gratis dryck i halvtid.",
     packages: "De flesta fotbollsresenärer väljer ett komplett matchpaket. Det beror på att hotellpriserna i London skjuter i höjden under matchhelger. Ett standardpaket inkluderar en officiell matchbiljett (ofta placerad på Club Level, sektion 66-74 eller liknande) samt 1, 2 eller 3 nätter på ett centralt 3- eller 4-stjärnigt hotell (t.ex. i Kings Cross eller Euston för enkel logistik till arenan). Detta säkrar att hela sällskapet får sitta tillsammans och eliminerar risken för matchflyttar då paketen ofta har inbyggda garantier.",
     history: "Arsenal FC grundades 1886 av ammunitionsarbetare i Woolwich, sydöstra London, under namnet Dial Square (vilket snabbt blev Royal Arsenal). År 1913 tog klubben det kontroversiella beslutet att flytta tvärs över staden till norra London och Highbury under ledning av visionären Sir Henry Norris. Under 1930-talet dominerade klubben engelsk fotboll under Herbert Chapman, som revolutionerade både taktiken (WM-systemet) och arenan. Klubbens modernaste glansdagar inföll under Arsène Wenger (1996–2018), vars franska revolution bar frukt i form av den historiska 'Invincibles'-säsongen 2003/04 när laget gick obesegrade genom hela ligasäsongen.",
     faqs: [
-      {
-        question: "Behöver jag ett Arsenal-medlemskap för att köpa här?",
-        answer: "Nej, de återförsäljare och paketleverantörer vi jämför säljer officiella hospitality- och resebiljetter där klubbmedlemskap inte krävs."
-      },
-      {
-        question: "Vad innebär Club Level på Emirates Stadium?",
-        answer: "Club Level är arenans premium-etage (etage 2). Det ger fantastisk vy över planen, bekvämare vadderade stolar, tillgång till exklusiva restauranger och barer, samt ofta en gratis dryck i halvtid och ett officiellt matchprogram."
-      }
-    ]
+  {
+    question: "Behöver jag ett Arsenal-medlemskap för att köpa här?",
+    answer: "Nej, de återförsäljare och paketleverantörer vi jämför säljer officiella hospitality- och resebiljetter där klubbmedlemskap inte krävs."
+  },
+  {
+    question: "Vad innebär Club Level på Emirates Stadium?",
+    answer: "Club Level är arenans premium-etage (etage 2). Det ger fantastisk vy över planen, bekvämare vadderade stolar, tillgång till exklusiva restauranger och barer, samt ofta en gratis dryck i halvtid och ett officiellt matchprogram."
+  },
+  {
+    question: "Hur tar man sig enklast till Emirates Stadium?",
+    answer: "Enklast tar du dig till Emirates Stadium via Londons tunnelbana (Piccadilly Line) till stationerna Arsenal eller Holloway Road. Det går även bra att åka till Finsbury Park (Victoria Line / National Rail) och gå den sista biten på ca 10 minuter."
+  },
+  {
+    question: "Vad kostar en fotbollsresa till Arsenal totalt?",
+    answer: "En komplett fotbollsresa till Arsenal i London brukar landa på mellan 4 500 SEK och 9 000 SEK per person. Totalkostnaden beror främst på motståndare, läktarkategori samt hur tidigt du bokar flyg och hotell."
+  }
+]
   },
   "manchester-united": {
     name: "Manchester United",
@@ -62,18 +70,26 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     contentImage: "https://images.unsplash.com/photo-1510563800743-aed2364902cb?q=80&w=600&auto=format&fit=crop", // Klassisk läktare/stadion
     stadiumLayoutImage: "/stadiums/old-trafford.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2375.3129596489387!2d-2.293902323267597!3d53.46305886623668!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487bae72e7e47f69%3A0x6c930e96df4455fe!2sOld%20Trafford!5e0!3m2!1ssv!2sse!4v1710000000001!5m2!1ssv!2sse",
-    howToBuy: "Ordinarie biljetter säljs via klubbens officiella sajt enbart till personer med ett betalt 'Official Membership'. Till stormatcherna (mot Liverpool, Man City, Arsenal, Chelsea) lottas biljetterna ut bland medlemmarna, vilket gör det nästan omöjligt för turister att få plats. Lösningen för internationella fans är att boka officiella matchpaket (Hospitality) via auktoriserade agenter. Dessa biljetter kräver inget medlemskap och ger dig garanterat en äkta biljett samt tillgång till exklusiva lounger som International Suite, 500 Club eller Academy Lounge innan matchstart.",
+    howToBuy: "Att köpa biljetter via Manchester Uniteds egna kanaler kräver officiellt medlemskap (Official Membership, ca £35–£40/år) och biljetter till stormatcher lottas ut månader i förväg. För internationella besökare är det betydligt smidigare och tryggare att köpa via verifierade återförsäljare och partners på biljetterfotboll.se (som P1 Travel, Ticombo och Sports Events 365). Där garanteras giltiga matchbiljetter och hospitality-paket helt utan krav på medlemskap.",
     sectionsAndPrices: "Arenan är indelad i fyra huvudläktare: Sir Alex Ferguson Stand (North), Sir Bobby Charlton Stand (South), Stretford End (West) och East Stand. Kortsidan East Stand är ofta det mest prisvärda alternativet, och det är även här bortafansen har en liten sektion. Sir Alex Ferguson Stand är den största läktaren i tre etage som ger en spektakulär panoramavy men kan kännas lite långt ifrån om du hamnar högst upp (Tier 3). Priserna skjuter i höjden för stormatcher, medan tidiga cupmatcher eller matcher mot bottenlag ofta erbjuder mycket bra priser på långsidorna.",
     packages: "Ett fotbollspaket till Manchester United är det absolut bekvämaste sättet att resa. Paketen innehåller en officiell matchbiljett (ofta placerad på Quadrant-sektionerna på North-West eller North-East, vilket ger utmärkt sikt diagonal över planen) kombinerat med hotellboende. Du kan välja hotell i centrala Manchester (runt Piccadilly eller Deansgate för ett aktivt nattliv) eller nära Salford Quays/MediaCityUK om du vill ha gångavstånd till arenan och slippa trängseln på spårvagnarna efter slutsignal.",
     history: "Klubben bildades ursprungligen 1878 under namnet Newton Heath LYR FC av järnvägsarbetare. Efter att ha varit nära konkurs räddades klubben 1902 av lokala affärsmän som ändrade namnet till Manchester United. Klubbens moderna historia är starkt präglad av två legendariska tränare. Först Sir Matt Busby, som byggde upp det unga, fantastiska laget 'Busby Babes' som tragiskt drabbades av flygkatastrofen i München 1958 där 8 spelare omkom. Busby överlevde och byggde ett nytt lag som vann Europacupen 10 år senare (1968). Den andra guldåldern leddes av Sir Alex Ferguson (1986–2013), som gjorde klubben till världens största med 13 Premier League-titlar och den historiska 'The Treble' (Ligan, FA-cupen och Champions League) 1999.",
     faqs: [
-      {
-        question: "Vad är 'Hospitality-biljetter' på Old Trafford?",
-        answer: "Det är officiella biljetter som säljs helt lagligt till icke-medlemmar. De inkluderar matchbiljett på långsidan eller i hörnen (Quadrant), samt tillgång till en uppvärmd bar/lounge innan match, gratis matchprogram och halvtidssnacks."
+     {
+        question: "Behöver jag ett officiellt medlemskap för att köpa biljetter till Old Trafford?",
+        answer: "Nej, när du jämför och bokar via verifierade partners på biljetterfotboll.se ingår officiella hospitality- eller resebiljetter där klubbmedlemskap inte krävs."
       },
       {
-        question: "Hur tar man sig till Old Trafford från centrum?",
-        answer: "Det absolut snabbaste sättet är att ta spårvagnen (Metrolink) från Manchester Piccadilly eller Deansgate-Castlefield direkt till stationen 'Old Trafford' (Altrincham-linjen) eller 'Wharfside' (Trafford Park-linjen). Det tar cirka 15 minuter."
+        question: "Hur tar man sig enklast till Old Trafford?",
+        answer: "Det enklaste sättet är att ta spårvagnen (Metrolink) från centrala Manchester (Piccadilly eller Victoria) direkt till hållplatsen Old Trafford eller Wharfside, följt av en kort promenad på 5–10 minuter."
+      },
+      {
+        question: "Vad kostar en fotbollsresa till Manchester United totalt?",
+        answer: "En komplett fotbollsresa till Manchester United brukar kosta mellan 4 000 SEK och 8 500 SEK per person, beroende på motståndare, läktarplats och flygpriser."
+      },
+      {
+        question: "Hur levereras biljetterna till matchen?",
+        answer: "De flesta biljetter levereras som digitala e-biljetter eller NFC-biljetter till din smartphone 1–3 dagar innan matchdag."
       }
     ]
   },
@@ -84,19 +100,31 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     stadiumDescription: "Anfield är en av fotbollsvärldens mest mytomspunna och ikoniska platser, belägen i stadsdelen Anfield i norra Liverpool. Efter de senaste årens massiva utbyggnader av det gigantiska Main Stand och det nyligen färdigställda Anfield Road End, har arenan nu en kapacitet på över 61 200 åskådare. Trots moderniseringen har arenan lyckats behålla sin själ. Hjärtat av arenan är utan tvekan 'The Kop', den enorma kortsidan där klubbens mest röststarka fans står och skapar den legendariska ljudvägg som fått många motståndarlag att darra. Att stå eller sitta på Anfield när hela arenan sträcker upp sina halsdukar och sjunger 'You'll Never Walk Alone' precis innan domaren blåser igång matchen är en gåshudsframkallande upplevelse som rankas högt på alla sportälskares 'bucket list'.",
     location: "Liverpool, England",
     league: "Premier League",
-    aboutTickets: "Jämför biljetter och hotellpaket till Liverpool FC på Anfield. Upplev den unika stämningen på The Kop eller njut av förstklassig hospitality på Main Stand.",
+    aboutTickets: "Jämför biljetter och hotellpaket till Liverpool FC på Anfield. Biljettpriserna varierar från ca 1 200 SEK upp till 4 500 SEK beroende på matchens karaktär och loungepaketeval.",
     heroImage: "/stadiums/anfield-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1556056504-51717367a80c?q=80&w=600&auto=format&fit=crop", // Match/stadion
     stadiumLayoutImage: "/stadiums/anfield-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2377.12353110292!2d-2.9634283232692257!3d53.43082936865611!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487b216f7dddb69b%3A0x6b448f760da62fef!2sAnfield!5e0!3m2!1ssv!2sse!4v1710000000002!5m2!1ssv!2sse",
-    howToBuy: "Biljetter till Anfield är bland de svåraste i hela världen att köpa på egen hand. Klubbens egna släpp kräver medlemskap och sker via ett poängsystem (du måste ha gått på ett visst antal matcher föregående säsong för att få köpa till stormatcher). Att köpa svart utanför arenan är förenat med enorm risk då Liverpool använder strikt digitala NFC-biljetter som är låsta till telefoner. Den enda säkra vägen för svenska fans är att boka officiella matchbiljetter med hospitality-tillgång via auktoriserade sportresebyråer. Det garanterar en laglig biljett som skickas direkt till din smartphone via klubbens officiella app.",
+    howToBuy: "Biljetter till Anfield hör till de svåraste att köpa på egen hand. Klubbens egna släpp kräver medlemskap och poäng från tidigare matcher. Den säkraste och smidigaste vägen för svenska fans är att jämföra priser på biljetterfotboll.se från auktoriserade partners som P1 Travel och Ticombo för att boka garanterade hospitality-biljetter helt utan krav på medlemskap. Att köpa svart utanför arenan är förenat med enorm risk då Liverpool använder strikt digitala NFC-biljetter som är låsta till telefoner.",  
     sectionsAndPrices: "Arenan är uppdelad i The Kop (kortsidan med bäst stämning), Main Stand (det enorma nya långsidoetaget med fantastiska faciliteter), Sir Kenny Dalglish Stand (motsvarande långsida, klassisk och nära planen) samt Anfield Road End (kortsidan där även bortafansen huserar). Priserna på Anfield är generellt högre än på många andra engelska arenor på grund av den extrema efterfrågan. Platser högt upp på Main Stand ger en otrolig vy över staden men kan kännas avlägsna, medan platser på Sir Kenny Dalglish Stand sätter dig mitt i händelsernas centrum.",
     packages: "Ett typiskt Liverpool-paket innehåller 2 nätters hotellboende i centrala Liverpool (t.ex. runt Albert Dock eller Lime Street Station) samt en officiell matchbiljett. Biljetterna är oftast placerade på det nya, moderna Main Stand (t.ex. sektion L11/L12) eller Anfield Road End, och inkluderar ofta tillgång till en lounge (antingen på arenan eller på en närliggande legendarisk mötesplats som The Sandon) där det bjuds på mat och dryck innan match. Det är den perfekta kombinationen för en trygg och oförglömlig fotbollshelg.",
     history: "Liverpool FC bildades 1892 efter en numera historisk intern fejd. Affärsmannen John Houlding, som ägde Anfield, hamnade i en hyrestvist med Everton FC (som då spelade på Anfield). Everton packade sina väskor och flyttade till Goodison Park, varpå Houlding stod med en tom arena och inget lag. Han startade då Liverpool FC som kom att bli en av världens mest framgångsrika klubbar. Under ledning av Bill Shankly på 1960-talet transformerades klubben från ett division 2-lag till en europeisk stormakt och skapade 'The Boot Room'-kulturen. Klubben dominerade totalt under 70- och 80-talet under Bob Paisley och Kenny Dalglish, och har i modern tid återvänt till den absoluta världstoppen under Jürgen Klopps karismatiska ledarskap.",
     faqs: [
-      {
+     {
         question: "När levereras biljetterna till Anfield och hur fungerar de?",
-        answer: "Liverpool FC använder 100 % digitala mobilbiljetter (NFC). Du får en personlig länk via e-post från din leverantör cirka 2–4 dagar före match, och du laddar ner biljetten direkt till din telefons digitala plånbok (Apple Wallet / Google Wallet) för att skanna vid vändkorset."
+        answer: "Liverpool FC använder 100 % digitala NFC-biljetter. Du får en personlig länk via e-post från din leverantör 2–4 dagar före match och laddar ner den direkt till Apple Wallet eller Google Wallet."
+      },
+      {
+        question: "Behöver man medlemskap för att köpa paket via er?",
+        answer: "Nej, de återförsäljare och paketleverantörer vi jämför säljer officiella hospitality- och resebiljetter där klubbmedlemskap inte krävs."
+      },
+      {
+        question: "Hur tar man sig från centrala Liverpool till Anfield?",
+        answer: "Enklast tar du dig till Anfield med Soccerbus från Sandhills Station, direktbuss 917 från St Johns Lane, eller med en taxi på ca 10–15 minuter från Lime Street Station."
+      },
+      {
+        question: "Vad ingår i ett hospitality-paket på Anfield?",
+        answer: "Utöver vadderade platser på Main Stand eller Anfield Road End ingår vanligtvis tillgång till en exklusiv lounge, gratis matchprogram och servering av mat eller dryck innan avspark."
       }
     ]
   },
@@ -107,7 +135,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     stadiumDescription: "Stamford Bridge ligger vackert inbäddat i de välbärgade och exklusiva stadsdelarna Fulham och Chelsea i sydvästra London. Arenan öppnade redan 1905 och har en kapacitet på 40 341 åskådare. Till skillnad från många av de nybyggda jättearenorna i London är 'The Bridge' en mycket kompakt och intim fotbollsarena. Läktarna är byggda tätt inpå sidlinjerna vilket ger en fantastisk närhetskänsla till planen oavsett var du sitter. Arenans hjärta och stämningsnav är kortsidan Matthew Harding Stand (North Stand) och den historiska The Shed End (South Stand). Trots att arenan är mindre än konkurrenternas, gör det exklusiva läget i London och den intensiva atmosfären ett besök här till en riktigt klassisk engelsk fotbollsupplevelse.",
     location: "London, England",
     league: "Premier League",
-    aboutTickets: "Hitta biljetter till Chelsea FC på Stamford Bridge. Jämför allt från vanliga kortsidor till exklusiva paket med hotell i London.",
+    aboutTickets: "Jämför biljetter och matchpaket till Chelsea FC på Stamford Bridge. Priserna för Premier League-matcher ligger vanligtvis från ca 1 000 SEK till 3 800 SEK per biljett.",
     heroImage: "/stadiums/stamford-bridge-hero.jpg", 
     contentImage: "https://images.unsplash.com/photo-1459865264687-595d652de67e?q=80&w=600&auto=format&fit=crop", // Fotbollsplan/gräs
     stadiumLayoutImage: "/stadiums/stamford-bridge-hero.jpg",
@@ -115,11 +143,23 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     howToBuy: "På grund av arenans begränsade kapacitet säljer i stort sett alla Premier League-matcher slut direkt till Chelseas egna medlemmar. Det är därför extremt svårt att köpa lösa biljetter på egen hand utan ett medlemskap. Den säkraste och smidigaste vägen är att boka via auktoriserade researrangörer som säljer officiella hospitality-biljetter. Dessa biljetter inkluderar officiell sittplats på West Stand eller East Stand och ger dig dessutom inträde till en lounge (t.ex. Tea Bar eller Captains Bar) före matchen med dryck, matchprogram och mat inkluderat, helt utan dolda medlemskrav.",
     sectionsAndPrices: "Stamford Bridge har fyra huvudläktare: West Stand (modern och lyxig långsida), East Stand (arenans äldsta läktare med familjesektioner), Matthew Harding Stand (där hemmasupportrarna sjunger mest) och Shed End (kortsidan där bortafansen sitter på ena halvan). Priserna är generellt höga, i linje med Londons prisnivåer, och stiger rejält under London-derbyn mot Arsenal och Tottenham eller vid matcher mot de övriga topplagen. Platser på West Stand Upper erbjuder fantastisk sikt över båda lagens bänkar och taktik.",
     packages: "Att boka ett Chelsea-paket är perfekt för en weekendresa till London. Paketen inkluderar en garanterad matchbiljett (ofta placerad på West Stand Middle/Upper eller East Stand) tillsammans med hotellboende. Du kan med fördel välja ett hotell i områdena Kensington, Earl's Court eller Fulham för att ha korta resvägar med tunnelbanan till matchen, samtidigt som du har hela centrala Londons utbud av shopping, restauranger och sevärdheter bara 15 minuter bort.",
-    history: "Stamford Bridge öppnade ursprungligen 1877 som en friidrottsarena. Ägarna erbjöd arenan till Fulham FC, som tackade nej. För att inte stå med en tom arena fattade man då beslutet att starta en helt egen fotbollsklubb – och därmed föddes Chelsea FC 1905. Klubben vann sin första ligatitel 1955 men pendlade under långa perioder mellan divisionerna. Allt förändrades dramatiskt år 2003 när den ryska miljardären Roman Abramovich köpte klubben. Genom massiva investeringar och rekryteringen av José Mourinho ('The Special One') transformerades Chelsea till en global stormakt som radat upp Premier League-titlar och vunnit Champions League flera gånger under 2000-talet.",
+    history: "Chelsea FC bildades 1905 på puben The Rising Sun mitt emot Stamford Bridge. Klubben vann sin första ligatitel 1955, men klev in i den absoluta världseliten på 2000-talet då klubben vann flera Premier League-titlar och två Champions League-titlar (2012 och 2021).",
     faqs: [
       {
-        question: "Finns det en klädkod på Chelseas hospitality-platser?",
-        answer: "Ja, Stamford Bridges lounger tillämpar en 'Smart Casual'-policy. Det innebär att du inte får bära trasiga jeans, träningskläder eller bortalagets färger. Chelseas hemmatröjor är dock tillåtna i de flesta mer avslappnade lounger."
+        question: "Krävs det medlemskap för att se Chelsea på Stamford Bridge?",
+        answer: "Nej, om du bokar officiella hospitality-paket via leverantörerna på biljetterfotboll.se behöver du inget klubbmedlemskap."
+      },
+      {
+        question: "Hur tar man sig till Stamford Bridge?",
+        answer: "Enklast tar du dig hit via Londons tunnelbana (District Line) till stationen Fulham Broadway, som ligger bara några minuters promenad från arenan."
+      },
+      {
+        question: "Vad är Westview på Stamford Bridge?",
+        answer: "Westview är en nyligen renoverad premiumsektion på West Stand Upper som erbjuder bekväma vadderade stolar, panoramautsikt över London samt tillgång till mat- och ölbarer."
+      },
+      {
+        question: "Vad kostar en fotbollsresa till Chelsea?",
+        answer: "En komplett resa med hotell och biljett landar oftast mellan 4 500 SEK och 8 500 SEK per person."
       }
     ]
   },
@@ -130,19 +170,31 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     stadiumDescription: "Tottenham Hotspur Stadium slog upp portarna 2019 på samma historiska plats som gamla White Hart Lane i norra London. Med en kapacitet på 62 850 åskådare är det en av världens mest teknologiskt avancerade och lyxiga arenor. Arenan har en helt infällbar gräsmatta (under vilken det ligger en NFL-plan i konstgräs), en enorm 360-graders concourse och ett eget mikrobryggeri som pumpar ut öl underifrån glaset på sekunder. Det arkitektoniska utropstecknet är 'The South Stand' – en gigantisk, brant kortsida i ett enda etage med 17 500 platser, inspirerad av Dortmunds 'Gula vägg'. Ljudvolymen som genereras från denna läktare under stormatcher är fullständigt öronbedövande och erbjuder en modern arenas absolut bästa atmosfär.",
     location: "London, England",
     league: "Premier League",
-    aboutTickets: "Köp biljetter till Tottenham Hotspur på deras toppmoderna hemmaarena. Jämför priser på officiella biljetter och exklusiva resepaket.",
+    aboutTickets: "Jämför biljetter och hospitality-paket till Tottenham Hotspur i London. Biljettpriserna ligger oftast från ca 950 SEK till 3 200 SEK beroende på sektion och motstånd.",
     heroImage: "/stadiums/tottenham-hotspur-stadium-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=600&auto=format&fit=crop", // Strålkastarljus/arena
     stadiumLayoutImage: "/stadiums/tottenham-hotspur-stadium-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2476.3268427928236!2d-0.06899722337345595!3d51.60428617183492!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48761e1b8577114b%3A0x7d6360bf008f5d02!2sTottenham%20Hotspur%20Stadium!5e0!3m2!1ssv!2sse!4v1710000000004!5m2!1ssv!2sse",
-    howToBuy: "Tottenham har ett mycket modernt och smidigt biljettsystem, men precis som för övriga Londonklubbar krävs ett One Hotspur-medlemskap för att kunna köpa biljetter direkt via klubben. Lyckligtvis har klubben ett stort och välfungerande nätverk av officiella partners som säljer 'Premium Seats'. Dessa biljetter säljs helt utan krav på medlemskap och ger dig fantastiska platser på långsidan (etage 2 eller 3) kombinerat med tillgång till arenans prisbelönta lounger, mattorg och barer (inklusive den berömda 'Goal Line Bar' som är Europas längsta bar). Vi listar enbart dessa auktoriserade återförsäljare.",
+    howToBuy: "Ordinarie biljetter direkt från Tottenham släpps först till OneHotspur-medlemmar. För att garantera platser utan medlemskap kan du jämföra auktoriserade partners på biljetterfotboll.se. Här finns officiella Travel Club-paket med garanterade platser på långsida, matkuponger och tillgång till Premium Lounges.",
     sectionsAndPrices: "Arenan är uppdelad i North, South, East och West Stand. Platser på South Stand är fantastiska för att uppleva stämningen på nära håll. Östra och västra långsidorna erbjuder premiumplatser med enastående komfort och sikt. Priserna varierar beroende på motstånd men tack vare arenans storlek finns det ofta ett bra utbud av biljetter till rimliga priser för matcher utanför toppskiktet. Det övre etaget (Tier 5) ger en otrolig överblick över hela arenan och spelet men ligger väldigt högt upp.",
     packages: "Ett matchpaket till Tottenham Hotspur är en fantastisk helhetsupplevelse tack vare den extremt höga standarden på arenans faciliteter. Paketen inkluderar officiella matchbiljetter (ofta i block 200-300 på långsidan med lounge-tillgång) samt hotellboende. Eftersom arenan ligger en bit norrut i London, är det mycket smidigt att bo på ett hotell nära Liverpool Street Station eller King's Cross. Därifrån tar du dig snabbt och enkelt med tåg direkt upp till arenan på matchdagen och har samtidigt bästa tänkbara utgångsläge för resten av din London-vistelse.",
     history: "Tottenham Hotspur grundades 1882 av ett gäng lokala skolpojkar från en cricketklubb och namngavs efter den historiske riddaren Harry Hotspur. Klubben blev historisk 1901 när de som första och enda lag utanför det officiella ligasystemet lyckades vinna FA-cupen. Under ledning av Bill Nicholson på 1950- och 60-talet upplevde klubben sin absoluta guldålder. De vann 'The Double' (ligan och FA-cupen samma år) 1961 och blev 1963 den första brittiska klubben någonsin att vinna en stor europeisk titel (Cupvinnarcupen). Klubben är känd för sin tradition av att spela attraktiv, offensiv fotboll under mottot 'Audere est Facere' (Att våga är att göra).",
     faqs: [
       {
-        question: "Kan man betala med kontanter på Tottenham Hotspur Stadium?",
-        answer: "Nej, arenan är 100 % kontantfri. Alla barer, matställen och souvenirbutiker accepterar enbart kort eller mobila betalningar (Apple Pay / Google Pay)."
+        question: "Behöver jag ett OneHotspur-medlemskap för att boka här?",
+        answer: "Nej, de Travel Club- och hospitality-paket vi jämför kräver inget medlemskap."
+      },
+      {
+        question: "Hur tar man sig till Tottenham Hotspur Stadium?",
+        answer: "Enklast är att ta Overground från Liverpool Street till White Hart Lane Station, eller Victoria Line till Tottenham Hale / Seven Sisters och gå sista biten."
+      },
+      {
+        question: "Är Tottenham Hotspur Stadium en kontantfri arena?",
+        answer: "Ja, hela arenan är 100 % kontantfri. Alla köp av mat, dryck och merchendise sker med kort eller mobilbetalning."
+      },
+      {
+        question: "Vad kostar en fotbollsresa till Tottenham?",
+        answer: "En paketresa med hotell och matchbiljett brukar landa på cirka 4 000 SEK till 8 000 SEK per person."
       }
     ]
   },
