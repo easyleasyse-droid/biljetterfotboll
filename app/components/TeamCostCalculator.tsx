@@ -246,6 +246,31 @@ export function TeamCostCalculator({
           </div>
         </div>
       </div>
+      {/* JSON-LD för AI & Sökmotorer */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": `Resekalkylator för ${teamName || "fotbollslag"},
+            "url": "https://biljetterfotboll.se",
+            "applicationCategory": "TravelApplication",
+            "operatingSystem": "All",
+            "description": `Beräkna den totala kostnaden för en fotbollsresa för att se ${teamName || "ditt favoritlag"} inklusive biljetter, flyg, hotell och lokal transport.,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "SEK"
+            },
+            "featureList": [
+              "Lagspecifik biljett- och resekalkylator",
+              "Uppskattning av flyg och hotell",
+              "Lokal transportberäkning"
+            ]
+          })
+        }}
+      />
     </div>
   );
 }
