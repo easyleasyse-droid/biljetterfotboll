@@ -207,7 +207,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     league: "La Liga",
     aboutTickets: "Hitta biljetter till Real Madrid och upplev världsstjärnorna live i den spanska huvudstaden. Jämför priser för La Liga och Champions League.",
     heroImage: "/stadiums/santiago-bernabéu-hero.jpg",
-    contentImage: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=600&auto=format&fit=crop", // Fotbollsplan/stadion
+    contentImage: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=600&auto=format&fit=crop",
     stadiumLayoutImage: "/stadiums/santiago-bernabéu-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3035.7176182390884!2d-3.69094772390506!3d40.45305405338167!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd4228e23705d39f%3A0xa87652e78bc5aa!2sEstadio%20Santiago%20Bernab%C3%A9u!5e0!3m2!1ssv!2sse!4v1710000000005!5m2!1ssv!2sse",
     howToBuy: "Att köpa biljetter direkt via Real Madrids officiella hemsida är känt för att vara krångligt. Allmänna biljettsläpp sker ofta så sent som 5–7 dagar före matchstart och säljer slut på sekunder till klubbens medlemmar (Socios) och 'Madridistas Premium'. Dessutom nekar det spanska betalsystemet ofta utländska kreditkort. Det absolut säkraste sättet att planera sin resa i god tid är att köpa via auktoriserade biljettförmedlare och sportresebyråer. De har garanterade kvoter av officiella biljetter (både standard- och hospitality-paket) som levereras digitalt som e-biljetter direkt till din e-post.",
@@ -218,9 +218,22 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
       {
         question: "Hur fungerar de digitala biljetterna till Bernabéu?",
         answer: "Biljetterna levereras som mobilbiljetter i PDF-format eller som en länk till din smartphone. Du öppnar dokumentet i telefonen och skannar streckkoden/QR-koden direkt i de automatiska vändkorsen vid den port (Puerta) som står angiven på din biljett."
+      },
+      {
+        question: "Krävs det medlemskap för att köpa biljetter till Real Madrid?",
+        answer: "Nej, när du bokar via återförsäljarna som jämförs på biljetterfotboll.se krävs inget klubbmedlemskap."
+      },
+      {
+        question: "Hur tar man sig till Santiago Bernabéu?",
+        answer: "Det är mycket enkelt via Madrids tunnelbana (Linje 10) direkt till stationen 'Santiago Bernabéu' som ligger precis utanför arenan."
+      },
+      {
+        question: "Vad kostar en fotbollsresa till Real Madrid totalt?",
+        answer: "En paketresa med hotell och matchbiljett brukar kosta från cirka 3 800 SEK till 8 000 SEK per person beroende på motståndare och säsong."
       }
     ]
   },
+
   "barcelona": {
     name: "FC Barcelona",
     stadiumName: "Spotify Camp Nou",
@@ -230,7 +243,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     league: "La Liga",
     aboutTickets: "Säkra dina biljetter till FC Barcelona. Jämför priser för sittplatser på det mäktiga Camp Nou och upplev den katalanska fotbollsfesten.",
     heroImage: "/stadiums/camp-nou-hero.jpg",
-    contentImage: "https://images.unsplash.com/photo-1518063319789-7217e6706b04?q=80&w=600&auto=format&fit=crop", // Stadion/publik/match
+    contentImage: "https://images.unsplash.com/photo-1518063319789-7217e6706b04?q=80&w=600&auto=format&fit=crop",
     stadiumLayoutImage: "/stadiums/camp-nou-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2993.673892794411!2d2.1202723239474934!3d41.38089944365313!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12a4a413d07e26d9%3A0xf658f844ca1ba3b!2sSpotify%20Camp%20Nou!5e0!3m2!1ssv!2sse!4v1710000000006!5m2!1ssv!2sse",
     howToBuy: "Biljetter till FC Barcelona säljs i stor utsträckning via klubbens egna kanaler, men till de absolut största matcherna (El Clásico mot Real Madrid, derbyt mot Espanyol eller avgörande Champions League-slutspel) är det i princip omöjligt för icke-medlemmar att få tag på biljetter då klubbens säsongskortsinnehavare lägger beslag på platserna. Genom att använda vår jämförelsetjänst hittar du officiella sportresebyråer och verifierade biljettpartners som har fasta, garanterade biljettkvoter tilldelade direkt från klubben. Det gör att du kan boka din resa månader i förväg med fullständig trygghet.",
@@ -241,9 +254,22 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
       {
         question: "Garanteras platser tillsammans om vi bokar flera biljetter?",
         answer: "Ja, de etablerade leverantörer vi listar på vår sajt garanterar alltid att ni får sitta tillsammans i par (två och två). Om ni är ett större sällskap som reser ihop kan ni i de flesta fall välja till en 'sällskapsgaranti' i kassan för att säkra tre eller fyra platser i rad."
+      },
+      {
+        question: "Måste man vara medlem (Socio) för att boka biljetter?",
+        answer: "Nej, återförsäljarna vi jämför säljer öppna biljetter och VIP-paket där medlemskap inte behövs."
+      },
+      {
+        question: "Hur tar man sig lättast till Spotify Camp Nou?",
+        answer: "Ta tunnelbanans Linje 3 (grön) till stationen Les Corts / Palau Reial eller Linje 5 (blå) till Collblanc."
+      },
+      {
+        question: "När levereras biljetterna till matchen?",
+        answer: "Biljetterna levereras som PDF- eller mobilbiljetter via e-post cirka 24–48 timmar före avspark."
       }
     ]
   },
+
   "atletico-madrid": {
     name: "Atlético Madrid",
     stadiumName: "Estadio Metropolitano",
@@ -253,8 +279,8 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     league: "La Liga",
     aboutTickets: "Hitta prisvärda biljetter till Atlético Madrid. Upplev Diego Simeones passionerade lag live på den kokande hemmaborgen.",
     heroImage: "/stadiums/metropolitano-hero.jpg",
-    contentImage: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=600&auto=format&fit=crop", // Läktarvy/stadion
-    stadiumLayoutImage: "/stadiums/metropolitano-hero.jpg", // Fotbollsplan/gräs
+    contentImage: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=600&auto=format&fit=crop",
+    stadiumLayoutImage: "/stadiums/metropolitano-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3036.0028751508933!2d-3.6019556239053896!3d40.43588975376517!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd422f2cb82915cb%3A0x6b13fa250320a27c!2sEstadio%20C%C3%ADvitas%20Metropolitano!5e0!3m2!1ssv!2sse!4v1710000000007!5m2!1ssv!2sse",
     howToBuy: "Biljetter till Atlético Madrids matcher är i allmänhet betydligt mer lättillgängliga och prisvärda än till grannklubben Real Madrid, med undantag för det glödheta Madrid-derbyt (El Derbi Madrileño) eller stormatcher i Champions League. Klubbens officiella biljettsläpp sker digitalt några veckor före match. För att garantera sina platser långt i förväg och säkra bra sittplatser bredvid varandra på långsidorna väljer de flesta svenskar att köpa via auktoriserade biljettförmedlare eller boka kompletta fotbollspaket där officiell matchbiljett och hotellövernattning ingår.",
     sectionsAndPrices: "Metropolitano har en mycket tydlig struktur uppdelad i Lateral Oeste (västra långsidan med VIP och bänkar), Lateral Este (östra långsidan, perfekt för sol och tv-vy), Fondo Norte och Fondo Sur (kortsidorna). Läktarna är uppdelade i tre etage (Grada Baja, Grada Media och Grada Alta). Priserna på kortsidorna och det översta etaget är mycket plånboksvänliga och perfekta för budgetresenären, medan Grada Media på långsidorna erbjuder den absolut bästa balansen mellan fantastisk sikt, komfort och närhet till spelet.",
@@ -264,6 +290,14 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
       {
         question: "Hur tar man sig lättast till Estadio Metropolitano?",
         answer: "Det absolut smidigaste sättet är att ta tunnelbanans linje 7 (orange linje) och gå av vid stationen 'Estadio Metropolitano' som ligger direkt under arenans huvudentré. Det tar cirka 25–30 minuter från centrala Madrid."
+      },
+      {
+        question: "När får jag mina e-biljetter levererade?",
+        answer: "Biljetterna skickas som digitala e-biljetter (PDF/mobilbiljett) via e-post cirka 24–48 timmar före matchstart."
+      },
+      {
+        question: "Krävs det medlemskap för att köpa biljetter till Atlético Madrid?",
+        answer: "Nej, när du bokar via de godkända partneraktörerna på biljetterfotboll.se krävs inget medlemskap."
       }
     ]
   },
@@ -276,7 +310,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     league: "Allsvenskan",
     aboutTickets: "Köp biljetter till Sveriges mest framgångsrika klubb i modern tid. Se Malmö FF slåss om SM-guldet i Allsvenskan eller upplev magiska Europakvällar på Eleda Stadion.",
     heroImage: "/stadiums/eleda-stadion-hero.jpg",
-    contentImage: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=600&auto=format&fit=crop", // Fotboll på gräs
+    contentImage: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=600&auto=format&fit=crop",
     stadiumLayoutImage: "/stadiums/eleda-stadion-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2254.735235546252!2d12.985449273413988!3d55.58434726410427!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4653a15dc4a3b723%3A0x633519894e6dc637!2sEleda%20Stadion!5e0!3m2!1ssv!2sse!4v1710000000008!5m2!1ssv!2sse",
     howToBuy: "Till ordinarie allsvenska seriematcher säljs biljetter enkelt direkt via Malmö FF:s officiella biljettsystem (axs). Men till de glödheta Skånederbyna, guldmatcher eller vid de prestigefyllda matcherna i Europa League och Champions League blir arenan snabbt helt slutsåld till klubbens över 10 000 säsongskortsinnehavare och medlemmar. För supportrar som reser långväga och vill säkra sina sittplatser i god tid samlar vi säkra, verifierade paketlösningar och resealternativ som garanterar officiella sittplatser på långsidorna.",
@@ -287,75 +321,106 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
       {
         question: "Hur tar jag mig lättast till Eleda Stadion?",
         answer: "Stadion ligger centralt i Malmö. Du tar dig hit på under 10 minuter från Malmö Central eller Triangeln genom att ta stadsbuss linje 3 (mot Ringlinjen) eller linje 8 (mot Hyllie) och gå av vid hållplats 'Stadion'."
+      },
+      {
+        question: "Vad gäller för biljetter till MFF:s Europamatcher?",
+        answer: "Efterfrågan på Europamatcher är extremt hög. Medlemmar och årskortsinnehavare har förtur, så för tillresande rekommenderas att boka garanterade paket i god tid."
       }
     ]
-  }, // <--- Detta kommatecken är LIVSVIKTIGT för att Valencia ska fungera
+  },
+
   "valencia": {
     name: "Valencia CF",
     stadiumName: "Mestalla",
     logo: "/logos/valencia.png",
-    stadiumDescription: "Mestalla är en av Spaniens mest historiska och intensiva arenor, känd för sina extremt branta läktare som ger en unik närhet till planen.",
+    stadiumDescription: "Estadio de Mestalla, invigd redan 1923, är en av de mest ikoniska och historiska fotbollsarenorna i hela Europa. Arenan är världsberömd för sin unika och smått svindlande arkitektur med extremt branta läktare som reser sig nästan vertikalt mot den spanska himlen. Detta skapar en intim, nästan klaustrofobisk känsla för bortalaget och en enorm ljudkuliss när drygt 49 000 passionerade 'Che'-supportrar stämmer upp i sina kampsånger. Att sitta högt upp på Mestallas läktare ger en nästan flygande panoramavy över spelplanen och är en helt oförglömlig upplevelse för alla som älskar klassisk spansk fotbollskultur.",
     location: "Valencia, Spanien",
     league: "La Liga",
-    aboutTickets: "Upplev den unika atmosfären på Mestalla. Vi jämför priser för officiella biljetter till Valencia CF.",
+    aboutTickets: "Upplev den unika atmosfären på klassiska Mestalla. Jämför priser för officiella biljetter och paketresor till Valencia CF i La Liga.",
     heroImage: "/stadiums/mestalla-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=600&auto=format&fit=crop",
     stadiumLayoutImage: "/stadiums/mestalla-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3079.799732731872!2d-0.3637372239337581!3d39.47453457161822!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6048995a9a4b3d%3A0xe543e49e917d4a2d!2sEstadio%20de%20Mestalla!5e0!3m2!1ssv!2sse!4v1710000000008!5m2!1ssv!2sse",
-    howToBuy: "Biljetter till Valencia köps smidigast via klubbens officiella sajt. För stormatcher rekommenderas officiella matchpaket.",
-    sectionsAndPrices: "Arenan är uppdelad i olika sektioner där 'Grada Central' erbjuder bäst sikt. Kortsidorna är mer prisvärda.",
-    packages: "Vi listar paket som inkluderar officiell matchbiljett och hotell i centrala Valencia.",
-    history: "Valencia CF grundades 1919 och är en av Spaniens mest framgångsrika klubbar med flera ligatitlar och europeiska framgångar.",
+    howToBuy: "Att köpa lösbiljetter till Valencia CF via klubbens egen hemsida går i regel bra till ordinära ligamatcher, men till stormatcherna mot Real Madrid, Barcelona eller lokalderyt mot Levante blir det snabbt utsålt. Det säkraste och smidigaste sättet för svenska resenärer är att boka via auktoriserade biljettsajter och sportresebyråer. Då får du garanterade sittplatser i par och biljetterna levereras smidigt som e-biljetter direkt till din mobil innan avresa.",
+    sectionsAndPrices: "Mestalla är uppdelad i Tribuna (huvudläktaren med tak och de dyraste VIP-platserna), Silla de Gol (platser bakom målen), och Grada Central (långsidan mittemot huvudläktaren). För bäst kombination av pris och utsikt rekommenderas platser på Grada Central. De branta etagen gör att man ser spelet fantastiskt väl oavsett var på långsidorna man sitter, medan kortsidorna erbjuder det lägsta priset och mest högljudda stödet.",
+    packages: "Valencia är den perfekta destinationen för en fotbollshelg med kombinationen av medelhavssol, stränder, världskänd paella och fotboll i toppklass. Våra paket inkluderar matchbiljett och hotellboende mitt i centrala Valencia eller nära den vackra parken Turia. Från centrum promenerar du enkelt till Mestalla på 15–20 minuter eller tar tunnelbanan direkt till arenan.",
+    history: "Valencia Club de Fútbol grundades 1919 på baren Bar Tortoni och utvecklades snabbt till en maktfaktor i spansk fotboll. Klubben nådde sin absoluta storhetstid under tidigt 2000-tal då man under tränaren Héctor Cúper nådde två raka Champions League-finaler (1999 och 2000), och därefter tog två La Liga-titlar samt en UEFA-cupseger under Rafa Benítez ledning. Med en stolt tradition av att fostra och forma superstjärnor som Mario Kempes, Gaizka Mendieta, David Villa och David Silva intar Valencia en permanent plats i den spanska fotbollsadeln.",
     faqs: [
       {
-        question: "Hur tar man sig till Mestalla?",
-        answer: "Mestalla ligger centralt och nås enkelt med tunnelbana, station 'Aragón' ligger precis utanför."
+        question: "Hur tar man sig lättast till Mestalla?",
+        answer: "Mestalla ligger extremt centralt i staden. Du tar enkelt tunnelbanans linje 3 eller 9 och går av vid stationen 'Aragón', som ligger precis utanför arenans entré."
+      },
+      {
+        question: "Är läktarna på Mestalla verkligen så branta som det sägs?",
+        answer: "Ja, de övre etagen på Mestalla hör till de brantaste i världen. Det ger en fantastisk sikt och mäktig känsla, men kan kännas lite svindlande om man är extremt höjdrädd."
+      },
+      {
+        question: "När levereras biljetterna till matchen?",
+        answer: "E-biljetterna skickas digitalt till din e-post senast 24–48 timmar innan matchstart."
       }
     ]
   },
+
   "inter": {
     name: "Inter Milan",
     stadiumName: "San Siro",
     logo: "/logos/inter.png",
-    stadiumDescription: "En av världens mest ikoniska arenor, delad med stadsrivalen Milan.",
+    stadiumDescription: "Stadio Giuseppe Meazza, mer känd som San Siro, är en av fotbollsvärldens absoluta katedraler. Med sina karakteristiska betongtorn och det rödblanka fackverkstaket rymmer arenan över 75 000 åskådare. När Inter spelar hemma förvandlas kortsidan Curva Nord till ett hav av blåsvarta flaggor och tifo-arrangemang. Stämningen under storkamperna mot Juventus (Derby d'Italia) eller stadsrivalen AC Milan är elektrisk och visar italiensk supporterkultur från sin absolut bästa sida.",
     location: "Milano, Italien",
     league: "Serie A",
-    aboutTickets: "Inter säljer biljetter via sin officiella hemsida. För större matcher krävs ofta medlemskap.",
+    aboutTickets: "Köp biljetter till Inter på San Siro. Jämför priser för Serie A och Champions League och upplev italiensk toppfotboll live.",
     heroImage: "/stadiums/giuseppe-meazza-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
     stadiumLayoutImage: "/stadiums/giuseppe-meazza-hero.jpg",
-    googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2798.541334994273!2d9.121516076587425!3d45.47810377107293!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4786c12563f8d951%3A0x6b4f74d02330a8c!2sSan%20Siro!5e0!3m2!1ssv!2sse!4v1718460000000!5m2!1ssv!2sse",// För både Inter och AC Milan, använd denna URL:
-    howToBuy: "Köp biljetter direkt via Inter.it eller officiella återförsäljare.",
-    sectionsAndPrices: "För bästa sikt, välj sektionerna på långsidan (Primo Anello).",
-    packages: "Vi erbjuder paket med hotell i Milano och officiell matchbiljett.",
-    history: "Inter grundades 1908 och är en av Italiens mest framgångsrika klubbar.",
+    googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2798.541334994273!2d9.121516076587425!3d45.47810377107293!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4786c12563f8d951%3A0x6b4f74d02330a8c!2sSan%20Siro!5e0!3m2!1ssv!2sse!4v1718460000000!5m2!1ssv!2sse",
+    howToBuy: "Biljetter till Inter kan köpas direkt via klubbens hemsida, men för stormatcher ställs ofta krav på klubbens fankort (Siamo Noi) eller så säljer det slut i medlemsfasen. Genom att jämföra verifierade biljettförmedlare och resebyråer på biljetterfotboll.se säkrar du giltiga biljetter utan krav på italienska medlemskort. Observera att alla biljetter i Italien är personliga, så korrekt namn och passuppgifter måste uppges vid bokning.",
+    sectionsAndPrices: "San Siro är uppdelad i tre etage (Anelli). Primo Anello (1:a etaget) ger bäst närhet till spelarna och är dyrast, särskilt på långsidorna Rosso och Arancio. Secondo Anello (2:a etaget) anses av många ge den bästa överblicken över taktiken, medan Terzo Anello (3:e etaget) erbjuder mycket billiga biljetter högsta upp under taket. Inters ultras håller till på Curva Nord (Grön sektion).",
+    packages: "En fotbollsresa till Milano kombinerar fotboll i världsklass med mode, kultur och fantastisk italiensk mat. Genom att boka ett komplett paket får du garanterad matchbiljett och hotellboende i centrala Milano. Från centrala lägen som Duomo eller Stazione Centrale tar du dig enkelt med tunnelbanan direkt till arenan på matchdagen.",
+    history: "FC Internazionale Milano grundades 1908 av en utbrytargrupp från AC Milan som ville tillåta utländska spelare i laget, vilket gav upphov till namnet 'Internazionale'. Klubben har en stolt historia och är den enda italienska klubb som aldrig åkt ur Serie A. Klubbens mest framgångsrika epoker inkluderar 'Grande Inter' under Helenio Herrera på 1960-talet samt den historiska Trippeln (Serie A, Coppa Italia och Champions League) under José Mourinho 2010.",
     faqs: [
       {
-        question: "Var ligger San Siro?",
-        answer: "Arenan ligger i nordvästra Milano och nås enkelt med spårvagn linje 16."
+        question: "Behöver jag visa ID/pass vid entrén till San Siro?",
+        answer: "Ja, italiensk lag kräver att alla matchbiljetter är personliga. Namnet på biljetten måste stämma exakt överens med det fysiska passet eller det nationella ID-kortet du visar upp i spärrarna."
+      },
+      {
+        question: "Hur tar man sig smidigast till San Siro?",
+        answer: "Ta tunnelbanans lila linje (M5) direkt till slutstationen 'San Siro Stadio'. Du kliver ut precis utanför entréspärrarna."
+      },
+      {
+        question: "Vad är skillnaden på San Siro och Giuseppe Meazza?",
+        answer: "Det är exakt samma arena. Giuseppe Meazza är det officiella namnet (döpt efter den legendariska spelaren som representerade både Inter och Milan), medan San Siro är det stadsdelsnamn som arenan i folkmun alltid kallas."
       }
     ]
   },
+
   "milan": {
     name: "AC Milan",
     stadiumName: "San Siro",
     logo: "/logos/milan.png",
-    stadiumDescription: "San Siro är hem för Milan och är en av fotbollsvärldens riktiga katedraler.",
+    stadiumDescription: "San Siro är AC Milans stolta hemmaarena och en av fotbollens mest mytomspunna platser. Med sin enorma kapacitet och brutala betongarkitektur skapar den en elektrisk inramning när de rödsvarta 'Rossoneri' kliver ut på planen. Under hemmamatcherna förvandlas den södra kortsidan, Curva Sud, till ett hav av flaggor, pyroteknik och passionerade läktarsånger. Att uppleva en kvällsmatch här när 'Milan, Milan'-hymnen dånar ur högtalarna är en ren magisk upplevelse för varje fotbollsälskare.",
     location: "Milano, Italien",
     league: "Serie A",
-    aboutTickets: "Milan biljetter köps enklast via deras officiella portal.",
+    aboutTickets: "Säkra biljetter till AC Milan på San Siro. Jämför priser på officiella biljetter och paketresor till italienska ligamatcher och Champions League.",
     heroImage: "/stadiums/san-siro-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
     stadiumLayoutImage: "/stadiums/san-siro-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2798.541334994273!2d9.121516076587425!3d45.47810377107293!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4786c12563f8d951%3A0x6b4f74d02330a8c!2sSan%20Siro!5e0!3m2!1ssv!2sse!4v1718460000000!5m2!1ssv!2sse",
-    howToBuy: "Officiella hemsidan är säkrast. Tänk på att ha ID tillgängligt.",
-    sectionsAndPrices: "Curva Sud är platsen för den mest fanatiska stämningen.",
-    packages: "Hotell + biljett-paket finns tillgängliga för de flesta hemmamatcher.",
-    history: "Grundad 1899, Milan är en av de mest klassiska klubbarna i europeisk fotboll.",
+    howToBuy: "Biljetter säljs via Milans officiella sajt, men populära matcher blir snabbt slutsålda eller kräver klubbens medlemskort (Cuore Rossonero). För att säkra dina platser i god tid utan krångel rekommenderas att köpa via de verifierade partneraktörerna på biljetterfotboll.se. Alla biljetter är personliga enligt italiensk lagstiftning, så kom ihåg att uppge korrekta namnuppgifter vid bokningen.",
+    sectionsAndPrices: "Sittplatserna är indelade i färgglada zoner: Rosso (västra långsidan, dyrast och bäst sikt), Arancio (östra långsidan, mycket bra sikt), Blu (Curva Sud, Milans ultras) och Verde (Curva Nord, oftast bortasektion). Förstaelaget (Primo Anello) ger bäst närhet, medan andra etaget (Secondo Anello) ger fantastisk överblicksvy över hela planen till ett bra pris.",
+    packages: "Boka ett fotbollspaket med officiell matchbiljett och hotell i Milano för den perfekta helgresan. Kombinera storkampsfotboll med shopping i Galleria Vittorio Emanuele II, besök vid katedralen Duomo och god mat. Tunnelbanan gör det busenkelt att ta sig mellan hotellet i centrum och San Siro på matchdagen.",
+    history: "AC Milan grundades 1899 av engelsmannen Herbert Kilpin och är en av världens mest framgångsrika klubbar genom tiderna med hela 7 Champions League/Europacup-titlar. Klubben dominerade europeisk fotboll under skedet med den svenskäda 'Gre-No-Li'-trion (Grenn, Nordahl, Liedholm) på 1950-talet och Arrigo Sacchis revolutionerande superlag i slutet av 1980-talet med holländarna Van Basten, Gullit och Rijkaard.",
     faqs: [
       {
         question: "Behöver jag ID för att gå på match?",
-        answer: "Ja, i Italien krävs giltig ID-handling för att komma in på arenan."
+        answer: "Ja, i Italien krävs giltig fysisk ID-handling (pass eller nationellt ID-kort) för att komma in på arenan, då namnet kontrolleras mot biljetten."
+      },
+      {
+        question: "Hur tar jag mig till San Siro?",
+        answer: "Smidigast är att ta tunnelbanans lila linje M5 till slutstationen 'San Siro Stadio' eller spårvagn linje 16 från Duomo."
+      },
+      {
+        question: "Var sitter Milans mest högljudda supportrar?",
+        answer: "Milans ultras håller till på Curva Sud (blå sektion på den södra kortsidan)."
       }
     ]
   },
@@ -363,73 +428,128 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     name: "Manchester City",
     stadiumName: "Etihad Stadium",
     logo: "/logos/manchester-city.png",
-    stadiumDescription: "En modern och imponerande arena som speglar klubbens framgångar.",
+    stadiumDescription: "Etihad Stadium (ursprungligen City of Manchester Stadium) byggdes inför Commonwealth Games 2002 och förvandlades därefter till en ultramodern, toppmodern fotbollsarena. Med en kapacitet på över 53 000 åskådare kombinerar arenan fantastisk sikt från samtliga sektioner med en högklassig komfort. Den imponerande arkitekturen med sina skålade läktare och öppna hörn gör Etihad till en spektakulär kuliss för Pep Guardiolas tekniska och dominerande fotboll, där stämningen på t.ex. South Stand driver laget framåt under de stora Premier League- och Champions League-kvällarna.",
     location: "Manchester, England",
     league: "Premier League",
-    aboutTickets: "City har en av Premier Leagues största arenor, men biljetterna går åt snabbt.",
+    aboutTickets: "Manchester City har en av Premier Leagues mest eftertraktade arenor. Jämför priser för officiella biljetter och hospitality-paket för att se världsstjärnorna live på Etihad Stadium.",
     heroImage: "/stadiums/etihad-stadium-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
     stadiumLayoutImage: "/stadiums/etihad-stadium-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2374.455648756024!2d-2.202868284157143!3d53.48316397998651!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487bb0814f61f7e3%3A0x6b4f74d02330a8c!2sEtihad%20Stadium!5e0!3m2!1ssv!2sse!4v1718460000000!5m2!1ssv!2sse",
-    howToBuy: "Officiella hemsidan är bäst. Medlemskap krävs för toppmatcher.",
-    sectionsAndPrices: "East Stand har bra överblick.",
-    packages: "Matchpaket med hotell i Manchester finns tillgängliga.",
-    history: "Klubben har dominerat engelsk fotboll under det senaste decenniet.",
-    faqs: [{ question: "Hur tar man sig till Etihad?", answer: "Metrolink-spårvagn till hållplats 'Etihad Campus'." }]
+    howToBuy: "Att få tag på lösbiljetter direkt via Citys officiella hemsida kräver oftast ett betalt 'Matchday Membership', och biljetterna till toppmatcher mot Liverpool, Arsenal och Manchester United säljer slut på sekunder. För svenska supportrar som vill boka i god tid är det smidigast att köpa auktoriserade biljetter eller s.k. Officiella Premium/Matchday VIP-paket via biljetterfotboll.se. Då ingår garanterad sittplats på långsidan samt tillgång till lounger och mat dryck innan avspark.",
+    sectionsAndPrices: "Arenan är uppdelad i Colin Bell Stand (Västra långsidan med avbytarbänkar och spelargång), East Stand (Östra långsidan med fantastisk överblick), South Stand (kortsidan där hemmalagets mest högljudda supportrar samlas samt bortaflocken) och Family Stand (Norra kortsidan). Priserna varierar kraftigt beroende på motståndare (kategori A-C), där platser högt upp på kortsidorna erbjuder de mest prisvärda alternativen medan långsidan på Level 2 ger maximal komfort.",
+    packages: "Skräddarsy din fotbollshelg i Manchester med vårt utbud av prisvärda matchpaket. I paketen ingår garanterad officiell matchbiljett och boende på 3- eller 4-stjärniga hotell i centrala Manchester (t.ex. nära Piccadilly Station eller Deansgate). Det ger dig det bästa av två världar – fotboll i absolut världsklass kombinerat med Manchesters berömda musikscen, pubkultur och shopping.",
+    history: "Manchester City grundades 1880 som St. Mark's (West Gorton) och blev Manchester City 1894. Klubben spelade under många decennier på den legendariska arenan Maine Road. Efter en bergochdalbana i ligasystemet under 1990- och 2000-talen inleddes en helt ny era 2008. Sedan dess har City växt till en global supermakt och dominerat engelsk fotboll totalt, krönt med den historiska Trippeln (Premier League, FA-cupen och Champions League) säsongen 2022/23.",
+    faqs: [
+      {
+        question: "Hur tar man sig lättast till Etihad Stadium?",
+        answer: "Det absolut smidigaste sättet är att ta Metrolink-spårvagnen från Manchester Piccadilly station direkt till hållplatsen 'Etihad Campus'. Resan tar bara cirka 8 minuter. Det går även utmärkt att gå till fots från centrum via den skyltade 'Citylink Walk' på cirka 25–30 minuter."
+      },
+      {
+        question: "Behöver jag medlemskap för att köpa biljetter via er?",
+        answer: "Nej, när du bokar via våra verifierade partneraktörer och resebyråer krävs inget medlemskap i Manchester City. Du får officiella, garanterade e-biljetter."
+      },
+      {
+        question: "Vad innebär ett Matchday Hospitality-paket?",
+        answer: "Det innebär att du utöver din vadderade sittplats på långsidan får tillgång till en exklusiv stadionlounge före och efter match, där det ofta ingår mat, dryck, matchprogram och uppvärmning inför matchen."
+      }
+    ]
   },
+
   "newcastle": {
     name: "Newcastle United",
     stadiumName: "St. James' Park",
     logo: "/logos/newcastle.png",
-    stadiumDescription: "En ikonisk arena som tornar upp sig över staden Newcastle.",
+    stadiumDescription: "St. James' Park är en av fotbollsvärldens mest imponerande och spektakulära katedraler. Med sin asymmetriska silhuett och enorma läktarsektioner tonar arenan upp sig som ett landmärke mitt i centrala Newcastle. Kapaciteten på över 52 000 åskådare nyttjas till sista plats, där den svartvita skaran ('Geordies') skapar en av de mest passionerade, högljudda och elektriska atmosfärerna i hela Premier League. När arenan stämmer upp i 'Local Hero' inför avspark är gåshuden ett faktum.",
     location: "Newcastle upon Tyne, England",
     league: "Premier League",
-    aboutTickets: "Extremt högt tryck – boka i god tid.",
+    aboutTickets: "Efterfrågan på biljetter till St. James' Park är extremt hög. Jämför officiella biljetter och paketresor till Newcastle Uniteds alla hemmamatcher.",
     heroImage: "/stadiums/st-james-park-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
     stadiumLayoutImage: "/stadiums/st-james-park-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2277.685324546875!2d-1.6234394841285!3d54.975586680335!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487e70b8c66e4a2d%3A0x1d5821034f5a2b1!2sSt%20James'%20Park!5e0!3m2!1ssv!2sse!4v1718460000000!5m2!1ssv!2sse",
-    howToBuy: "Biljetter via officiella hemsidan, ofta genom lottningssystem för medlemmar.",
-    sectionsAndPrices: "Gallowgate End erbjuder den mest intensiva stämningen.",
-    packages: "Vi erbjuder paket med hotell i Newcastle.",
-    history: "En klubb med enorm passion och en lång historia.",
-    faqs: [{ question: "Var ligger arenan?", answer: "Den ligger mitt i centrum, gångavstånd från järnvägsstationen." }]
+    howToBuy: "Att köpa biljetter direkt via Newcastle United är nästan omöjligt för icke-medlemmar, då nästan alla matcher säljer slut direkt via klubbens lottningssystem. För svenska resenärer är den absolut säkraste vägen att boka officiella matchpaket eller garanterade biljetter via auktoriserade biljettsajter. Biljetterna levereras tryggt som mobila e-biljetter direkt till din smartphone i god tid innan matchdag.",
+    sectionsAndPrices: "Arenan bestående av fyra huvudläktare: Milburn Stand (huvudläktaren med loger och pressrum), Leazes End (den gigantiska norra läktaren), East Stand och den legendariska kortsidan Gallowgate End. Milburn Stand och Leazes End reser sig enormt högt och platser högst upp på 'Leazes Upper' erbjuder en mäktig utsikt över hela staden, medan Gallowgate End står för det mest intensiva supporterstödet.",
+    packages: "Newcastle är vida känt som en av Storbritanniens absolut bästa städer för en helgresa. Våra paket inkluderar garanterad matchbiljett på St. James' Park kombinerat med hotellövernattning på utvalda hotell i centrum. Upplev det legendariska utelivet, pubarna runt Quayside och den genuina fotbollskulturen där hela staden andas svartvitt på matchdagar.",
+    history: "Newcastle United bildades 1892 genom en sammanslagning av Newcastle East End och Newcastle West End. Klubben har en stolt historia med fyra ligatitlar och sex FA-cupguld, samt legendariska eror under tränare som Kevin Keegan ('The Entertainers' på 90-talet) och ikoner som tidernas meste målskytt i Premier League, Alan Shearer. Med nya ägare och en stark sportslig satsning är 'The Magpies' återigen med och utmanar den absoluta eliten.",
+    faqs: [
+      {
+        question: "Var ligger St. James' Park i förhållande till centrum?",
+        answer: "Arenan har ett unikt läge mitt i stadskärnan. Du promenerar hit på bara 5–10 minuter från både centralstationen (Newcastle Central Station) och shoppingstråket på Northumberland Street."
+      },
+      {
+        question: "Vad är s.k. 'Geordie hospitality'?",
+        answer: "Det är Newcastles officiella VIP- och loungepaket på stadion där du njuter av god mat och dryck med lokal nordengelsk gästfrihet innan du kliver ut till dina premiumplatser."
+      },
+      {
+        question: "Hur säljs biljetterna bäst för tillresande svenskar?",
+        answer: "Eftersom ordinära biljetter kräver medlemskap och lottning rekommenderas starkt att boka ett färdigt hotell- och biljettpaket via våra verifierade återförsäljare."
+      }
+    ]
   },
+
   "leeds": {
     name: "Leeds United",
     stadiumName: "Elland Road",
     logo: "/logos/leeds.png",
-    stadiumDescription: "En klassisk engelsk arena med en mycket intim atmosfär.",
+    stadiumDescription: "Elland Road är en äkta, orörd och rå engelsk fotbollsborg. Arenan, som har varit Leeds Uniteds hem sedan klubbens grundande 1919, rymmer drygt 37 000 åskådare. Läktarna är byggda nära planen vilket skapar en intensiv och genuint elektrisk stämning där ljudvolymen ofta når bedövande nivåer. Att höra hela stadion stämma upp i klubbhymnen 'Marching On Together' är en klassisk upplevelse som alla fotbollsentusiaster bör få uppleva på plats.",
     location: "Leeds, England",
     league: "Premier League",
-    aboutTickets: "Lojala fans gör att biljetterna ofta säljer slut snabbt.",
+    aboutTickets: "Jämför priser för biljetter och paketresor till Elland Road. Upptäck stämningen hos en av Englands mest hängivna och lojala supporterskaror.",
     heroImage: "/stadiums/elland-road-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
     stadiumLayoutImage: "/stadiums/elland-road-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2356.5412345678!2d-1.5714321!3d53.777823!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48795c123456789!2sElland%20Road!5e0!3m2!1ssv!2sse!4v1718460000000!5m2!1ssv!2sse",
-    howToBuy: "Köp via officiella kanaler eller officiella matchpaket.",
-    sectionsAndPrices: "Kop-läktaren är legendarisk.",
-    packages: "Matchpaket finns tillgängliga.",
-    history: "Leeds har en stolt historia och en av Englands mest hängivna supporterskaror.",
-    faqs: [{ question: "Hur tar man sig till arenan?", answer: "Bussar går regelbundet från Leeds centrum." }]
+    howToBuy: "Med över 20 000 personer på väntelista för säsongskort är biljetttrycket på Elland Road enormt. Ordinära lösbiljetter släpps främst till klubbens medlemmar och säljer slut omedelbart. För att vara garanterad plats som tillresande supporter bör du boka officiella matchpaket (med biljett och hotell) eller auktoriserade hospitality-biljetter i god tid innan resan.",
+    sectionsAndPrices: "Elland Road består av Don Revie Stand (Norra läktaren, känd som 'The Kop' där de mest högljudda supportrarna sitter), Jack Charlton Stand (Östra läktaren, stor och modern i två etage), Norman Hunter Stand (Södra läktaren, rymmer även bortasektionen) och John Charles Stand (Västra huvudläktaren). Prisvärda platser finns på kortsidorna medan Östra och Västra läktarna erbjuder bäst sikt över spelet.",
+    packages: "Våra hotell- och matchpaket gör din resa till Yorkshire helt bekymmersfri. I paketen ingår officiell matchbiljett på Elland Road kombinerat med boende på centralt belägna hotell i Leeds. Staden erbjuder ett fantastiskt utbud av mikrobryggerier, historiska pubar, bra shopping och god mat – perfekt för en komplett fotbollshelg.",
+    history: "Leeds United grundades 1919 efter upplösningen av Leeds City. Klubben nådde sin första guldålder under den legendariske tränaren Don Revie på 1960- och 70-talen med flera ligatitlar och Europafinaler. Under 1990-talet vann laget den sista upplagan av gamla First Division (1991/92) och nådde semifinal i Champions League 2001. Efter flera tuffa år i lägre divisioner tog sig Leeds tillbaka till finrummet under Marcelo Bielsas spektakulära ledning.",
+    faqs: [
+      {
+        question: "Hur tar jag mig till Elland Road från centrala Leeds?",
+        answer: "Det går dedikerade matchbussar (R2) från Sovereign Street i centrala Leeds direkt till arenan på matchdagar. Du kan även ta en taxi på cirka 10 minuter eller gå till fots från centralstationen på cirka 30–35 minuter."
+      },
+      {
+        question: "Vad är 'The Kop' på Elland Road?",
+        answer: "Det är den norra kortsidan (Don Revie Stand) där klubbens mest sångglada och passionerade kår av supportrar samlas för att skapa den fantastiska stämningen."
+      },
+      {
+        question: "Är det säkert att köpa sista minuten-biljetter utanför arenan?",
+        answer: "Nej, köp aldrig biljetter av svartbörshandlare utanför arenan då risken för förfalskade biljetter är stor. Boka alltid via verifierade, auktoriserade återförsäljare."
+      }
+    ]
   },
+
   "aston-villa": {
     name: "Aston Villa",
     stadiumName: "Villa Park",
     logo: "/logos/aston-villa.png",
-    stadiumDescription: "En av Englands mest anrika arenor som ofta värd för semifinaler i FA-cupen.",
+    stadiumDescription: "Villa Park är en av den engelska fotbollens absolut mest anrika och vackraste katedraler, belägen i stadsdelen Aston i Birmingham. Arenan har varit Villas hem sedan 1897 och rymmer drygt 42 000 åskådare. Med sin klassiska tegelfasad vid Holte End och eleganta arkitektur utstrålar Villa Park ren och skär fotbollshistoria. Arenan har genom åren valt som spelplats för fler FA-cupsemifinaler än någon annan arena i England och bjuder på en genuint elektrisk stämning under både Premier League- och Europakvällar.",
     location: "Birmingham, England",
     league: "Premier League",
-    aboutTickets: "Villa Park är en fantastisk upplevelse för alla fotbollsfans.",
+    aboutTickets: "Upplev atmosfären på anrika Villa Park. Jämför priser för officiella biljetter och paketresor till Aston Villas alla hemmamatcher.",
     heroImage: "/stadiums/villa-park-hero.jpg",
     contentImage: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?q=80&w=600&auto=format&fit=crop",
     stadiumLayoutImage: "/stadiums/villa-park-hero.jpg",
     googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2430.4321!2d-1.8845!3d52.5094!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4870bc123456!2sVilla%20Park!5e0!3m2!1ssv!2sse!4v1718460000000!5m2!1ssv!2sse",
-    howToBuy: "Officiella hemsidan är säkrast.",
-    sectionsAndPrices: "Trinity Road Stand erbjuder utmärkt sikt.",
-    packages: "Matchpaket med hotell i Birmingham rekommenderas.",
-    history: "En klubb med anor från 1874 och vinnare av Europacupen 1982.",
-    faqs: [{ question: "Var ligger arenan?", answer: "Den ligger i området Aston, en kort tågresa från Birmingham New Street." }]
+    howToBuy: "I och med klubbens stora framgångar säljer matcherna på Villa Park slut väldigt fort. Lösbiljetter kräver oftast medlemskap i Aston Villa. För svenska resenärer är det absolut smidigaste alternativet att boka ett säkert matchpaket med officiell biljett och hotellboende. Då garanteras du giltiga e-biljetter levererade direkt till mobilen utan krångel.",
+    sectionsAndPrices: "Arenan bestående av fyra fristående och karaktäristiska läktare: Holte End (den ikoniska södra kortsidan med två stora etage där de mest hängivna fansen sitter), Trinity Road Stand (den moderna västra långsidan med VIP-utrymmen), Doug Ellis Stand (östra långsidan) och North Stand (norra kortsidan). Trinity Road och Doug Ellis erbjuder bäst vy över planens taktiska spel.",
+    packages: "Våra matchpaket till Birmingham inkluderar en garanterad sittplatsbiljett på Villa Park samt boende på godkänt hotell i centrala Birmingham. Som Storbritanniens näst största stad har Birmingham ett fantastiskt utbud av restauranger, pubar och shopping (t.ex. vid Bullring), vilket gör resan till en komplett fotbollsupplevelse.",
+    history: "Aston Villa grundades 1874 och var en av de tolv klubbar som bildade The Football League 1888. Klubben har en oerhört stolt historia med sju engelska ligatitlar, sju FA-cupguld och den absoluta höjdpunkten: segern i Europacupen (nuvarande Champions League) 1982 efter att ha besegrat Bayern München i finalen i Rotterdam.",
+    faqs: [
+      {
+        question: "Hur tar man sig bäst till Villa Park från centrala Birmingham?",
+        answer: "Det enklaste sättet är att ta lokaltåget från Birmingham New Street station till antingen stationen Witton (närmast Holte End) eller Aston station. Tågresan tar cirka 8–10 minuter, följt av en kort promenad på 5–10 minuter till arenan."
+      },
+      {
+        question: "Vad är Holte End för något?",
+        answer: "Holte End är den berömda södra kortsidan på Villa Park. Det var en gång i tiden en av Europas största ståplatsläktare under tak och är än idag hjärtat i Aston Villas supporterkultur och sång."
+      },
+      {
+        question: "Ingår hotell i paketresorna?",
+        answer: "Ja, när du bokar ett matchpaket via våra partners ingår både officiell matchbiljett och hotellövernattning i Birmingham."
+      }
+    ]
   },
   "villarreal": {
     name: "Villarreal CF",
