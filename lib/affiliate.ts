@@ -44,10 +44,9 @@ export const getP1TravelUrl = (homeTeam: string, league?: string): string => {
 
 // --- FOOTBALL TICKET NET (AWIN) ---
 const FTN_PUBLISHER_ID = '3043299';
-const FTN_ADVERTISER_ID = '66509';
+const FTN_ADVERTISER_ID = '109002';
 
 export const getFootballTicketNetUrl = (homeTeam: string, awayTeam: string): string => {
-  // Testa med en ren domän-URL utan sökparametrar
-  const targetUrl = 'https://www.footballticketnet.com';
-  return `https://www.awin1.com/cread.php?awinmid=66509&awinaffid=3043299&ued=${encodeURIComponent(targetUrl)}`;
+  const targetUrl = `https://www.footballticketnet.com/search?q=${encodeURIComponent(homeTeam)}`;
+  return `https://www.awin1.com/cread.php?awinmid=${FTN_ADVERTISER_ID}&awinaffid=${FTN_PUBLISHER_ID}&ued=${encodeURIComponent(targetUrl)}`;
 };
