@@ -533,7 +533,6 @@ export async function GET() {
       // Slå upp biljetter i feederna
       const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date);
       const ticomboData = findTicomboTicketInRows(ticomboRows, homeName, awayName, m.date);
-      const ftnData = findFootballTicketNetTicket(homeName, awayName);
 
       // Bygg listan över erbjudanden dynamiskt
       const offers: any[] = [
