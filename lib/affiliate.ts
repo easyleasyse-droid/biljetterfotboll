@@ -40,4 +40,14 @@ export const getP1TravelUrl = (homeTeam: string, league?: string): string => {
 
   // 2. Koppla ihop med din Partnerize-länk
   return `https://p1travel.prf.hn/click/camref:${P1_TRAVEL_CAMREF}/destination:${encodeURIComponent(targetUrl)}`;
-};
+
+// --- FOOTBALL TICKET NET (AWIN) ---
+const FTN_PUBLISHER_ID = '3043299';
+const FTN_ADVERTISER_ID = '66509';
+
+export const getFootballTicketNetUrl = (homeTeam: string, awayTeam: string): string => {
+  const searchQuery = encodeURIComponent(`${homeTeam} vs ${awayTeam}`);
+  const targetUrl = encodeURIComponent(`https://www.footballticketnet.com/search?q=${searchQuery}`);
+
+  return `https://www.awin1.com/cread.php?awinmid=${FTN_ADVERTISER_ID}&awinaffid=${FTN_PUBLISHER_ID}&ued=${targetUrl}`;
+};  

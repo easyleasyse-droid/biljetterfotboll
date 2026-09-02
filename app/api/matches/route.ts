@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
+import { findFootballTicketNetTicket } from "@/lib/footballTicketNetFeed";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 
 export const dynamic = 'force-dynamic';
@@ -532,6 +533,7 @@ export async function GET() {
       // Slå upp biljetter i feederna
       const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date);
       const ticomboData = findTicomboTicketInRows(ticomboRows, homeName, awayName, m.date);
+      const ftnData = findFootballTicketNetTicket(homeName, awayName);
 
       // Bygg listan över erbjudanden dynamiskt
       const offers: any[] = [
@@ -658,6 +660,20 @@ export async function GET() {
           deliveryType: "Mobilbiljett",
           isVerified: true,
           url: getSearchUrl("Viagogo", homeName, awayName),
+          type: "ticket"
+        },
+        {
+          id: `o-${matchId}-ftn`,
+          merchantName: "Football Ticket Net",
+          rating: 4.6,
+          reviewsCount: 380,
+          section: "Sittplats / Sektion valfri",
+          category: "Standard / VIP",
+          priceSEK: Math.round(basePrice * 0.95),
+          availableQuantity: 6,
+          deliveryType: "E-biljett / Mobil",
+          isVerified: true,
+          url: findFootballTicketNetTicket(homeName, awayName).directUrl,
           type: "ticket"
         }
       );
