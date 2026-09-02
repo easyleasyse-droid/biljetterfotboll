@@ -47,11 +47,14 @@ const FTN_PUBLISHER_ID = '3043299';
 const FTN_ADVERTISER_ID = '109002';
 
 export const getFootballTicketNetUrl = (homeTeam: string, awayTeam: string): string => {
-  // Rensa bort eventuella "FC", "CF" osv. för renare sökning
-  const cleanHomeTeam = homeTeam.replace(/\s+(FC|CF|Club)$/i, '').trim();
-  
-  // Använd en ren sträng utan encodeURIComponent inuti URL-bygget
-  const targetUrl = `https://www.footballticketnet.com/search?q=${cleanHomeTeam}`;
+  // Omvandla t.ex. "Arsenal FC" -> "arsenal", "Real Madrid" -> "real-madrid"
+  const formattedTeam = homeTeam
+    .toLowerCase()
+    .replace(/\s+(fc|cf|club)$/i, '')
+    .trim()
+    .replace(/\s+/g, '-');
+
+  const targetUrl = `https://www.footballticketnet.com/${formattedTeam}-football-tickets`;
 
   return `https://www.awin1.com/cread.php?awinmid=${FTN_ADVERTISER_ID}&awinaffid=${FTN_PUBLISHER_ID}&ued=${encodeURIComponent(targetUrl)}`;
 };
