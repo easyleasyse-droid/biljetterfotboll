@@ -47,9 +47,7 @@ const FTN_PUBLISHER_ID = '3043299';
 const FTN_ADVERTISER_ID = '66509';
 
 export const getFootballTicketNetUrl = (homeTeam: string, awayTeam: string): string => {
-  // 1. Bygg en ren direktlänk till sökningen helt utan encodeURIComponent internt
-  const targetUrl = `https://www.footballticketnet.com/search?q=${homeTeam}`;
-
-  // 2. Låt enbart hela targetUrl kodas EN gång i Awin-länken
+  // Testa med en ren domän-URL utan sökparametrar
+  const targetUrl = 'https://www.footballticketnet.com';
   return `https://www.awin1.com/cread.php?awinmid=66509&awinaffid=3043299&ued=${encodeURIComponent(targetUrl)}`;
 };
