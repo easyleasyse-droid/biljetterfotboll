@@ -30,7 +30,7 @@ export const LEAGUES_DATA: Record<string, LeagueSEOData> = {
     description: "Turneringen där Europas absolut bästa klubbar gör upp under strålkastarljuset.",
     aboutTickets: "Champions League-kvällar har en unik status och biljettrycket är enormt, särskilt i slutspelet.",
     ticketTips: "Perfekt att kombinera med en storstadssemester då matcherna spelas mitt i veckan.",
-    teams: ["arsenal", "manchester-united", "liverpool", "real-madrid", "barcelona", "manchester-city", "inter", "borussia-dortmund", "atletico.madrid", "psg", "roma", "bayern-munchen", "manchester-united", "villarreal", "real-betis", "napoli", "lille", "aston-villa", "porto", "feyenoord", "stuttgart", "viking", "bodo-glimt", "sporting", "galatasaray", "lens", "como", "leipzig", "fenerbache", "club-brugge", "aek-athens", "lask-linz", "slovan-bratiislava", "psv", "shakhtar", "slavia-prague"]
+    teams: ["arsenal", "manchester-united", "liverpool", "real-madrid", "barcelona", "manchester-city", "inter", "borussia-dortmund", "atletico-madrid", "psg", "roma", "bayern-munchen", "villarreal", "real-betis", "napoli", "lille", "aston-villa", "porto", "feyenoord", "stuttgart", "viking", "bodo-glimt", "sporting", "galatasaray", "lens", "como", "leipzig", "fenerbache", "club-brugge", "aek-athens", "lask-linz", "slovan-bratiislava", "psv", "shakhtar", "slavia-prague", "sabah"]
   },
   "serie-a": {
     name: "Serie A",

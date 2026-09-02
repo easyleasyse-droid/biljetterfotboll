@@ -2707,8 +2707,8 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     stadiumName: "MEWA ARENA",
     location: "Mainz, Tyskland",
     logo: "/logos/mainz.png",
-    heroImage: "/stadiums/mewa-arena-hero.jpg",
-    stadiumLayoutImage: "/stadiums/mewa-arena-hero.jpg",
+    heroImage: "/stadiums/mewa-arena-hero.webp",
+    stadiumLayoutImage: "/stadiums/mewa-arena-hero.webp",
     googleMapsEmbedUrl: "https://maps.google.com/maps?q=MEWA+ARENA,+Mainz&t=&z=16&ie=UTF8&iwloc=&output=embed",
     stadiumDescription: "MEWA ARENA (tidigare Coface Arena) invigdes 2011 och rymmer 33 305 åskådare. Arenan är känd för sina markanta röda ramar i hörnen och en brant läktarkonstruktion som håller ljudet kvar inuti stadion. Här upplever du en varm, familjär och högljudd tysk matchkultur i Rheinland-Pfalz.",
     aboutTickets: "Jämför biljetter till 1. FSV Mainz 05 på MEWA ARENA. Säkra din plats för heta matcher i Bundesliga.",
@@ -2730,7 +2730,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
 
   "paderborn": {
     name: "SC Paderborn 07",
-    league: "2. Bundesliga",
+    league: "Bundesliga",
     stadiumName: "Home Deluxe Arena",
     location: "Paderborn, Tyskland",
     logo: "/logos/paderborn.png",
@@ -2810,7 +2810,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
 
   "elversberg": {
     name: "SV Elversberg",
-    league: "2. Bundesliga",
+    league: "Bundesliga",
     stadiumName: "URSAPHARM-Arena an der Kaiserlinde",
     location: "Spiesen-Elversberg, Tyskland",
     logo: "/logos/elversberg.png",
@@ -2837,7 +2837,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
 
   "hamburger-sv": {
     name: "Hamburger SV",
-    league: "2. Bundesliga",
+    league: "Bundesliga",
     stadiumName: "Volksparkstadion",
     location: "Hamburg, Tyskland",
     logo: "/logos/hamburger-sv.png",
@@ -2868,8 +2868,8 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
     stadiumName: "Europa-Park Stadion",
     location: "Freiburg im Breisgau, Tyskland",
     logo: "/logos/freiburg.png",
-    heroImage: "/stadiums/europa-park-stadion-hero.jpg",
-    stadiumLayoutImage: "/stadiums/europa-park-stadion-hero.jpg",
+    heroImage: "/stadiums/europa-park-stadion-hero.webp",
+    stadiumLayoutImage: "/stadiums/europa-park-stadion-hero.webp",
     googleMapsEmbedUrl: "https://maps.google.com/maps?q=Europa-Park+Stadion,+Freiburg&t=&z=16&ie=UTF8&iwloc=&output=embed",
     stadiumDescription: "Europa-Park Stadion invigdes hösten 2021 och rymmer 34 700 åskådare. Det är en otroligt modern och hållbar stadion med Tysklands största solcellstak för arenor. Byggd extremt brant kombinerar den nutida komfort med den fantastiska, intima och högljudda stämning Freiburg är känt för.",
     aboutTickets: "Jämför biljetter till SC Freiburg. Säkra biljetter till en av Bundesligas allra mest stämningsfulla och charmigaste arenor.",
@@ -2944,7 +2944,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
   },
   "schalke": {
     name: "FC Schalke 04",
-    league: "2. Bundesliga",
+    league: "Bundesliga",
     stadiumName: "VELTINS-Arena",
     location: "Gelsenkirchen, Tyskland",
     logo: "/logos/schalke.png",
