@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
-import { findFootballTicketNetTicket } from "@/lib/footballTicketNetFeed";
+import { getFootballTicketNetUrl } from "@/lib/affiliate";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 
 export const dynamic = 'force-dynamic';
@@ -662,7 +662,7 @@ export async function GET() {
           url: getSearchUrl("Viagogo", homeName, awayName),
           type: "ticket"
         },
-        {
+         {
           id: `o-${matchId}-ftn`,
           merchantName: "Football Ticket Net",
           rating: 4.6,
@@ -673,7 +673,7 @@ export async function GET() {
           availableQuantity: 6,
           deliveryType: "E-biljett / Mobil",
           isVerified: true,
-          url: findFootballTicketNetTicket(homeName, awayName).directUrl,
+          url: getFootballTicketNetUrl(homeName, awayName),
           type: "ticket"
         }
       );
