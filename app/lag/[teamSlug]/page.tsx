@@ -58,6 +58,24 @@ export default async function Page({ params }: Props) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.biljetterfotboll.se";
   const graphItems: any[] = [];
 
+  // 0) SportsTeam Schema (Laget självt)
+  graphItems.push({
+    "@type": "SportsTeam",
+    "name": team.name,
+    "sport": "Soccer",
+    "url": `${baseUrl}/lag/${teamSlug}`,
+    "logo": team.logo ? `${baseUrl}${team.logo}` : undefined,
+    "memberOf": {
+      "@type": "SportsOrganization",
+      "name": team.league,
+    },
+    "location": {
+      "@type": "Place",
+      "name": team.stadiumName,
+      "address": team.location
+    }
+  });
+
   // A) FAQ Schema (om FAQ finns för laget)
   if (team.faqs && team.faqs.length > 0) {
     graphItems.push({

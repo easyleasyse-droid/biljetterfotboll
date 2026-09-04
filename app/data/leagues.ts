@@ -70,6 +70,14 @@ export const LEAGUES_DATA: Record<string, LeagueSEOData> = {
     description: "Sveriges högsta serie med en av Europas bästa läktarkulturer och otrolig passion.",
     aboutTickets: "Allsvenska biljetter säljs i första hand direkt via klubbarnas egna biljettsystem eller officiella partners.",
     ticketTips: "Derbymatcher i Stockholm och Malmö blir snabbt slutsålda – boka så fort biljettsläppet sker.",
-    teams: ["aik", "hammarby", "djurgarden", "malmo-ff", "ifk-goteborg"]   
-  }// <--- Ingen semikolon här
+    teams: ["aik", "hammarby", "djurgarden", "malmo-ff", "ifk-goteborg"]  
+  },
+  "europa-league": {
+    name: "UEFA Europa League",
+    country: "Europa",
+    description: "Europas näst största klubblagsturnering fylld med dramatik, dramatiska slutspelskvällar och drömmatcher.",
+    aboutTickets: "Biljetter till Europa League ger fantastiskt värde där du kan se storklubbar mötas på klassiska arenor runt om i Europa.",
+    ticketTips: "Matcherna spelas på torsdagar. Det gör turneringen perfekt för en förlängd weekendresa till någon av Europas storstäder.",
+    teams: ["tottenham", "manchester-united", "roma", "lazio", "porto", "athletic-bilbao", "real-sociedad", "eintracht-frankfurt", "nice", "twente", "malmo-ff", "bodo-glimt", "union-berlin", "ajax", "fenerbahce", "galatasaray", "olympiacos"]
+  }
 }; // <--- Denna stänger LEAGUES_DATA och har semikolon
