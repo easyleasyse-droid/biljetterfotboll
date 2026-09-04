@@ -187,11 +187,23 @@ export default function HomePage() {
           <p className="text-sm font-medium">Hämtar dagens hetaste toppmatcher live...</p>
         </div>
       ) : (
-        <MatchList
-          matches={searchText || selectedLeague ? sortedMatches : sortedMatches.slice(0, 12)}
-          onSelectMatch={handleSelectMatch}
-          selectedLeague={selectedLeague}
-        />
+        <>
+          <MatchList
+            matches={searchText || selectedLeague ? sortedMatches : sortedMatches.slice(0, visibleCount)}
+            onSelectMatch={handleSelectMatch}
+            selectedLeague={selectedLeague}
+          />
+          {sortedMatches.length > visibleCount && (
+            <div className="text-center mt-8 mb-12">
+              <button
+                onClick={() => setVisibleCount((prev) => prev + 15)}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-8 py-3 rounded-xl transition-all shadow-md active:scale-95"
+              >
+                Visa fler matcher ({sortedMatches.length - visibleCount} kvar)
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       <section className="bg-slate-50 border-t border-b border-slate-200 py-16 px-4">
