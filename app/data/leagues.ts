@@ -38,7 +38,7 @@ export const LEAGUES_DATA: Record<string, LeagueSEOData> = {
     description: "Italiensk fotboll när den är som bäst, känd för sin taktiska disciplin och passionerade fans.",
     aboutTickets: "Biljetter till Serie A kräver ofta att du registrerar dig med ID-handling hos klubbarna.",
     ticketTips: "Besök arenorna i god tid – säkerhetskontrollerna i Italien är noggranna.",
-    teams: ["inter", "ac-milan", "juventus", "napoli", "roma", "lazio", "atalanta", "bologna", "como"]
+    teams: ["inter", "milan", "juventus", "napoli", "roma", "lazio", "atalanta", "bologna", "como"]
   },
    "ligue-1": {
     name: "Ligue 1",

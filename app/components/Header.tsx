@@ -80,6 +80,9 @@ export default function Header() {
           <Link href="/liga/champions-league" className="hover:text-indigo-600 transition-colors flex items-center gap-1">
             🔥 Champions League
           </Link>
+          <Link href="/liga/europa-league" className="hover:text-indigo-600 transition-colors flex items-center gap-1">
+            Europa League
+          </Link>
           <Link href="/liga/ligue-1" className="hover:text-indigo-600 transition-colors">
             Ligue 1
           </Link>  
