@@ -22,7 +22,7 @@ export const LEAGUES_DATA: Record<string, LeagueSEOData> = {
     description: "Spansk toppfotboll fylld med teknik, passion och några av världens mest ikoniska fotbollsklubbar.",
     aboutTickets: "Biljetter till La Liga-matcher släpps ofta senare än i England. För stormatcher krävs lång framförhållning.",
     ticketTips: "Spansk fotboll spelas ofta sent på kvällarna. Se till att ha flexibla flygbokningar.",
-    teams: ["real-madrid", "barcelona", "atletico-madrid", "valencia", "villarreal", "real-betis", "sevilla", "real-sociedad", "athletic-bilbao", "rayo", "racing-santander", "deportivo", "alaves", "espanyol", "malaga", "levante", "getafe", "celta-vigo" ,"elche"]
+    teams: ["real-madrid", "barcelona", "atletico-madrid", "valencia", "villarreal", "real-betis", "sevilla", "real-sociedad", "athletic-bilbao", "rayo", "racing-santander", "deportivo", "alaves", "espanyol", "malaga", "levante", "getafe", "celta-vigo" ,"elche", "osasuna"]
   },
   "champions-league": {
     name: "UEFA Champions League",

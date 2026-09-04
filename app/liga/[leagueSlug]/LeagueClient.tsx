@@ -53,18 +53,28 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
     );
   }
 
-  const filteredMatches = matches.filter((match) => {
-    if (!match.league) return false;
-    
-    const matchLeague = match.league.trim().toLowerCase();
-    const targetLeague = leagueData.name.trim().toLowerCase();
+  const filteredMatches = matches
+    .filter((match) => {
+      if (!match.league) return false;
+      
+      const matchLeague = match.league.trim().toLowerCase();
+      const targetLeague = leagueData.name.trim().toLowerCase();
 
-    return (
-      matchLeague === targetLeague ||
-      matchLeague.includes(targetLeague) ||
-      targetLeague.includes(matchLeague)
-    );
-  });
+      return (
+        matchLeague === targetLeague ||
+        matchLeague.includes(targetLeague) ||
+        targetLeague.includes(matchLeague)
+      );
+    })
+    .sort((a, b) => {
+      const timeA = a.time ? a.time : "00:00";
+      const timeB = b.time ? b.time : "00:00";
+      const dateA = new Date(`${a.date}T${timeA}`).getTime();
+      const dateB = new Date(`${b.date}T${b.time || "00:00"}`).getTime();
+
+      return dateA - dateB;
+    })
+    .slice(0, 15); // <--- Visar endast de 15 närmaste matcherna
 
   const handleBookOffer = (offer: any, quantity: number) => {
     setSelectedOffer(offer);

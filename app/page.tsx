@@ -105,7 +105,7 @@ export default function HomePage() {
     const timeA = a.time === "TBD" || !a.time ? "23:59" : a.time;
     const timeB = b.time === "TBD" || !b.time ? "23:59" : b.time;
     return `${a.date} ${timeA}`.localeCompare(`${b.date} ${timeB}`);
-  });
+  }).slice(0, 10);
 
   const handleSearchFocus = () => {
     const searchInput = document.getElementById("hero-main-search");
