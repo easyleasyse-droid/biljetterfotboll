@@ -10,7 +10,7 @@ interface HeroProps {
   matches: Match[];
   onSelectMatch: (match: Match) => void;
   onClearFilters: () => void;
-  onSelectLeague: (league: "Premier League" | "La Liga" | "Champions League" | "Serie A" | "Allsvenskan" | null) => void;
+  onSelectLeague: (league: "Premier League" | "La Liga" | "Champions League" | "Serie A" | "Allsvenskan" | "Europa League" | null) => void;
   selectedLeague: string | null;
 }
 
@@ -76,6 +76,7 @@ export default function Hero({
     { label: "Premier League", query: "Premier League" },
     { label: "Allsvenskan derby", query: "Hammarby" },
     { label: "Champions League", query: "Champions League" },
+    { label: "Europa League", query: "Europa League" },
   ];
 
   return (
@@ -245,7 +246,7 @@ export default function Hero({
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Snabbval:</span>
-          {["Serie A", "Premier League", "La Liga", "Champions League"].map((leagueName) => (
+          {["Serie A", "Premier League", "La Liga", "Champions League", "Europa League"].map((leagueName) => (
             <button
               key={leagueName}
               onClick={() => {
