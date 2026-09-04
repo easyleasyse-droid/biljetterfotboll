@@ -189,7 +189,7 @@ export default function HomePage() {
       ) : (
         <>
           <MatchList
-            matches={searchText || selectedLeague ? sortedMatches : sortedMatches.slice(0, visibleCount)}
+            matches={sortedMatches.slice(0, visibleCount)}
             onSelectMatch={handleSelectMatch}
             selectedLeague={selectedLeague}
           />
@@ -197,7 +197,7 @@ export default function HomePage() {
             <div className="text-center mt-8 mb-12">
               <button
                 onClick={() => setVisibleCount((prev) => prev + 15)}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-8 py-3 rounded-xl transition-all shadow-md active:scale-95"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-8 py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
               >
                 Visa fler matcher ({sortedMatches.length - visibleCount} kvar)
               </button>
