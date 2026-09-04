@@ -78,6 +78,6 @@ export const LEAGUES_DATA: Record<string, LeagueSEOData> = {
     description: "Europas näst största klubblagsturnering fylld med dramatik, dramatiska slutspelskvällar och drömmatcher.",
     aboutTickets: "Biljetter till Europa League ger fantastiskt värde där du kan se storklubbar mötas på klassiska arenor runt om i Europa.",
     ticketTips: "Matcherna spelas på torsdagar. Det gör turneringen perfekt för en förlängd weekendresa till någon av Europas storstäder.",
-    teams: ["tottenham", "manchester-united", "roma", "lazio", "porto", "athletic-bilbao", "real-sociedad", "eintracht-frankfurt", "nice", "twente", "malmo-ff", "bodo-glimt", "union-berlin", "ajax", "fenerbahce", "galatasaray", "olympiacos"]
+    teams: ["lyon", "olympiakos", "bayer-leverkusen", "sunderland", "juventus", "milan", "benfica", "rennes", "rb-salzburg", "hoffenheim", "besiktas", "marseille", "crystal.palace", "real-sociedad", "bournemouth", "omonia", "celta-vigo", "ararat", "sparta-prag", "jagiellonia", "anderlecht", "celje", "az", "sturm-graz", "hapoel-sheva", "dinamo-zagreb", "levski-sofia", "ofi-kreta", "celtic", "ferencvaros", "nec", "viktoria-plzen", "union-saint-gilloise", "lillestrom", "torreense", "lech-poznan"]
   }
 }; // <--- Denna stänger LEAGUES_DATA och har semikolon
