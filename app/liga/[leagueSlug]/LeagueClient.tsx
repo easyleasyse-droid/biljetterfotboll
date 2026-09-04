@@ -18,6 +18,7 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [bookingQuantity, setBookingQuantity] = useState<number>(2);
+  const [visibleCount, setVisibleCount] = useState<number>(15);
 
   useEffect(() => {
     async function fetchMatches() {
@@ -70,11 +71,13 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
       const timeA = a.time ? a.time : "00:00";
       const timeB = b.time ? b.time : "00:00";
       const dateA = new Date(`${a.date}T${timeA}`).getTime();
-      const dateB = new Date(`${b.date}T${b.time || "00:00"}`).getTime();
+      const dateB = new Date(`${b.date}T${timeB}`).getTime();
 
       return dateA - dateB;
-    })
-    .slice(0, 15); // <--- Visar endast de 15 närmaste matcherna
+    });
+
+  // Hämta endast de matcher som ska visas just nu
+  const displayedMatches = filteredMatches.slice(0, visibleCount);
 
   const handleBookOffer = (offer: any, quantity: number) => {
     setSelectedOffer(offer);
@@ -176,7 +179,7 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
             </div>
           ) : filteredMatches.length > 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm divide-y divide-slate-100">
-              {filteredMatches.map((match) => (
+              {filteredMatches.slice(0, visibleCount).map((match) => (
                 <div 
                   key={match.id} 
                   className="p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/80 transition-colors"
@@ -246,6 +249,17 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
               Just nu har vi inga inlagda matcher för {leagueData.name}. Fler matcher kommer inom kort!
             </div>
           )}
+
+          {filteredMatches.length > visibleCount && (
+          <div className="text-center mt-8">
+            <button
+              onClick={() => setVisibleCount((prev) => prev + 15)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-8 py-3 rounded-xl transition-all shadow-sm active:scale-95"
+            >
+              Visa fler matcher ({filteredMatches.length - visibleCount} kvar)
+            </button>
+          </div>
+        )}
         </section>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
