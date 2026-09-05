@@ -275,42 +275,62 @@ export default function HomePage() {
           }}
         />
       )}
-      {/* FAQ JSON-LD för AI-sökmotorer */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              "mainEntity": [
-                {
-                  "@type": "Question",
-                  "name": "Vad kostar en fotbollsresa i Europa totalt?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "En typisk fotbollsresa till Premier League eller La Liga kostar oftast mellan 3 500 SEK och 8 000 SEK per person. Detta inkluderar matchbiljett, 2 nätters boende på hotell, flyg tur och retur samt lokal transport."
-                  }
-                },
-                {
-                  "@type": "Question",
-                  "name": "Hur hittar man billiga fotbollsbiljetter säkert?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Genom att jämföra priser från verifierade biljettaktörer och partners på biljetterfotboll.se kan du enkelt hitta det lägsta tillgängliga priset för din valda match utan att riskera ogiltiga biljetter."
-                  }
-                },
-                {
-                  "@type": "Question",
-                  "name": "Vad ingår i totalkostnaden för en fotbollsresa?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Utöver själva matchbiljetten består den totala reskalkylen av tur-och-returflyg, hotellnätter samt lokal kollektivtrafik eller taxi till och från arenan och flygplatsen."
-                  }
+      {/* Schema.org Graph för Startsidan (WebSite, Organization & FAQ) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "WebSite",
+                "@id": "https://www.biljetterfotboll.se/#website",
+                "url": "https://www.biljetterfotboll.se",
+                "name": "Biljetter Fotboll",
+                "description": "Jämför fotbollsbiljetter och matchpaket till Premier League, La Liga och Serie A.",
+                "potentialAction": {
+                  "@type": "SearchAction",
+                  "target": "https://www.biljetterfotboll.se/?s={search_term_string}",
+                  "query-input": "required name=search_term_string"
                 }
-              ]
-            })
-          }}
-        />
-      </div>
-    );
-  }
+              },
+              {
+                "@type": "Organization",
+                "@id": "https://www.biljetterfotboll.se/#organization",
+                "name": "Biljetter Fotboll",
+                "url": "https://www.biljetterfotboll.se",
+                "logo": "https://www.biljetterfotboll.se/logo.png"
+              },
+              {
+                "@type": "FAQPage",
+                "mainEntity": [
+                  {
+                    "@type": "Question",
+                    "name": "Vad kostar en fotbollsresa i Europa totalt?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "En typisk fotbollsresa till Premier League eller La Liga kostar oftast mellan 3 500 SEK och 8 000 SEK per person. Detta inkluderar matchbiljett, hotell och flyg."
+                    }
+                  },
+                  {
+                    "@type": "Question",
+                    "name": "Hur hittar man billiga fotbollsbiljetter säkert?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "Genom att jämföra priser från verifierade biljettaktörer och partners på biljetterfotboll.se kan du enkelt hitta det lägsta tillgängliga priset."
+                    }
+                  },
+                  {
+                    "@type": "Question",
+                    "name": "Vad ingår i totalkostnaden för en fotbollsresa?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "Utöver själva matchbiljetten består den totala reskalkylen av tur-och-returflyg, hotellnätter samt lokal kollektivtrafik eller taxi till och från arenan."
+                    }
+                  }
+                ]
+              }
+            ]
+          })
+        }}
+      />
