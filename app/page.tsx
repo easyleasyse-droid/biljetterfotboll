@@ -65,7 +65,7 @@ export default function HomePage() {
         }
       } catch (err) {
         console.error("Kunde inte ladda live-matcher:", err);
-      } finally {
+      } font-finally {
         setLoading(false);
       }
     }
@@ -275,6 +275,7 @@ export default function HomePage() {
           }}
         />
       )}
+
       {/* Schema.org Graph för Startsidan (WebSite, Organization & FAQ) */}
       <script
         type="application/ld+json"
@@ -334,3 +335,6 @@ export default function HomePage() {
           })
         }}
       />
+    </div>
+  );
+}
