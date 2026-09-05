@@ -3131,7 +3131,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
   },
 
   "aek-athens": {
-    name: "AEK Aten",
+    name: "AEK Athens",
     league: "Super League Greece",
     stadiumName: "Agia Sofia Stadium",
     location: "Aten, Grekland",

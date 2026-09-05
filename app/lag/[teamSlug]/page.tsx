@@ -57,7 +57,30 @@ export default async function Page({ params }: Props) {
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.biljetterfotboll.se";
   const graphItems: any[] = [];
-
+  // 0) BreadcrumbList Schema (Brödsmulor)
+  graphItems.push({
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Hem",
+        "item": `${baseUrl}`
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": team.league,
+        "item": `${baseUrl}/liga/${team.league.toLowerCase().replace(/\s+/g, '-')}`
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": team.name,
+        "item": `${baseUrl}/lag/${teamSlug}`
+      }
+    ]
+  });
   // 0) SportsTeam Schema (Laget självt)
   graphItems.push({
     "@type": "SportsTeam",
@@ -126,13 +149,13 @@ export default async function Page({ params }: Props) {
               "addressLocality": team.location,
             },
           },
-          "offers": {
-            "@type": "AggregateOffer",
-            "lowPrice": match.priceFrom,
-            "priceCurrency": "SEK",
-            "offerCount": match.offers?.length || 1,
-            "url": `${baseUrl}/lag/${teamSlug}`,
-          },
+          "offers": match.priceFrom ? {
+          "@type": "AggregateOffer",
+          "lowPrice": match.priceFrom,
+          "priceCurrency": "SEK",
+          "offerCount": match.offers?.length || 1,
+          "url": `${baseUrl}/lag/${teamSlug}`
+        } : undefined,
         });
       });
     }
