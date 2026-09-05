@@ -65,7 +65,7 @@ export default function HomePage() {
         }
       } catch (err) {
         console.error("Kunde inte ladda live-matcher:", err);
-      } font-finally {
+      } finally {
         setLoading(false);
       }
     }
