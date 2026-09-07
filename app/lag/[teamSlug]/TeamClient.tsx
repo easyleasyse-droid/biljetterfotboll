@@ -55,21 +55,21 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
       const awayName = removeAccents(match.awayTeam?.name || "").toLowerCase();
       const slug = teamSlug.toLowerCase().trim();
 
-      // Specifik spärr för AC Milan: Släpp ALDRIG igenom matcher där "inter" ingår
-      if (slug === "ac-milan") {
-        const isInterMatch = homeName.includes("inter") || awayName.includes("inter");
-        if (isInterMatch) return false;
-
-        const isMilanMatch = homeName.includes("milan") || awayName.includes("milan");
-        return isMilanMatch;
+      // Täcker både "milan" och "ac-milan"
+      if (slug === "milan" || slug === "ac-milan") {
+        // Om matchen innehåller "inter", kasta bort den direkt
+        if (homeName.includes("inter") || awayName.includes("inter")) {
+          return false;
+        }
+        return homeName.includes("milan") || awayName.includes("milan");
       }
 
-      // Specifik spärr för Inter
+      // Regel för Inter
       if (slug === "inter" || slug === "inter-milan") {
         return homeName.includes("inter") || awayName.includes("inter");
       }
 
-      // Standardjämförelse för alla andra lag
+      // Standard för övriga lag
       const targetName = removeAccents(slug.replace(/-/g, " "));
       return homeName.includes(targetName) || awayName.includes(targetName);
     })
