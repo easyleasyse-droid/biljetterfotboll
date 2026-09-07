@@ -14,7 +14,7 @@ export const LEAGUES_DATA: Record<string, LeagueSEOData> = {
     description: "Världens mest populära och intensiva fotbollsliga. Upplev stämningen på arenor som Emirates Stadium, Old Trafford och Anfield live.",
     aboutTickets: "Biljetter till Premier League-matcher är extremt eftertraktade. Det absolut smidigaste och säkraste sättet för internationella supportrar att köpa är officiella hospitality-paket eller färdiga hotellpaket.",
     ticketTips: "Planera din resa i god tid. Matchdagar spikas ofta 6–8 veckor före matchhelgen.",
-    teams: ["arsenal", "manchester-united", "liverpool", "chelsea", "tottenham", "manchester-city", "newcastle", "leeds", "aston-villa"]
+    teams: ["arsenal", "manchester-united", "liverpool", "chelsea", "tottenham", "manchester-city", "newcastle", "leeds", "aston-villa", "fulham", "crystal-palace", "bournemouth", "hull-city", "everton", "brighton", "coventry", "ipswich", "brentford", "nottingham", "sunderland"]
   },
   "la-liga": {
     name: "La Liga",
@@ -38,7 +38,7 @@ export const LEAGUES_DATA: Record<string, LeagueSEOData> = {
     description: "Italiensk fotboll när den är som bäst, känd för sin taktiska disciplin och passionerade fans.",
     aboutTickets: "Biljetter till Serie A kräver ofta att du registrerar dig med ID-handling hos klubbarna.",
     ticketTips: "Besök arenorna i god tid – säkerhetskontrollerna i Italien är noggranna.",
-    teams: ["inter", "milan", "juventus", "napoli", "roma", "lazio", "atalanta", "bologna", "como"]
+    teams: ["inter", "milan", "juventus", "napoli", "roma", "lazio", "atalanta", "bologna", "como", "cagliari", "udinese", "lecce", "fiorentina", "venezia", "genoa", "frosinone", "monza", "sassuolo", "torino", "parma"]
   },
    "ligue-1": {
     name: "Ligue 1",
@@ -46,7 +46,7 @@ export const LEAGUES_DATA: Record<string, LeagueSEOData> = {
     description: "Fransk toppfotboll som kombinerar teknisk briljans med unika talanger.",
     aboutTickets: "Biljetter till franska matcher kräver ofta att du registrerar ett konto hos klubben.",
     ticketTips: "Större arenor i Frankrike har ofta bra tillgänglighet, men boka i tid för PSG-matcher.",
-    teams: ["psg", "lille", "strasbourg", "nice", "marseille", "lyon"]
+    teams: ["psg", "lille", "strasbourg", "nice", "marseille", "lyon", "monaco", "lens", "paris-fc", "toulouse", "auxerre", "le-havre", "lorient", "brest", "angers", "le-mans", "troyes"]
   },
   "bundesliga": {
     name: "Bundesliga",
@@ -54,7 +54,7 @@ export const LEAGUES_DATA: Record<string, LeagueSEOData> = {
     description: "Tyskland bjuder på några av Europas mest välfyllda arenor och fantastisk stämning.",
     aboutTickets: "Biljetter i Tyskland är ofta populära tack vare den höga publiktillströmningen.",
     ticketTips: "Se till att köpa officiella biljetter; tyska klubbar är mycket strikta med andrahandsmarknaden.",
-    teams: ["bayern-munchen", "borussia-dortmund", "bayer-leverkusen", "eintracht-frankfurt", "stuttgart", "union-berlin"]
+    teams: ["bayern-munchen", "borussia-dortmund", "bayer-leverkusen", "eintracht-frankfurt", "stuttgart", "union-berlin", "schalke", "hamburger-sv", "freiburg", "augsburg", "hoffenheim", "koln", "leipzig", "werder-bremen", "monchengladbach,", "elversberg", "paderborn"]
   },
   "eredivisie": {
     name: "Eredivisie",
