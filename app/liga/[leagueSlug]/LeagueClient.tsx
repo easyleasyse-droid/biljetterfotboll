@@ -128,16 +128,18 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
               const logoUrl = teamData.logo || teamData.image || teamData.crestUrl;
 
               return (
-                <Link 
-                  key={slug} 
-                  href={`/lag/${slug}`} 
-                  className="group bg-white p-5 rounded-xl border border-slate-200 hover:border-indigo-200 hover:shadow-md transition-all text-center flex flex-col items-center justify-between min-h-[160px]"
+                <Link
+                  key={slug}
+                  href={`/lag/${slug}`}
+                  title={`Biljetter till ${teamData.name || slug}`}
+                  aria-label={`Biljetter till ${teamData.name || slug}`}
+                  className="group bg-white p-5 rounded-xl border border-slate-200 hover:border-indigo-200 hover:shadow-md transition-all text-center flex flex-col items-center"
                 >
                   <div className="mb-2 h-14 w-14 flex items-center justify-center">
                     {logoUrl ? (
                       <img 
                         src={logoUrl} 
-                        alt={teamData.name || "Laglogo"} 
+                        alt={`Biljetter ${teamData.name || slug}`}
                         className="h-12 w-12 object-contain transform group-hover:scale-110 transition-transform"
                         onError={(e: any) => {
                           e.target.style.display = 'none';
