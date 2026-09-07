@@ -44,26 +44,45 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
     fetchMatches();
   }, []);
 
-// Filtrera matcherna dynamiskt baserat på lagets slug (hanterar även accenter som é)
-const filteredMatches = matches.filter((match: any) => {
-  const homeName = match.homeTeam?.name?.toLowerCase() || "";
-  const awayName = match.awayTeam?.name?.toLowerCase() || "";
-  
-  // Skapa en hjälpfunktion som tar bort accenter/diakritiska tecken (é -> e)
+// Hjälpfunktion för att ta bort accenter/diakritiska tecken (é -> e)
   const removeAccents = (str: string) => 
     str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-  const cleanSlugNormalized = removeAccents(cleanSlug);
-  const homeNameNormalized = removeAccents(homeName);
-  const awayNameNormalized = removeAccents(awayName);
-  
-  return homeNameNormalized.includes(cleanSlugNormalized) || awayNameNormalized.includes(cleanSlugNormalized);
-  }).sort((a, b) => {
-  const timeA = (a.time && a.time !== "TBD") ? a.time : "00:00";
-  const timeB = (b.time && b.time !== "TBD") ? b.time : "00:00";
+  // Säkrare matchning per lag för att separera AC Milan och Inter
+  const isMatchingTeam = (teamNameInMatch: string, currentTeamSlug: string) => {
+    if (!teamNameInMatch) return false;
+    
+    const normalizedMatchName = removeAccents(teamNameInMatch.toLowerCase().trim());
+    
+    if (currentTeamSlug === "ac-milan") {
+      return (
+        (normalizedMatchName.includes("ac milan") || normalizedMatchName === "milan") &&
+        !normalizedMatchName.includes("inter")
+      );
+    }
+    
+    if (currentTeamSlug === "inter" || currentTeamSlug === "inter-milan") {
+      return normalizedMatchName.includes("inter");
+    }
 
-  return new Date(`${a.date}T${timeA}`).getTime() - new Date(`${b.date}T${timeB}`).getTime();
-  });
+    const normalizedSlug = removeAccents(currentTeamSlug.replace(/-/g, " "));
+    return normalizedMatchName.includes(normalizedSlug);
+  };
+
+  // Filtrera och sortera matcher
+  const filteredMatches = matches
+    .filter((match: any) => {
+      const homeName = match.homeTeam?.name || "";
+      const awayName = match.awayTeam?.name || "";
+
+      return isMatchingTeam(homeName, teamSlug) || isMatchingTeam(awayName, teamSlug);
+    })
+    .sort((a, b) => {
+      const timeA = a.time && a.time !== "TBD" ? a.time : "00:00";
+      const timeB = b.time && b.time !== "TBD" ? b.time : "00:00";
+
+      return new Date(`${a.date}T${timeA}`).getTime() - new Date(`${b.date}T${timeB}`).getTime();
+    });
 
   const handleBookOffer = (offer: any, quantity: number) => {
     setSelectedOffer(offer);
