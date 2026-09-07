@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
-import { getFootballTicketNetUrl } from "@/lib/affiliate";
 import { getFootballTicketNetUrl, getChampionsTravelUrl } from "@/lib/affiliate";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 
