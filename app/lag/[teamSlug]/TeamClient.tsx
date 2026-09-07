@@ -44,38 +44,23 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
     fetchMatches();
   }, []);
 
-// Hjälpfunktion för att ta bort accenter/diakritiska tecken (é -> e)
-  const removeAccents = (str: string) => 
-    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-  // Säkrare matchning per lag för att separera AC Milan och Inter
-  const isMatchingTeam = (teamNameInMatch: string, currentTeamSlug: string) => {
-    if (!teamNameInMatch) return false;
-    
-    const normalizedMatchName = removeAccents(teamNameInMatch.toLowerCase().trim());
-    
-    if (currentTeamSlug === "ac-milan") {
-      return (
-        (normalizedMatchName.includes("ac milan") || normalizedMatchName === "milan") &&
-        !normalizedMatchName.includes("inter")
-      );
-    }
-    
-    if (currentTeamSlug === "inter" || currentTeamSlug === "inter-milan") {
-      return normalizedMatchName.includes("inter");
-    }
-
-    const normalizedSlug = removeAccents(currentTeamSlug.replace(/-/g, " "));
-    return normalizedMatchName.includes(normalizedSlug);
-  };
-
-  // Filtrera och sortera matcher
+// Filtrera och sortera matcher baserat på exakt nyckel (homeKey / awayKey)
   const filteredMatches = matches
     .filter((match: any) => {
-      const homeName = match.homeTeam?.name || "";
-      const awayName = match.awayTeam?.name || "";
+      // Hämta nycklarna från match-objektet (hanterar både platt struktur och nästlade objekt)
+      const homeKey = (match.homeKey || match.homeTeam?.key || "").toLowerCase().trim();
+      const awayKey = (match.awayKey || match.awayTeam?.key || "").toLowerCase().trim();
 
-      return isMatchingTeam(homeName, teamSlug) || isMatchingTeam(awayName, teamSlug);
+      // Normalisera teamSlug från URL:en
+      let targetKey = teamSlug.toLowerCase().trim();
+
+      // Mappa AC Milan från slug till API-nyckeln "milan"
+      if (targetKey === "ac-milan") {
+        targetKey = "milan";
+      }
+
+      // Exakt matchning (hindrar att "inter" och "milan" krockar)
+      return homeKey === targetKey || awayKey === targetKey;
     })
     .sort((a, b) => {
       const timeA = a.time && a.time !== "TBD" ? a.time : "00:00";
