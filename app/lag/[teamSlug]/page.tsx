@@ -8,7 +8,7 @@ interface Props {
 }
 
 // ==========================================
-// 1. DYNAMISK SEO (Metadata)
+// 1. DYNAMISK SEO (Metadata) - Optimerad för sökordsorder
 // ==========================================
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
@@ -19,23 +19,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.biljetterfotboll.se";
+  
+  // Sätter sökordet "Biljetter [Lagnamn] [År]" först i titeln
+  const title = `Biljetter ${team.name} 2026/27 – Jämför Priser & Matcher`;
+  const description = team.aboutTickets 
+    ? `Jämför priser på matchbiljetter till ${team.name}. Se spelschema, läktarinfo och köp biljetter till ${team.stadiumName} från verifierade återförsäljare.`
+    : `Jämför priser och boka biljetter till ${team.name}. Se aktuellt spelschema och priser för alla matcher.`;
 
   return {
-    title: `Köp biljetter till ${team.name} | Guide till ${team.stadiumName}`,
-    description: team.aboutTickets?.substring(0, 160) || `Hitta biljetter till ${team.name}`,
+    title,
+    description,
     alternates: {
       canonical: `${baseUrl}/lag/${resolvedParams.teamSlug}`,
     },
     openGraph: {
-      title: `Officiella biljetter & matchpaket: ${team.name}`,
-      description: `Hitta trygga biljetter till ${team.name} på ${team.stadiumName}. Jämför priser och boka din fotbollsresa här.`,
+      title: `Biljetter & Matchpaket till ${team.name}`,
+      description,
+      url: `${baseUrl}/lag/${resolvedParams.teamSlug}`,
       images: [{ url: team.heroImage || "" }],
     },
   };
 }
 
 // ==========================================
-// 2. BUILD OPTIMERING (Generera alla 115 sidor)
+// 2. BUILD OPTIMERING (Generera alla sidor)
 // ==========================================
 export async function generateStaticParams() {
   return Object.keys(TEAMS_SEO_DATA).map((slug) => ({
@@ -57,6 +64,7 @@ export default async function Page({ params }: Props) {
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.biljetterfotboll.se";
   const graphItems: any[] = [];
+
   // 0) BreadcrumbList Schema (Brödsmulor)
   graphItems.push({
     "@type": "BreadcrumbList",
@@ -81,6 +89,7 @@ export default async function Page({ params }: Props) {
       }
     ]
   });
+
   // 0) SportsTeam Schema (Laget självt)
   graphItems.push({
     "@type": "SportsTeam",
@@ -114,18 +123,29 @@ export default async function Page({ params }: Props) {
     });
   }
 
-  // B) SportsEvent Schema för matcher
+  // B) SportsEvent Schema för matcher (med säker Milan/Inter-filtrering)
   try {
     const res = await fetch(`${baseUrl}/api/matches`, { next: { revalidate: 3600 } });
     
     if (res.ok) {
       const matches = await res.json();
-      const cleanSlug = teamSlug.replaceAll("-", " ");
       
       const teamMatches = matches.filter((match: any) => {
-        const homeName = match.homeTeam?.name?.toLowerCase() || "";
-        const awayName = match.awayTeam?.name?.toLowerCase() || "";
-        return homeName.includes(cleanSlug) || awayName.includes(cleanSlug);
+        const homeName = (match.homeTeam?.name || "").toLowerCase();
+        const awayName = (match.awayTeam?.name || "").toLowerCase();
+        const slug = teamSlug.toLowerCase().trim();
+
+        if (slug === "milan" || slug === "ac-milan") {
+          if (homeName.includes("inter") || awayName.includes("inter")) return false;
+          return homeName.includes("milan") || awayName.includes("milan");
+        }
+
+        if (slug === "inter" || slug === "inter-milan") {
+          return homeName.includes("inter") || awayName.includes("inter");
+        }
+
+        const targetName = slug.replace(/-/g, " ");
+        return homeName.includes(targetName) || awayName.includes(targetName);
       });
 
       teamMatches.forEach((match: any) => {
@@ -150,12 +170,12 @@ export default async function Page({ params }: Props) {
             },
           },
           "offers": match.priceFrom ? {
-          "@type": "AggregateOffer",
-          "lowPrice": match.priceFrom,
-          "priceCurrency": "SEK",
-          "offerCount": match.offers?.length || 1,
-          "url": `${baseUrl}/lag/${teamSlug}`
-        } : undefined,
+            "@type": "AggregateOffer",
+            "lowPrice": match.priceFrom,
+            "priceCurrency": "SEK",
+            "offerCount": match.offers?.length || 1,
+            "url": `${baseUrl}/lag/${teamSlug}`
+          } : undefined,
         });
       });
     }

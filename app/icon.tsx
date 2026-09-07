@@ -1,6 +1,5 @@
 import { ImageResponse } from 'next/og';
 
-// Storlek på favicon
 export const size = {
   width: 32,
   height: 32,
@@ -12,18 +11,16 @@ export default function Icon() {
     (
       <div
         style={{
-          fontSize: 18,
-          background: '#1e3a8a', // Din blåa varumärkesfärg
+          background: '#1e3a8a', // Din blåa färg
           width: '100%',
           height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
-          borderRadius: '6px', // Rundade hörn precis som i koden
+          borderRadius: '6px',
         }}
       >
-        {/* SVG-biljetten */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -34,6 +31,9 @@ export default function Icon() {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
+          style={{
+            transform: 'rotate(-12deg)', // Lutar biljetten snyggt åt vänster
+          }}
         >
           <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
           <path d="M13 5v2" />
