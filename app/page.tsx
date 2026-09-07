@@ -201,7 +201,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-black tracking-tight text-slate-800 mb-8 flex items-center gap-2">
             <Trophy className="text-indigo-600 h-6 w-6" />
-            Sök biljetter per lag
+            Sök fotbollsbiljetter per lag
           </h2>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -210,18 +210,20 @@ export default function HomePage() {
               if (!teamData) return null;
 
               const logoUrl = teamData.logo || teamData.image || teamData.crestUrl;
+              const teamName = teamData.name || slug;
 
               return (
                 <Link 
                   key={slug} 
-                  href={`/lag/${slug}`} 
+                  href={`/lag/${slug}`}
+                  title={`Köp biljetter till ${teamName}`}
                   className="group bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:shadow-md transition-all text-center flex flex-col justify-center items-center"
                 >
                   <div className="mb-3 h-12 w-12 flex items-center justify-center">
                     {logoUrl ? (
                       <img 
                         src={logoUrl} 
-                        alt={teamData.name} 
+                        alt={`Logotyp ${teamName} biljetter`} 
                         className="h-10 w-10 object-contain transform group-hover:scale-105 transition-transform"
                         onError={(e) => {
                           e.target.style.display = 'none';
@@ -234,12 +236,12 @@ export default function HomePage() {
                       className="bg-slate-100 rounded-full h-10 w-10 flex items-center justify-center font-bold text-indigo-600 group-hover:bg-indigo-50 transition-colors text-sm"
                       style={{ display: logoUrl ? 'none' : 'flex' }}
                     >
-                      {teamData.name ? teamData.name.substring(0, 2).toUpperCase() : "FC"}
+                      {teamName ? teamName.substring(0, 2).toUpperCase() : "FC"}
                     </div>
                   </div>
 
                   <h3 className="font-bold text-xs text-slate-800 group-hover:text-indigo-600 transition-colors line-clamp-1">
-                    {teamData.name || slug}
+                    Biljetter {teamName}
                   </h3>
                   <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-0.5 line-clamp-1">
                     <MapPin className="h-2.5 w-2.5" /> 
