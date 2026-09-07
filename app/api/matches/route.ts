@@ -648,24 +648,23 @@ export async function GET() {
           deliveryType: "E-biljett / Mobil",
           isVerified: true,
           url: getFootballTicketNetUrl(homeName, awayName),
-          type: "ticket"
-        }
-      ),
-        {
-          id: `o-${matchId}-champions`,
-          merchantName: "Champions Travel",
-          rating: 4.8,
-          reviewsCount: 1250,
-          section: "Officiell Långsida",
-          category: "Långsida",
-          priceSEK: Math.round(basePrice * 1.15),
-          availableQuantity: 2,
-          deliveryType: "E-biljett (Direkt)",
-          isVerified: true,
-          url: getChampionsTravelUrl(homeName),
-          type: "ticket"
-        }
-      );
+      type: "ticket"
+    },
+    {
+      id: `o-${matchId}-champions`,
+      merchantName: "Champions Travel",
+      rating: 4.8,
+      reviewsCount: 1250,
+      section: "Officiell Långsida",
+      category: "Långsida",
+      priceSEK: Math.round(basePrice * 1.15),
+      availableQuantity: 2,
+      deliveryType: "E-biljett (Direkt)",
+      isVerified: true,
+      url: getChampionsTravelUrl(homeName),
+      type: "ticket"
+    }
+  );
         
 
       return {
