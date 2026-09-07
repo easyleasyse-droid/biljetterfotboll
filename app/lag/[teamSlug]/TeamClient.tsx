@@ -44,23 +44,34 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
     fetchMatches();
   }, []);
 
-// Filtrera och sortera matcher baserat på exakt nyckel (homeKey / awayKey)
+// Hjälpfunktion för att ta bort accenter (é -> e)
+  const removeAccents = (str: string) => 
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  // Filtrera och sortera matcher
   const filteredMatches = matches
     .filter((match: any) => {
-      // Hämta nycklarna från match-objektet (hanterar både platt struktur och nästlade objekt)
-      const homeKey = (match.homeKey || match.homeTeam?.key || "").toLowerCase().trim();
-      const awayKey = (match.awayKey || match.awayTeam?.key || "").toLowerCase().trim();
+      const homeName = removeAccents(match.homeTeam?.name || "").toLowerCase();
+      const awayName = removeAccents(match.awayTeam?.name || "").toLowerCase();
+      const slug = teamSlug.toLowerCase().trim();
 
-      // Normalisera teamSlug från URL:en
-      let targetKey = teamSlug.toLowerCase().trim();
+      // Specifik spärr för AC Milan: Släpp ALDRIG igenom matcher där "inter" ingår
+      if (slug === "ac-milan") {
+        const isInterMatch = homeName.includes("inter") || awayName.includes("inter");
+        if (isInterMatch) return false;
 
-      // Mappa AC Milan från slug till API-nyckeln "milan"
-      if (targetKey === "ac-milan") {
-        targetKey = "milan";
+        const isMilanMatch = homeName.includes("milan") || awayName.includes("milan");
+        return isMilanMatch;
       }
 
-      // Exakt matchning (hindrar att "inter" och "milan" krockar)
-      return homeKey === targetKey || awayKey === targetKey;
+      // Specifik spärr för Inter
+      if (slug === "inter" || slug === "inter-milan") {
+        return homeName.includes("inter") || awayName.includes("inter");
+      }
+
+      // Standardjämförelse för alla andra lag
+      const targetName = removeAccents(slug.replace(/-/g, " "));
+      return homeName.includes(targetName) || awayName.includes(targetName);
     })
     .sort((a, b) => {
       const timeA = a.time && a.time !== "TBD" ? a.time : "00:00";
