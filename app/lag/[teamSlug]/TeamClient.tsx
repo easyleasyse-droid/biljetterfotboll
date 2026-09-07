@@ -58,9 +58,12 @@ const filteredMatches = matches.filter((match: any) => {
   const awayNameNormalized = removeAccents(awayName);
   
   return homeNameNormalized.includes(cleanSlugNormalized) || awayNameNormalized.includes(cleanSlugNormalized);
-}).sort((a, b) => {
-  return new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime();
-});
+  }).sort((a, b) => {
+  const timeA = (a.time && a.time !== "TBD") ? a.time : "00:00";
+  const timeB = (b.time && b.time !== "TBD") ? b.time : "00:00";
+
+  return new Date(`${a.date}T${timeA}`).getTime() - new Date(`${b.date}T${timeB}`).getTime();
+  });
 
   const handleBookOffer = (offer: any, quantity: number) => {
     setSelectedOffer(offer);
