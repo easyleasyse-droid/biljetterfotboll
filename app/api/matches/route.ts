@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
 import { getFootballTicketNetUrl } from "@/lib/affiliate";
+import { getFootballTicketNetUrl, getChampionsTravelUrl } from "@/lib/affiliate";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 
 export const dynamic = 'force-dynamic';
@@ -649,7 +650,23 @@ export async function GET() {
           url: getFootballTicketNetUrl(homeName, awayName),
           type: "ticket"
         }
+      ),
+        {
+          id: `o-${matchId}-champions`,
+          merchantName: "Champions Travel",
+          rating: 4.8,
+          reviewsCount: 1250,
+          section: "Officiell Långsida",
+          category: "Långsida",
+          priceSEK: Math.round(basePrice * 1.15),
+          availableQuantity: 2,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: getChampionsTravelUrl(homeName),
+          type: "ticket"
+        }
       );
+        
 
       return {
         id: matchId,
