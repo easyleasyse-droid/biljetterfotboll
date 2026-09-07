@@ -115,7 +115,7 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
           </div>
           
           <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4 text-white drop-shadow-md">
-            {teamName} biljetter
+            Biljetter till {teamName}
           </h1>
           
           <div className="flex flex-wrap gap-2 text-xs md:text-sm text-slate-200 mb-8">
@@ -152,7 +152,7 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2.5">
               <Calendar className="text-indigo-600 h-6 w-6" />
-              Aktuella matcher & biljetter 2026
+              Kommande matcher & biljetter med {teamName}
             </h2>
             {!loading && (
               <span className="bg-indigo-50 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full border border-indigo-100">
@@ -188,9 +188,9 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start mb-16">
             <div id="biljettinfo" className="lg:col-span-2 space-y-6 scroll-mt-20">
               <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                <h3 className="text-xl font-extrabold mb-4 flex items-center gap-2 text-slate-800">
-                  <Ticket className="text-indigo-600 h-5 w-5" /> Hur du köper {teamName} biljetter
-                </h3>
+                <h2 className="text-xl font-extrabold mb-4 flex items-center gap-2 text-slate-800">
+                <Ticket className="text-indigo-600 h-5 w-5" /> Köpa biljetter till {teamName} – Så gör du
+              </h2>
                 <p className="text-slate-600 leading-relaxed text-sm md:text-base">{seoData.howToBuy}</p>
               </div>
 
@@ -238,7 +238,7 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
                 {/* Texten ligger nu i TOPPEN av bilden med en snygg toning nedåt */}
                 <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-slate-900/80 via-slate-900/40 to-transparent p-4 pb-12">
                   <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-0.5">Hemmaborg</p>
-                  <h3 className="text-base font-black text-white tracking-tight">{seoData?.stadiumName}</h3>
+                  <h2 className="text-base font-black text-white tracking-tight">{seoData?.stadiumName} – Arena & Läktarinfo</h2>
                 </div>
               </div>
 
