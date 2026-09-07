@@ -62,19 +62,35 @@ export const getFootballTicketNetUrl = (homeTeam: string, awayTeam: string): str
 // --- CHAMPIONS TRAVEL (AWIN) ---
 const CHAMPIONS_TRAVEL_ADVERTISER_ID = '53765';
 
+// Mappning för lag som har avvikande URL-namn hos Champions Travel
+const CHAMPIONS_TRAVEL_SLUGS: Record<string, string> = {
+  'chelsea': 'chelsea',
+  'chelsea fc': 'chelsea',
+  'arsenal': 'arsenal',
+  'arsenal fc': 'arsenal',
+  'manchester city': 'manchester-city',
+  'man city': 'manchester-city',
+  'manchester united': 'manchester-united',
+  'man utd': 'manchester-united',
+  'liverpool': 'liverpool-fc',
+  'liverpool fc': 'liverpool-fc',
+  'tottenham': 'tottenham-hotspur',
+  'tottenham hotspur': 'tottenham-hotspur',
+  'aston villa': 'aston-villa',
+};
+
 export const getChampionsTravelUrl = (homeTeam?: string): string => {
   if (!homeTeam) {
-    const fallbackUrl = 'https://www.champions-travel.com/football/';
+    const fallbackUrl = 'https://champions-travel.com/football/';
     return `https://www.awin1.com/cread.php?awinmid=${CHAMPIONS_TRAVEL_ADVERTISER_ID}&awinaffid=${FTN_PUBLISHER_ID}&ued=${encodeURIComponent(fallbackUrl)}`;
   }
 
-  // Omvandlar t.ex. "Chelsea FC" -> "chelsea-fc"
-  const formattedTeam = homeTeam
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-');
+  const cleanTeam = homeTeam.toLowerCase().trim();
 
-  const targetUrl = `https://www.champions-travel.com/football/${formattedTeam}-tickets/`;
+  // Hämtar anpassad slug från mappen, annars standardiseras namnet med bindestreck
+  const teamSlug = CHAMPIONS_TRAVEL_SLUGS[cleanTeam] || cleanTeam.replace(/\s+/g, '-');
+
+  const targetUrl = `https://champions-travel.com/football/${teamSlug}`;
 
   return `https://www.awin1.com/cread.php?awinmid=${CHAMPIONS_TRAVEL_ADVERTISER_ID}&awinaffid=${FTN_PUBLISHER_ID}&ued=${encodeURIComponent(targetUrl)}`;
 };
