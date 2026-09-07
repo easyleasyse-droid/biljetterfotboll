@@ -62,15 +62,18 @@ export const getFootballTicketNetUrl = (homeTeam: string, awayTeam: string): str
 // --- CHAMPIONS TRAVEL (AWIN) ---
 const CHAMPIONS_TRAVEL_ADVERTISER_ID = '53765';
 
-export const getChampionsTravelUrl = (homeTeam: string): string => {
-  // Rensa lagnamnet (t.ex. "Arsenal FC" -> "arsenal")
+export const getChampionsTravelUrl = (homeTeam?: string): string => {
+  if (!homeTeam) {
+    const fallbackUrl = 'https://www.champions-travel.com/football/';
+    return `https://www.awin1.com/cread.php?awinmid=${CHAMPIONS_TRAVEL_ADVERTISER_ID}&awinaffid=${FTN_PUBLISHER_ID}&ued=${encodeURIComponent(fallbackUrl)}`;
+  }
+
+  // Omvandlar t.ex. "Chelsea FC" -> "chelsea-fc"
   const formattedTeam = homeTeam
     .toLowerCase()
-    .replace(/\s+(fc|cf|club|calcio|afc)$/i, '')
     .trim()
     .replace(/\s+/g, '-');
 
-  // Bygg mål-URL på Champions Travel (de kör oftast formatet /football/[lag]-tickets/)
   const targetUrl = `https://www.champions-travel.com/football/${formattedTeam}-tickets/`;
 
   return `https://www.awin1.com/cread.php?awinmid=${CHAMPIONS_TRAVEL_ADVERTISER_ID}&awinaffid=${FTN_PUBLISHER_ID}&ued=${encodeURIComponent(targetUrl)}`;
