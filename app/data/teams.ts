@@ -3451,5 +3451,534 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
         answer: "Klubben spelar i blått och vitt som sina primära färgkombinationer."
       }
     ]
+  },
+
+  "omonia": {
+    "name": "Omonia Nicosia",
+    "league": "Cypriot First Division",
+    "stadiumName": "GSP Stadium",
+    "location": "Nicosia, Cypern",
+    "logo": "/logos/omonia.png",
+    "heroImage": "/stadiums/gsp-stadium.jpg",
+    "stadiumLayoutImage": "/stadiums/gsp-stadium.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=GSP+Stadium+Nicosia&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "GSP Stadium i Nicosia rymmer drygt 22 800 åskådare och är Cyperns största och mest moderna fotbollsarena.",
+    "aboutTickets": "Jämför biljetter till Omonia Nicosia på GSP Stadium för en intensiv cypriotisk fotbollsupplevelse.",
+    "howToBuy": "Säkra dina biljetter smidigt via biljetterfotboll.se för matcher i både ligaspel och europeiska turneringar.",
+    "sectionsAndPrices": "Långsidorna erbjuder god komfort och fantastisk överblick, medan kortsidorna står för den stämningsfulla hemmaklacken.",
+    "packages": "Kombinera din matchbiljett med boende i soliga Nicosia för en komplett fotbollsweekend.",
+    "history": "AC Omonia grundades 1948 och är en av Cyperns mest framgångsrika och populära klubbar med en stolt historia.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till GSP Stadium?",
+        "answer": "Arenan ligger strax utanför centrala Nicosia och nås enklast via lokalbuss eller taxi."
+      }
+    ]
+  },
+  "ararat-armenia": {
+    "name": "FC Ararat-Armenia",
+    "league": "Armenian Premier League",
+    "stadiumName": "FFA Academy Stadium",
+    "location": "Jerevan, Armenien",
+    "logo": "/logos/ararat-armenia.png",
+    "heroImage": "/stadiums/ffa-academy-stadium.jpg",
+    "stadiumLayoutImage": "/stadiums/ffa-academy-stadium.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=FFA+Academy+Stadium+Yerevan&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "FFA Academy Stadium är en kompakt och modern arena i Jerevan med kapacitet för cirka 1 400 åskådare.",
+    "aboutTickets": "Boka biljetter till FC Ararat-Armenia och upplev armenisk toppfotboll på nära håll.",
+    "howToBuy": "Hitta tillgängliga biljetter och tillförlitliga säljare för Ararat-Armenias hemmamatcher via vår jämförelse.",
+    "sectionsAndPrices": "Huvudläktaren ger perfekt närhet till planen med prisvärda biljetter över hela arenan.",
+    "packages": "Boka biljetter och utforska historiska Jerevan under din matchresa.",
+    "history": "Klubben grundades 2017 och etablerade sig blixtsnabbt som en maktfaktor i armenisk fotboll med flera ligatitlar.",
+    "faqs": [
+      {
+        "question": "Var ligger FFA Academy Stadium?",
+        "answer": "Arenan ligger i Avan-distriktet i norra Jerevan, lättillgänglig med taxi från centrum."
+      }
+    ]
+  },
+  "sparta-prag": {
+    "name": "Sparta Prag",
+    "league": "Chance Liga",
+    "stadiumName": "epet ARENA",
+    "location": "Prag, Tjeckien",
+    "logo": "/logos/sparta-prag.png",
+    "heroImage": "/stadiums/epet-arena.jpg",
+    "stadiumLayoutImage": "/stadiums/epet-arena.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=epet+ARENA+Prague&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "epet ARENA (Letná) rymmer cirka 18 800 åskådare och är en klassisk fotbollsborg mitt i Prag.",
+    "aboutTickets": "Jämför biljetter till Sparta Prag och upplev en fantastisk inramning på ikoniska Letná.",
+    "howToBuy": "Jämför erbjudanden från verifierade partners och boka tryggt på biljetterfotboll.se.",
+    "sectionsAndPrices": "Långsidorna ger utmärkt sikt över spelet medan kortsidan hyser klubbens passionerade supporterskara.",
+    "packages": "Kombinera storklassig fotboll med en stadssemester i vackra Prag.",
+    "history": "AC Sparta Praha grundades 1893 och är Tjeckiens mest framgångsrika klubb med dussintals ligatitlar.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till epet ARENA?",
+        "answer": "Ta spårvagn eller tunnelbana till stationen Sparta eller Hradčanská, bara några minuters promenad från arenan."
+      }
+    ]
+  },
+  "benfica": {
+    "name": "SL Benfica",
+    "league": "Liga Portugal",
+    "stadiumName": "Estádio da Luz",
+    "location": "Lissabon, Portugal",
+    "logo": "/logos/benfica.png",
+    "heroImage": "/stadiums/estadio-da-luz.jpg",
+    "stadiumLayoutImage": "/stadiums/estadio-da-luz.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Estadio+da+Luz+Lisbon&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Estádio da Luz rymmer över 64 000 åskådare och är en av Europas mäktigaste och mest stämningsfulla arenor.",
+    "aboutTickets": "Säkra dina biljetter till SL Benfica för en fotbollsupplevelse i världsklass i Lissabon.",
+    "howToBuy": "Jämför priser på biljetter och VIP-paket direkt på biljetterfotboll.se.",
+    "sectionsAndPrices": "Nedre etaget på långsidorna ger perfekt närhet till stjärnorna, medan övre etagen ger en enorm överblick.",
+    "packages": "Boka komplett paket med matchbiljett och hotell i Portugals soliga huvudstad.",
+    "history": "Benfica grundades 1904 och är en europeisk gigant med två Europacuptitlar och rekordmånga portugisiska ligaguld.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Estádio da Luz?",
+        "answer": "Ta den blå tunnelbanelinjen direkt till stationen Colégio Militar/Luz."
+      }
+    ]
+  },
+  "olympiakos": {
+    "name": "Olympiakos",
+    "league": "Super League Grekland",
+    "stadiumName": "Karaiskakis Stadium",
+    "location": "Pireus, Grekland",
+    "logo": "/logos/olympiakos.png",
+    "heroImage": "/stadiums/karaiskakis-stadium.jpg",
+    "stadiumLayoutImage": "/stadiums/karaiskakis-stadium.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Karaiskakis+Stadium+Piraeus&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Karaiskakis Stadium rymmer drygt 32 000 åskådare och är känd för sin glödheta atmosfär.",
+    "aboutTickets": "Upplev grekisk toppfotboll och intensiv läktarkultur med biljetter till Olympiakos.",
+    "howToBuy": "Jämför priser från pålitliga biljettsäljare enkelt och säkert via vår plattform.",
+    "sectionsAndPrices": "Långsidorna erbjuder bra platser för familjer och besökare, medan 'Gate 7' står för den tysta stämningen.",
+    "packages": "Gör fotbollsresan komplett genom att kombinera matchen med en resa till Aten och Pireus.",
+    "history": "Olympiacos FC grundades 1925 och är Greklands mest framgångsrika klubb genom tiderna.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Karaiskakis Stadium?",
+        "answer": "Arenan ligger precis vid tunnelbanestationen Faliro (Grön linje 1)."
+      }
+    ]
+  },
+  "jagiellonia": {
+    "name": "Jagiellonia Białystok",
+    "league": "Ekstraklasa",
+    "stadiumName": "Stadion Miejski w Białymstoku",
+    "location": "Białystok, Polen",
+    "logo": "/logos/jagiellonia.png",
+    "heroImage": "/stadiums/stadion-miejski-bialystok.jpg",
+    "stadiumLayoutImage": "/stadiums/stadion-miejski-bialystok.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Stadion+Miejski+Bialystok&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "En toppmodern arena invigd i sin nuvarande form 2014 med kapacitet för över 22 000 åskådare.",
+    "aboutTickets": "Köp biljetter till Jagiellonia Białystok och upplev polsk Ekstraklasa från första parkett.",
+    "howToBuy": "Hitta bästa priserna på biljetter till Jagiellonias hemmamatcher via biljetterfotboll.se.",
+    "sectionsAndPrices": "Moderna läktare med utmärkt sikt från alla sektioner till väldigt överkomliga priser.",
+    "packages": "Boka matchbiljett och hotellboende för en genuin fotbollshelg i Polen.",
+    "history": "Klubben grundades 1920 och tog sin historiska första polska ligatitel säsongen 2023/24.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Stadion Miejski?",
+        "answer": "Busslinjer från centrala Białystok stannar precis utanför arenan."
+      }
+    ]
+  },
+  "anderlecht": {
+    "name": "RSC Anderlecht",
+    "league": "Jupiler Pro League",
+    "stadiumName": "Lotto Park",
+    "location": "Bryssel, Belgien",
+    "logo": "/logos/anderlecht.png",
+    "heroImage": "/stadiums/lotto-park.jpg",
+    "stadiumLayoutImage": "/stadiums/lotto-park.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Lotto+Park+Anderlecht&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Lotto Park (Constant Vanden Stock) rymmer ca 21 500 åskådare och är en klassisk, tight fotbollsarena.",
+    "aboutTickets": "Säkra dina biljetter till RSC Anderlecht för klassisk belgisk toppfotboll i Bryssel.",
+    "howToBuy": "Jämför priser från auktoriserade återförsäljare smidigt på vår sajt.",
+    "sectionsAndPrices": "Långsidorna ger suverän överblick nära planen, med exklusiva kategorier centralt.",
+    "packages": "Kombinera belgisk fotboll i världsklass med en helg i Europahuvudstaden Bryssel.",
+    "history": "Anderlecht grundades 1908 och är Belgions mest framgångsrika klubb genom tiderna med flest ligatitlar.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Lotto Park?",
+        "answer": "Ta tunnelbanans linje 5 till stationen Saint-Guidon eller Veeweyde."
+      }
+    ]
+  },
+  "celje": {
+    "name": "NK Celje",
+    "league": "Slovenian PrvaLiga",
+    "stadiumName": "Stadion Z'dežele",
+    "location": "Celje, Slovenien",
+    "logo": "/logos/celje.png",
+    "heroImage": "/stadiums/stadion-zdezele.jpg",
+    "stadiumLayoutImage": "/stadiums/stadion-zdezele.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Stadion+Zdezele+Celje&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Stadion Z'dežele rymmer drygt 13 000 åskådare och är en av Sloveniens mest moderna fotbollsarenor.",
+    "aboutTickets": "Jämför biljetter till NK Celje och upplev den slovenska ligafotbollen på nära håll.",
+    "howToBuy": "Hitta och jämför biljetter till Celjes matcher enkelt via biljetterfotboll.se.",
+    "sectionsAndPrices": "Överskådliga läktare med bra sikt och mycket förmånliga biljettpriser.",
+    "packages": "Planera din matchresa till vackra Celje i centrala Slovenien.",
+    "history": "NK Celje grundades 1919 och vann sin första slovenska ligatitel 2020.",
+    "faqs": [
+      {
+        "question": "Hur når man Stadion Z'dežele?",
+        "answer": "Arenan ligger i norra delen av Celje, inom gångavstånd eller kort taxiresa från tågstationen."
+      }
+    ]
+  },
+  "az": {
+    "name": "AZ Alkmaar",
+    "league": "Eredivisie",
+    "stadiumName": "AFAS Stadion",
+    "location": "Alkmaar, Nederländerna",
+    "logo": "/logos/az.png",
+    "heroImage": "/stadiums/afas-stadion.jpg",
+    "stadiumLayoutImage": "/stadiums/afas-stadion.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=AFAS+Stadion+Alkmaar&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "AFAS Stadion rymmer ca 19 500 åskådare och erbjuder en modern och intim fotbollsupplevelse.",
+    "aboutTickets": "Köp biljetter till AZ Alkmaar och se underhållande holländsk Eredivisie-fotboll.",
+    "howToBuy": "Jämför biljetter från verifierade säljare snabbt och tryggt på biljetterfotboll.se.",
+    "sectionsAndPrices": "Samtliga platser ger utmärkt sikt över planen med familjevänliga sektioner på långsidorna.",
+    "packages": "Kombinera matchen med en trevlig weekend i mysiga Alkmaar eller närliggande Amsterdam.",
+    "history": "AZ grundades 1967 och har utmanat de stora holländska giganterna med två Eredivisie-titlar.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till AFAS Stadion?",
+        "answer": "Pendelbussar går från Alkmaars tågstation direkt till arenan under matchdagar."
+      }
+    ]
+  },
+  "sturm-graz": {
+    "name": "SK Sturm Graz",
+    "league": "Österreichische Bundesliga",
+    "stadiumName": "Merkur Arena",
+    "location": "Graz, Österrike",
+    "logo": "/logos/sturm-graz.png",
+    "heroImage": "/stadiums/merkur-arena.jpg",
+    "stadiumLayoutImage": "/stadiums/merkur-arena.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Merkur+Arena+Graz&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Merkur Arena i stadsdelen Liebenau rymmer ca 16 300 åskådare och har en fantastisk stämning.",
+    "aboutTickets": "Säkra biljetter till Sturm Graz och upplev österrikisk toppfotboll när den är som bäst.",
+    "howToBuy": "Jämför priser och tillgängliga biljetter enkelt via biljetterfotboll.se.",
+    "sectionsAndPrices": "Sydläktaren hyser klubbens passionerade hemmaklack medan långsidorna passar utmärkt för övriga åskådare.",
+    "packages": "Sammankoppla din fotbollsresa med en vistelse i Österrikes kulturstad Graz.",
+    "history": "SK Sturm Graz grundades 1909 och har vunnit flera österrikiska mästerskap och cupguld.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Merkur Arena?",
+        "answer": "Spårvagnslinje 4 stannar direkt vid stationen Stadion Liebenau."
+      }
+    ]
+  },
+  "hapoel-sheva": {
+    "name": "Hapoel Be'er Sheva",
+    "league": "Israeli Premier League",
+    "stadiumName": "Turner Stadium",
+    "location": "Be'er Sheva, Israel",
+    "logo": "/logos/hapoel-sheva.png",
+    "heroImage": "/stadiums/turner-stadium.jpg",
+    "stadiumLayoutImage": "/stadiums/turner-stadium.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Turner+Stadium+Beer+Sheva&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Turner Stadium rymmer 16 126 åskådare och är känd för sin stängda, branta design som skapar enorm akustik.",
+    "aboutTickets": "Boka biljetter till Hapoel Be'er Sheva för en intensiv och stämningsfull matchupplevelse.",
+    "howToBuy": "Jämför trygga biljettalternativ och priser via vår webbplats.",
+    "sectionsAndPrices": "Kompakta läktare nära planen ger fantastisk sikt från alla kategorier.",
+    "packages": "Kombinera fotboll i Be'er Sheva med rundresa i södra Israel.",
+    "history": "Grundades 1949 och är en av Israels mest framgångsrika klubbar under 2000-talet med flera ligatitlar.",
+    "faqs": [
+      {
+        "question": "Var ligger Turner Stadium?",
+        "answer": "Arenan ligger i norra delen av Be'er Sheva och nås enkelt med taxi eller buss från centrum."
+      }
+    ]
+  },
+  "dinamo-zagreb": {
+    "name": "GNK Dinamo Zagreb",
+    "league": "SuperSport HNL",
+    "stadiumName": "Stadion Maksimir",
+    "location": "Zagreb, Kroatien",
+    "logo": "/logos/dinamo-zagreb.png",
+    "heroImage": "/stadiums/stadion-maksimir.jpg",
+    "stadiumLayoutImage": "/stadiums/stadion-maksimir.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Stadion+Maksimir+Zagreb&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Stadion Maksimir har en kapacitet på drygt 24 000 åskådare och är Kroatiens mest anrika fotbollsborg.",
+    "aboutTickets": "Köp biljetter till Dinamo Zagreb och upplev Kroatiens ohotade giganter live.",
+    "howToBuy": "Sök och jämför verifierade biljetter för Dinamo Zagrebs hemmamatcher via oss.",
+    "sectionsAndPrices": "Västläktaren ger den bästa komforten medan Bad Blue Boys dominerar den norra läktaren.",
+    "packages": "Boka matchbiljett och upplev den härliga atmosfären i Kroatiens huvudstad Zagreb.",
+    "history": "Dinamo Zagreb grundades 1945 och har dominerat kroatisk fotboll helt med dussintals ligatitlar.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Stadion Maksimir?",
+        "answer": "Spårvagn 4, 7, 11 eller 12 från centrum stannar precis vid Maksimir-parken och arenan."
+      }
+    ]
+  },
+  "levski-sofia": {
+    "name": "Levski Sofia",
+    "league": "Părva Liga",
+    "stadiumName": "Vivacom Arena - Georgi Asparuhov",
+    "location": "Sofia, Bulgarien",
+    "logo": "/logos/levski-sofia.png",
+    "heroImage": "/stadiums/georgi-asparuhov-stadium.jpg",
+    "stadiumLayoutImage": "/stadiums/georgi-asparuhov-stadium.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Georgi+Asparuhov+Stadium+Sofia&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Känd som 'Gerenka', med en kapacitet på cirka 18 000 åskådare och ett enormt läktarstöd.",
+    "aboutTickets": "Säkra biljetter till Levski Sofia för passionerad bulgarisk ligafotboll.",
+    "howToBuy": "Jämför biljetter och boka tryggt från auktoriserade partners på biljetterfotboll.se.",
+    "sectionsAndPrices": "Huvudläktaren (Sektor A) erbjuder utmärkt sikt medan Sektor B är hem för den passionerade klacken.",
+    "packages": "Kombinera fotbollsmatch med en prisvärd weekend i Sofia.",
+    "history": "PFC Levski Sofia grundades 1914 och är en av Bulgariens mest populära och framgångsrika klubbar.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Georgi Asparuhov Stadium?",
+        "answer": "Trolleybuss 1 eller buss 120 från centrum stannar i närheten av arenan."
+      }
+    ]
+  },
+  "rb-salzburg": {
+    "name": "RB Salzburg",
+    "league": "Österreichische Bundesliga",
+    "stadiumName": "Red Bull Arena",
+    "location": "Wals-Siezenheim (Salzburg), Österrike",
+    "logo": "/logos/rb-salzburg.png",
+    "heroImage": "/stadiums/red-bull-arena-salzburg.jpg",
+    "stadiumLayoutImage": "/stadiums/red-bull-arena-salzburg.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Red+Bull+Arena+Salzburg&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Red Bull Arena rymmer över 30 000 åskådare och är en toppmodern arena med fantastiska faciliteter.",
+    "aboutTickets": "Boka biljetter till RB Salzburg och se Europas mest talangfulla fotbollslag på hemmaplan.",
+    "howToBuy": "Jämför biljetter till RB Salzburgs ligamatcher och Europaspel via biljetterfotboll.se.",
+    "sectionsAndPrices": "Sektionerna på långsidorna ger perfekt sikt över hela planen i två etager.",
+    "packages": "Njut av toppfotboll och fantastiska alpmiljöer i vackra Salzburg.",
+    "history": "Klubben omstrukturerades 2005 och har därefter dominerat österrikisk fotboll helt med återkommande ligaguld.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Red Bull Arena?",
+        "answer": "Shuttlebussar avgår kostnadsfritt från Salzburgs centralstation på matchdagar."
+      }
+    ]
+  },
+  "ofi-kreta": {
+    "name": "OFI Kreta",
+    "league": "Super League Grekland",
+    "stadiumName": "Theodoros Vardinogiannis Stadium",
+    "location": "Heraklion, Grekland",
+    "logo": "/logos/ofi-kreta.png",
+    "heroImage": "/stadiums/theodoros-vardinogiannis.jpg",
+    "stadiumLayoutImage": "/stadiums/theodoros-vardinogiannis.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Theodoros+Vardinogiannis+Stadium+Heraklion&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Kallad 'Yenti Kule', en klassisk och intimt byggd arena i Heraklion som rymmer drygt 9 000 åskådare.",
+    "aboutTickets": "Upplev kretensisk passion och fotbollskultur med biljetter till OFI Kreta.",
+    "howToBuy": "Hitta och jämför biljetter till OFI Kretas hemmamatcher enkelt online.",
+    "sectionsAndPrices": "Närheten till planen gör att du kommer riktigt nära matchen från alla sektioner.",
+    "packages": "Kombinera din solsemester på Kreta med en medryckande fotbollsmatch i Heraklion.",
+    "history": "OFI Crete grundades 1925 och är Kretas stolthet inom grekisk toppfotboll.",
+    "faqs": [
+      {
+        "question": "Var ligger Theodoros Vardinogiannis Stadium?",
+        "answer": "Arenan ligger mitt i stadsdelen Kaminia i Heraklion, en kort taxiresa från hamnen eller centrum."
+      }
+    ]
+  },
+  "celtic": {
+    "name": "Celtic FC",
+    "league": "Scottish Premiership",
+    "stadiumName": "Celtic Park",
+    "location": "Glasgow, Skottland",
+    "logo": "/logos/celtic.png",
+    "heroImage": "/stadiums/celtic-park.jpg",
+    "stadiumLayoutImage": "/stadiums/celtic-park.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Celtic+Park+Glasgow&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Celtic Park ('Paradise') rymmer över 60 000 åskådare och har en av världens mest berömda publikinramningar.",
+    "aboutTickets": "Köp biljetter till Celtic FC och upplev 'You'll Never Walk Alone' live på Celtic Park.",
+    "howToBuy": "Jämför trygga biljetter och hospitality-paket direkt på biljetterfotboll.se.",
+    "sectionsAndPrices": "Main Stand ger klassisk sikt medan Jock Stein och Lisbon Lions-läktarna står för magisk stämning.",
+    "packages": "Säkra ett komplett paket med biljetter och hotell för en ikonisk fotbollsresa till Glasgow.",
+    "history": "Celtic grundades 1887, vann Europacupen 1967 och är en gigant i brittisk fotbollshistoria.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Celtic Park?",
+        "answer": "Ta tåget från centrala Glasgow till Dalmarnock eller Bridgeton station, följt av en kort promenad."
+      }
+    ]
+  },
+  "ferencvaros": {
+    "name": "Ferencváros TC",
+    "league": "NB I",
+    "stadiumName": "Groupama Aréna",
+    "location": "Budapest, Ungern",
+    "logo": "/logos/ferencvaros.png",
+    "heroImage": "/stadiums/groupama-arena.jpg",
+    "stadiumLayoutImage": "/stadiums/groupama-arena.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Groupama+Arena+Budapest&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Groupama Aréna invigdes 2014, rymmer 22 000 åskådare och är en av Östeuropas mest moderna fotbollsarenor.",
+    "aboutTickets": "Jämför biljetter till Ferencváros ('Fradi') och se Ungerns mest populära lag i Budapest.",
+    "howToBuy": "Boka dina biljetter från verifierade återförsäljare smidigt via vår plattform.",
+    "sectionsAndPrices": "Långsidorna erbjuder toppkomfort medan B-Közép står för den mäktiga hemmaklacken.",
+    "packages": "Njut av en fotbollsweekend i underbara Budapest kombinerat med internationellt Europaspel.",
+    "history": "Ferencváros grundades 1899 och är Ungerns mest framgångsrika klubb med fler än 30 ligatitlar.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Groupama Aréna?",
+        "answer": "Tunnelbanans linje M3 stannar direkt vid stationen Népliget precis intill arenan."
+      }
+    ]
+  },
+  "nec": {
+    "name": "N.E.C. Nijmegen",
+    "league": "Eredivisie",
+    "stadiumName": "Goffertstadion",
+    "location": "Nijmegen, Nederländerna",
+    "logo": "/logos/nec.png",
+    "heroImage": "/stadiums/goffertstadion.jpg",
+    "stadiumLayoutImage": "/stadiums/goffertstadion.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Goffertstadion+Nijmegen&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Goffertstadion ligger i en vacker parkmiljö och rymmer drygt 12 500 åskådare.",
+    "aboutTickets": "Boka biljetter till N.E.C. Nijmegen för genuin och stämningsfull holländsk ligafotboll.",
+    "howToBuy": "Jämför tillgängliga biljetter och priser enkelt via biljetterfotboll.se.",
+    "sectionsAndPrices": "Intima läktare nära planen med bra sikt över hela spelfältet.",
+    "packages": "Kombinera fotboll i Eredivisie med att utforska Nederländernas äldsta stad Nijmegen.",
+    "history": "N.E.C. bildades 1900 och är en traditionsrik klubb med en stark lokal förankring i Gelderland.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Goffertstadion?",
+        "answer": "Ta tåg till stationen Nijmegen Goffert, varifrån det är kort promenadavstånd till arenan."
+      }
+    ]
+  },
+  "viktoria-plzen": {
+    "name": "FC Viktoria Plzeň",
+    "league": "Chance Liga",
+    "stadiumName": "Doosan Arena",
+    "location": "Plzeň, Tjeckien",
+    "logo": "/logos/viktoria-plzen.png",
+    "heroImage": "/stadiums/doosan-arena.jpg",
+    "stadiumLayoutImage": "/stadiums/doosan-arena.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Doosan+Arena+Plzen&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Doosan Arena ligger i parken Štruncovy Sady nära centrum och rymmer ca 11 700 åskådare.",
+    "aboutTickets": "Säkra biljetter till Viktoria Plzeň och upplev tjeckisk toppfotboll på nära håll.",
+    "howToBuy": "Jämför priser från pålitliga säljare och boka tryggt via biljetterfotboll.se.",
+    "sectionsAndPrices": "En renodlad fotbollsarena där du hamnar riktigt nära spelet oavsett sektion.",
+    "packages": "Planera en weekend i ölets huvudstad Plzeň kombinerat med toppfotboll.",
+    "history": "Klubben grundades 1911 och fick ett enormt uppsving på 2010-talet med flera tjeckiska ligatitlar och Champions League-spel.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Doosan Arena?",
+        "answer": "Arenan ligger på gångavstånd (ca 10-15 minuter) från centrala torget i Plzeň."
+      }
+    ]
+  },
+  "union-sg": {
+    "name": "Union Saint-Gilloise",
+    "league": "Jupiler Pro League",
+    "stadiumName": "Joseph Marien Stadium",
+    "location": "Bryssel, Belgien",
+    "logo": "/logos/union-sg.png",
+    "heroImage": "/stadiums/joseph-marien-stadium.jpg",
+    "stadiumLayoutImage": "/stadiums/joseph-marien-stadium.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Joseph+Marien+Stadium+Brussels&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "En kultförklarad och k-märkt arena i Dudenpark med art déco-fasad och plats för ca 9 400 åskådare.",
+    "aboutTickets": "Upplev en av Europas mest charmiga fotbollsmiljöer med biljetter till Union SG.",
+    "howToBuy": "Hitta och jämför biljetter till Union SG:s hemmamatcher på biljetterfotboll.se.",
+    "sectionsAndPrices": "Unik stämning på de klassiska stå- och sittplatsläktarna omgivna av parkens träd.",
+    "packages": "Kombinera en unik fotbollsupplevelse med en resa till härliga Bryssel.",
+    "history": "Union SG grundades 1897, var en belgisk gigant på 1930-talet och har gjort en osannolik återkomst till toppen nyligen.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Joseph Marien Stadium?",
+        "answer": "Spårvagn 82 eller 97 stannar vid stationen Union precis intill parken."
+      }
+    ]
+  },
+  "lillestrom": {
+    "name": "Lillestrøm SK",
+    "league": "Eliteserien",
+    "stadiumName": "Åråsen Stadion",
+    "location": "Lillestrøm, Norge",
+    "logo": "/logos/lillestrom.png",
+    "heroImage": "/stadiums/arasen-stadion.jpg",
+    "stadiumLayoutImage": "/stadiums/arasen-stadion.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Arasen+Stadion+Lillestrom&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Åråsen Stadion har en kapacitet på cirka 11 500 åskådare och är känd för sin intima stämning.",
+    "aboutTickets": "Köp biljetter till Lillestrøm SK och se norsk fotboll i Eliteserien live.",
+    "howToBuy": "Jämför biljetter och boka smidigt via vår plattform.",
+    "sectionsAndPrices": "Långsidorna erbjuder mycket bra platser med 'Kanari-Fansen' på kortsidan som drivkraft.",
+    "packages": "Boka din matchbiljett och kombinera med boende i Lillestrøm eller närliggande Oslo.",
+    "history": "LSK grundades 1917 och är en av Norges mest anrika och mest storsatsande fotbollsklubbar.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Åråsen Stadion?",
+        "answer": "Kort tågresa från Oslo S till Lillestrøm station, följt av 10-15 minuters promenad eller lokalbuss."
+      }
+    ]
+  },
+  "torreense": {
+    "name": "SC Torreense",
+    "league": "Liga Portugal 2",
+    "stadiumName": "Estádio Manuel Marques",
+    "location": "Torres Vedras, Portugal",
+    "logo": "/logos/torreense.png",
+    "heroImage": "/stadiums/estadio-manuel-marques.jpg",
+    "stadiumLayoutImage": "/stadiums/estadio-manuel-marques.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Estadio+Manuel+Marques+Torres+Vedras&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Estádio Manuel Marques har kapacitet för cirka 12 000 åskådare och ligger i hjärtat av Torres Vedras.",
+    "aboutTickets": "Jämför biljetter till SC Torreense och upplev autentisk portugisisk fotboll.",
+    "howToBuy": "Hitta lediga biljetter och tillförlitliga säljare smidigt via biljetterfotboll.se.",
+    "sectionsAndPrices": "Klassiska öppna läktare med mycket förmånliga biljettpriser.",
+    "packages": "Upplev portugisisk lokalfotboll strax norr om Lissabon.",
+    "history": "Sport Clube Torreense grundades 1917 och har en stolt historia i de portugisiska divisionerna.",
+    "faqs": [
+      {
+        "question": "Var ligger Estádio Manuel Marques?",
+        "answer": "Arenan ligger centralt i Torres Vedras, drygt 40 minuter norr om Lissabon med bil."
+      }
+    ]
+  },
+  "lech-poznan": {
+    "name": "Lech Poznań",
+    "league": "Ekstraklasa",
+    "stadiumName": "Enea Stadion",
+    "location": "Poznań, Polen",
+    "logo": "/logos/lech-poznan.png",
+    "heroImage": "/stadiums/enea-stadion.jpg",
+    "stadiumLayoutImage": "/stadiums/enea-stadion.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Enea+Stadion+Poznan&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Enea Stadion (Stadion Miejski) rymmer drygt 42 800 åskådare och var en av spelplatserna under EM 2012.",
+    "aboutTickets": "Boka biljetter till Lech Poznań och upplev en av Europas mest kända läktarkulturer live.",
+    "howToBuy": "Jämför priser från auktoriserade biljettsäljare på biljetterfotboll.se.",
+    "sectionsAndPrices": "Branta, maffiga läktare där du har fantastisk överblick var du än sitter.",
+    "packages": "Säkra fotbollsbiljetter och hotell för en intensiv helg i Poznań.",
+    "history": "Lech Poznań grundades 1922 och är en polsk storklubb känd för sina trogna fans och 'Kocioł'-läktaren.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Enea Stadion?",
+        "answer": "Spårvagn 1, 6 och 15 går direkt från centrala Poznań till hpl Stadion Miejski."
+      }
+    ]
+  },
+  "besiktas": {
+    "name": "Beşiktaş JK",
+    "league": "Süper Lig",
+    "stadiumName": "Tüpraş Stadyumu",
+    "location": "Istanbul, Turkiet",
+    "logo": "/logos/besiktas.png",
+    "heroImage": "/stadiums/tupras-stadyumu.jpg",
+    "stadiumLayoutImage": "/stadiums/tupras-stadyumu.jpg",
+    "googleMapsEmbedUrl": "https://maps.google.com/maps?q=Tupras+Stadyumu+Istanbul&z=16&ie=UTF8&iwloc=&output=embed",
+    "stadiumDescription": "Tüpraş Stadyumu (Vodafone Park) ligger otroligt vackert vid Bosporen och rymmer ca 42 500 högljudda åskådare.",
+    "aboutTickets": "Säkra biljetter till Beşiktaş JK för en av världens absolut mest intensiva fotbollsatmosfärer.",
+    "howToBuy": "Jämför priser och biljetter tryggt och enkelt via vår plattform.",
+    "sectionsAndPrices": "Långsidorna ger fantastisk utsikt över planen och Bosporen, medan kortsidorna bjuder på ett enormt tryck.",
+    "packages": "Boka fotbollspaket och upplev magiska Istanbul kombinerat med turkisk storklubbsfotboll.",
+    "history": "Beşiktaş grundades 1903 och är en av Istanbuls tre stora giganter med otaliga ligatitlar och cuptriumfer.",
+    "faqs": [
+      {
+        "question": "Hur tar man sig till Tüpraş Stadyumu?",
+        "answer": "Arenan ligger i Beşiktaş nära Kabataş spårvagns- och färjestation, samt gångavstånd från Taksimtorget."
+      }
+    ]
   }
 };
