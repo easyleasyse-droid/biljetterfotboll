@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
 import { getFootballTicketNetUrl, getChampionsTravelUrl } from "@/lib/affiliate";
-import { fetchGigsbergTickets, findGigsbergTicketInRows } from "@/lib/gigsbergFeed";
+import { fetchGigsbergTickets } from "@/lib/gigsbergFeed";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 
 export const dynamic = 'force-dynamic';
@@ -564,7 +564,6 @@ export async function GET() {
       // Slå upp biljetter i feederna
       const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date);
       const ticomboData = findTicomboTicketInRows(ticomboRows, homeName, awayName, m.date);
-      const gigsbergData = findGigsbergTicketInRows(gigsbergTickets, homeName, awayName, m.date);
 
       // Bygg listan över erbjudanden dynamiskt
       const offers: any[] = [
@@ -644,26 +643,42 @@ export async function GET() {
         });
       }
 
-        // --- GIGSBERG ---
-    if (gigsbergData) {
-      const USD_TO_SEK = 10.5; // eller den kurs du hade
-      const gigsbergPriceSEK = Math.round(gigsbergData.price * USD_TO_SEK);
+        // --- GIGSBERG (Ursprunglig kod) ---
+          const homeClean = sanitizeTeamName(formatTeamName(m.homeKey));
+          const awayClean = sanitizeTeamName(formatTeamName(m.awayKey));
 
-      offers.push({
-        id: `o-${matchId}-gigsberg`,
-        merchantName: "Gigsberg",
-        rating: 4.5,
-        reviewsCount: 890,
-        section: "Säkrad plats",
-        category: "Standard / VIP",
-        priceSEK: gigsbergPriceSEK,
-        availableQuantity: 2,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true,
-        url: gigsbergData.url,
-        type: "ticket"
-      });
-    }
+          const gigsbergData = gigsbergTickets.find((t: any) => {
+            if (!t.title) return false;
+            const titleClean = sanitizeTeamName(t.title);
+
+            const homeParts = homeClean.split(" ").filter(w => w.length > 2);
+            const awayParts = awayClean.split(" ").filter(w => w.length > 2);
+
+            const homeMatches = homeParts.some(part => titleClean.includes(part));
+            const awayMatches = awayParts.some(part => titleClean.includes(part));
+
+            return homeMatches && awayMatches;
+          });
+
+          if (gigsbergData) {
+            const USD_TO_SEK = 10.5; // eller den ursprungliga växelkurs du använde
+            const gigsbergPriceSEK = Math.round(gigsbergData.price * USD_TO_SEK);
+
+            offers.push({
+              id: `o-${matchId}-gigsberg`,
+              merchantName: "Gigsberg",
+              rating: 4.5,
+              reviewsCount: 890,
+              section: "Säkrad plats",
+              category: "Standard / VIP",
+              priceSEK: gigsbergPriceSEK,
+              availableQuantity: 2,
+              deliveryType: "E-biljett (Direkt)",
+              isVerified: true,
+              url: gigsbergData.url,
+              type: "ticket"
+            });
+          }
     
 
       // LiveFootballTickets (Skicka till startsidan)
