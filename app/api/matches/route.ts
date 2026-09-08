@@ -497,6 +497,7 @@ const getSearchUrl = (
     "Ticombo": `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent('https://www.ticombo.com/en/sports-tickets/football')}`,
     "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${query}`)}`,
     "Sports Events 365": `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`
+    "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${query}`)}`,
   };
 
   return domainMap[merchantName] || `https://www.google.com/search?q=${query}`;
@@ -508,10 +509,11 @@ export async function GET() {
     const upcomingMatches = MY_MATCHES.filter((m) => m.date >= today);
 
     // 1. Hämta båda feederna som färdiga objekt-rader i minnet
-    const [p1Rows, ticomboRows] = await Promise.all([
-    fetchP1FeedRows().catch(() => []),
-    fetchTicomboParsedRows().catch(() => [])
-    ]);
+          const [p1Rows, ticomboRows, gigsbergTickets] = await Promise.all([
+        fetchP1FeedRows().catch(() => []),
+        fetchTicomboParsedRows().catch(() => []),
+        fetchGigsbergTickets().catch(() => []),
+      ]);
 
     // 2. Skapa matchobjekten
     const matches = upcomingMatches.map((m, index) => {
