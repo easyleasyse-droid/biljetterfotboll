@@ -1,47 +1,75 @@
 import https from 'https';
 import zlib from 'zlib';
-import csv from 'csv-parser';
 
 export async function fetchGigsbergTickets() {
   const feedUrl = process.env.GIGSBERG_FEED_URL;
   if (!feedUrl) {
-    throw new Error("GIGSBERG_FEED_URL saknas i .env.local");
+    throw new Error("GIGSBERG_FEED_URL saknas i miljövariablerna");
   }
 
   return new Promise((resolve, reject) => {
-    const results: any[] = [];
-
     https.get(feedUrl, (response) => {
-      // Dekomprimera gzip-strömmen i minnet
       const gunzip = zlib.createGunzip();
+      let rawData = '';
 
-      response
-        .pipe(gunzip)
-        .pipe(csv())
-        .on('data', (row) => {
-          const category = row.category_name || '';
-          const productName = row.product_name || '';
+      response.pipe(gunzip);
 
-          // Filtrera bort konserter och teater
-          if (category.includes('Concerts') || category.includes('Theater')) {
-            return;
+      gunzip.on('data', (chunk) => {
+        rawData += chunk.toString('utf-8');
+      });
+
+      gunzip.on('end', () => {
+        try {
+          const lines = rawData.split('\n');
+          if (lines.length === 0) return resolve([]);
+
+          // Läs ut rubrikraden och städa bort citattecken/mellanrum
+          const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+          
+          const productNameIndex = headers.indexOf('product_name');
+          const priceIndex = headers.indexOf('search_price');
+          const currencyIndex = headers.indexOf('currency');
+          const deepLinkIndex = headers.indexOf('aw_deep_link');
+          const categoryIndex = headers.indexOf('category_name');
+
+          const results: any[] = [];
+
+          // Gå igenom alla rader (hoppa över rubriken på rad 0)
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+
+            // Enkel CSV-uppdelning för rader
+            const columns = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/^"|"$/g, ''));
+
+            const category = columns[categoryIndex] || '';
+            const productName = columns[productNameIndex] || '';
+
+            // Filtrera bort konserter och teater
+            if (category.toLowerCase().includes('concert') || category.toLowerCase().includes('theater')) {
+              continue;
+            }
+
+            if (productName) {
+              results.push({
+                id: columns[deepLinkIndex] || '',
+                title: productName,
+                priceUSD: parseFloat(columns[priceIndex]) || 0,
+                currency: columns[currencyIndex] || 'USD',
+                url: columns[deepLinkIndex] || '',
+                merchant: 'Gigsberg',
+              });
+            }
           }
 
-          // Mappa till samma format som dina övriga feeds
-          results.push({
-            id: row.aw_deep_link,
-            title: productName,
-            priceUSD: parseFloat(row.search_price),
-            currency: row.currency || 'USD',
-            url: row.aw_deep_link,
-            merchant: 'Gigsberg',
-          });
-        })
-        .on('end', () => {
           console.log(`Hämtade ${results.length} biljetter från Gigsberg.`);
           resolve(results);
-        })
-        .on('error', (err) => reject(err));
+        } catch (err) {
+          reject(err);
+        }
+      });
+
+      gunzip.on('error', (err) => reject(err));
     }).on('error', (err) => reject(err));
   });
 }
