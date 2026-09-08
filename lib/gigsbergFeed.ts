@@ -8,7 +8,10 @@ const CACHE_TTL = 3600 * 1000;
 export async function fetchGigsbergTickets(): Promise<any[]> {
   try {
     const feedUrl = process.env.GIGSBERG_FEED_URL;
-    if (!feedUrl) return cachedTickets || [];
+    if (!feedUrl) {
+      console.log("❌ [GIGSBERG] GIGSBERG_FEED_URL saknas!");
+      return cachedTickets || [];
+    }
 
     const now = Date.now();
     if (cachedTickets && now - lastFetchTime < CACHE_TTL) {
@@ -17,7 +20,12 @@ export async function fetchGigsbergTickets(): Promise<any[]> {
 
     return await new Promise((resolve) => {
       const req = https.get(feedUrl, (response) => {
-        if (response.statusCode !== 200) return resolve(cachedTickets || []);
+        console.log(`📡 [GIGSBERG] HTTP Status: ${response.statusCode}`);
+
+        if (response.statusCode !== 200) {
+          console.log(`❌ [GIGSBERG] Fel statuskod från servern: ${response.statusCode}`);
+          return resolve(cachedTickets || []);
+        }
 
         const isGzip = response.headers['content-encoding'] === 'gzip' || feedUrl.endsWith('.gz');
         const stream = isGzip ? response.pipe(zlib.createGunzip()) : response;
@@ -28,9 +36,10 @@ export async function fetchGigsbergTickets(): Promise<any[]> {
         stream.on('end', () => {
           try {
             const lines = rawData.split('\n');
+            console.log(`📊 [GIGSBERG] Antal rader hämtade från feeden: ${lines.length}`);
+
             if (lines.length < 2) return resolve(cachedTickets || []);
 
-            // Läs in rubrikraden för att hitta exakta kolumner
             const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim().toLowerCase());
             
             const titleIndex = headers.findIndex(h => h.includes('product_name') || h.includes('name') || h.includes('title'));
@@ -62,24 +71,36 @@ export async function fetchGigsbergTickets(): Promise<any[]> {
               }
             }
 
+            console.log(`✅ [GIGSBERG] Totalt antal parsningsbara biljetter: ${results.length}`);
+
             cachedTickets = results;
             lastFetchTime = Date.now();
             resolve(results);
-          } catch {
+          } catch (err) {
+            console.log(`❌ [GIGSBERG] Parsningsfel:`, err);
             resolve(cachedTickets || []);
           }
         });
 
-        stream.on('error', () => resolve(cachedTickets || []));
+        stream.on('error', (err) => {
+          console.log(`❌ [GIGSBERG] Stream-fel:`, err);
+          resolve(cachedTickets || []);
+        });
       });
 
-      req.on('error', () => resolve(cachedTickets || []));
+      req.on('error', (err) => {
+        console.log(`❌ [GIGSBERG] Request-fel:`, err);
+        resolve(cachedTickets || []);
+      });
+
       req.setTimeout(12000, () => {
+        console.log(`❌ [GIGSBERG] Timeout efter 12 sekunder!`);
         req.destroy();
         resolve(cachedTickets || []);
       });
     });
-  } catch {
+  } catch (err) {
+    console.log(`❌ [GIGSBERG] Catch-fel:`, err);
     return cachedTickets || [];
   }
 }
