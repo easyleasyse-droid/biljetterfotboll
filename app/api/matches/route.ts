@@ -508,11 +508,11 @@ export async function GET() {
     const upcomingMatches = MY_MATCHES.filter((m) => m.date >= today);
 
     // 1. Hämta båda feederna som färdiga objekt-rader i minnet
-          const [p1Rows, ticomboRows, gigsbergTickets] = await Promise.all([
+       const [p1Rows, ticomboRows, gigsbergTickets] = (await Promise.all([
         fetchP1FeedRows().catch(() => []),
         fetchTicomboParsedRows().catch(() => []),
-        fetchGigsbergTickets().catch(() => []),
-      ]);
+        fetchGigsbergTickets().catch(() => [])
+      ])) as [any[], any[], any[]];
 
     // 2. Skapa matchobjekten
     const matches = upcomingMatches.map((m, index) => {
