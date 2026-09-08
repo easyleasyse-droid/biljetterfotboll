@@ -21,17 +21,22 @@ const sanitizeTeamName = (name: string) => {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "") // Gör ü/ö/ä till u/o/a
-    .replace(/[^a-z0-9 ]/g, " ")     // Tar bort bindestreck och specialtecken
-    .replace(/\bfc\b|\bac\b|\bafc\b|\bsv\b|\bcf\b|\brcd\b|\bud\b/g, "") // Rensar bort FC, CF, AC etc.
+    .replace(/[^a-z0-9 ]/g, " ")     // Tar bort specialtecken och bindestreck
+    .replace(/\bfc\b|\bac\b|\bafc\b|\bsv\b|\bcf\b|\brcd\b|\bud\b/g, "") // Rensar prefix/suffix
     .replace(/\s+/g, " ")
     .trim();
 
-  // Mappa alla tyska/svenska varianter direkt till Gigsbergs "bayern munich"
+  // Exakta kartläggningar för Real-lagen så de inte förväxlas
+  if (clean.includes("real madrid")) return "real madrid";
+  if (clean.includes("real betis")) return "real betis";
+  if (clean.includes("real sociedad")) return "real sociedad";
+
+  // Mappa alla bayern-varianter direkt till Gigsbergs "bayern munich"
   if (clean.includes("bayern") || clean.includes("munchen") || clean.includes("munich")) {
     return "bayern munich";
   }
 
-  // Tvinga "inter milan" eller "internazionale" till "inter milan"
+  // Tvinga italienska Inter till "inter milan" så vi undviker Inter Miami
   if (clean === "inter" || clean.includes("inter milan") || clean.includes("internazionale")) {
     return "inter milan";
   }
@@ -640,7 +645,6 @@ export async function GET() {
           const gigsbergData = gigsbergTickets.find((t: any) => {
             const titleClean = sanitizeTeamName(t.title || "");
 
-            // Kräv att BÅDA lagens rensade namn finns med i titeln
             const homeMatches = titleClean.includes(homeClean);
             const awayMatches = titleClean.includes(awayClean);
 
