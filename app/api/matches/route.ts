@@ -667,7 +667,7 @@ export async function GET() {
 
           if (gigsbergData) {
             const USD_TO_SEK = 10.5;
-            const gigsbergPriceSEK = Math.round(gigsbergData.price * USD_TO_SEK);
+            const gigsbergPriceSEK = Math.round(gigsbergData.search_price * USD_TO_SEK);
 
             offers.push({
               id: `o-${matchId}-gigsberg`,
