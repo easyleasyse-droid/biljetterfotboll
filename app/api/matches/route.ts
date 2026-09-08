@@ -15,6 +15,18 @@ const formatTeamName = (key: string) => {
     .join(" ");
 };
 
+// Tvättar lagnamn från specialtecken (ü/ö/ä/ø), engelska namn och FC/AC-prefix
+const sanitizeTeamName = (name: string) => {
+  return name
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Gör ü -> u, ö -> o, ä -> a, ø -> o
+    .replace(/\bmunich\b/g, "munchen")
+    .replace(/\bmilano?\b/g, "")
+    .replace(/\bfc\b|\bac\b|\bafc\b|\bsv\b/g, "")
+    .replace(/[^a-z0-9 ]/g, "") // Tar bort specialtecken som bindestreck och snedstreck
+    .trim();
+};
+
 const MY_MATCHES = [
   { homeKey: "liverpool", awayKey: "fulham", date: "2026-09-12", time: "16:00" },
   { homeKey: "crystal-palace", awayKey: "ipswich", date: "2026-09-12", time: "16:00" },
@@ -610,13 +622,19 @@ export async function GET() {
       }
 
       // --- GIGSBERG ---
-          const homeSearch = formatTeamName(m.homeKey).toLowerCase();
-          const awaySearch = formatTeamName(m.awayKey).toLowerCase();
+          const homeClean = sanitizeTeamName(formatTeamName(m.homeKey));
+          const awayClean = sanitizeTeamName(formatTeamName(m.awayKey));
+
+          const homeCoreWord = homeClean.split(" ")[0];
+          const awayCoreWord = awayClean.split(" ")[0];
 
           const gigsbergData = gigsbergTickets.find((t: any) => {
-            const title = t.title.toLowerCase();
-            // Matchar t.ex. "real sociedad" och "bournemouth" i samma titel
-            return title.includes(homeSearch) && title.includes(awaySearch);
+            const titleClean = sanitizeTeamName(t.title || "");
+
+            const homeMatches = titleClean.includes(homeClean) || (homeCoreWord.length > 3 && titleClean.includes(homeCoreWord));
+            const awayMatches = titleClean.includes(awayClean) || (awayCoreWord.length > 3 && titleClean.includes(awayCoreWord));
+
+            return homeMatches && awayMatches;
           });
 
           if (gigsbergData) {
