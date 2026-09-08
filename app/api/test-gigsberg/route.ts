@@ -3,11 +3,12 @@ import { fetchGigsbergTickets } from '@/lib/gigsbergFeed';
 
 export async function GET() {
   try {
-    const tickets = await fetchGigsbergTickets();
+    const tickets = (await fetchGigsbergTickets()) as any[];
+
     return NextResponse.json({
       success: true,
       count: tickets.length,
-      sample: tickets.slice(0, 5)
+      sample: tickets.slice(0, 5),
     });
   } catch (error: any) {
     return NextResponse.json(
