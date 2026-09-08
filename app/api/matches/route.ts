@@ -638,18 +638,25 @@ export async function GET() {
         });
       }
 
-      // --- GIGSBERG ---
-          const homeClean = sanitizeTeamName(formatTeamName(m.homeKey));
-          const awayClean = sanitizeTeamName(formatTeamName(m.awayKey));
+ // --- GIGSBERG ---
+    console.log("ANTAL GIGSBERG-BILJETTER I ARRAY:", gigsbergTickets ? gigsbergTickets.length : 0);
 
-          const gigsbergData = gigsbergTickets.find((t: any) => {
-            const titleClean = sanitizeTeamName(t.title || "");
+    if (gigsbergTickets && gigsbergTickets.length > 0) {
+      console.log("EXEMPEL PÅ EN TICKET:", gigsbergTickets[0]);
+    }
 
-            const homeMatches = titleClean.includes(homeClean);
-            const awayMatches = titleClean.includes(awayClean);
+    const homeClean = sanitizeTeamName(formatTeamName(m.homeKey));
+    const awayClean = sanitizeTeamName(formatTeamName(m.awayKey));
+    console.log(`JÄMFÖR LAG: Home='${homeClean}' Away='${awayClean}'`);
 
-            return homeMatches && awayMatches;
-          });
+    const gigsbergData = gigsbergTickets.find((t: any) => {
+      const titleClean = sanitizeTeamName(t.title || "");
+
+      const homeMatches = titleClean.includes(homeClean);
+      const awayMatches = titleClean.includes(awayClean);
+
+      return homeMatches && awayMatches;
+    });
 
           if (gigsbergData) {
             const USD_TO_SEK = 10.5;
