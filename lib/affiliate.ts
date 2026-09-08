@@ -94,3 +94,18 @@ export const getChampionsTravelUrl = (homeTeam?: string): string => {
 
   return `https://www.awin1.com/cread.php?awinmid=${CHAMPIONS_TRAVEL_ADVERTISER_ID}&awinaffid=${FTN_PUBLISHER_ID}&ued=${encodeURIComponent(targetUrl)}`;
 };
+
+// --- GIGSBERG (AWIN) ---
+const GIGSBERG_ADVERTISER_ID = '122390';
+
+export const getGigsbergUrl = (homeTeam?: string): string => {
+  if (!homeTeam) {
+    const fallbackUrl = 'https://www.gigsberg.com/sports-tickets/football-tickets';
+    return `https://www.awin1.com/cread.php?awinmid=${GIGSBERG_ADVERTISER_ID}&awinaffid=${FTN_PUBLISHER_ID}&ued=${encodeURIComponent(fallbackUrl)}`;
+  }
+
+  // Bygger en dynamisk söklänk på Gigsberg
+  const targetUrl = `https://www.gigsberg.com/search?q=${encodeURIComponent(homeTeam)}`;
+
+  return `https://www.awin1.com/cread.php?awinmid=${GIGSBERG_ADVERTISER_ID}&awinaffid=${FTN_PUBLISHER_ID}&ued=${encodeURIComponent(targetUrl)}`;
+};

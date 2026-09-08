@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
 import { getFootballTicketNetUrl, getChampionsTravelUrl } from "@/lib/affiliate";
+import { fetchGigsbergTickets } from '@/lib/gigsbergFeed';
 import { TEAMS_SEO_DATA } from "../../data/teams";
 
 export const dynamic = 'force-dynamic';
@@ -606,6 +607,36 @@ export async function GET() {
           type: "ticket"
         });
       }
+
+      // --- GIGSBERG ---
+          const homeSearch = formatTeamName(m.homeKey).toLowerCase();
+          const awaySearch = formatTeamName(m.awayKey).toLowerCase();
+
+          const gigsbergData = gigsbergTickets.find((t: any) => {
+            const title = t.title.toLowerCase();
+            // Matchar t.ex. "real sociedad" och "bournemouth" i samma titel
+            return title.includes(homeSearch) && title.includes(awaySearch);
+          });
+
+          if (gigsbergData) {
+            const USD_TO_SEK = 10.5;
+            const gigsbergPriceSEK = Math.round(gigsbergData.priceUSD * USD_TO_SEK);
+
+            offers.push({
+              id: `o-${m.homeKey}-${m.awayKey}-gigsberg`,
+              merchantName: "Gigsberg",
+              rating: 4.5,
+              reviewsCount: 890,
+              section: "Säkrad plats",
+              category: "Standard / VIP",
+              priceSEK: gigsbergPriceSEK,
+              availableQuantity: 2,
+              deliveryType: "E-biljett (Direkt)",
+              isVerified: true,
+              url: gigsbergData.url,
+              type: "ticket"
+            });
+          }
 
       // LiveFootballTickets (Skicka till startsidan)
          const lftTargetUrl = "https://www.livefootballtickets.com/";
