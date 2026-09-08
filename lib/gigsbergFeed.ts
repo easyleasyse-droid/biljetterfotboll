@@ -3,15 +3,12 @@ import zlib from 'zlib';
 
 let cachedTickets: any[] | null = null;
 let lastFetchTime = 0;
-const CACHE_TTL = 3600 * 1000; // 1 timme
+const CACHE_TTL = 3600 * 1000;
 
 export async function fetchGigsbergTickets(): Promise<any[]> {
   try {
     const feedUrl = process.env.GIGSBERG_FEED_URL;
-    if (!feedUrl) {
-      console.error("GIGSBERG_FEED_URL saknas i miljövariablerna");
-      return cachedTickets || [];
-    }
+    if (!feedUrl) return cachedTickets || [];
 
     const now = Date.now();
     if (cachedTickets && now - lastFetchTime < CACHE_TTL) {
@@ -20,32 +17,18 @@ export async function fetchGigsbergTickets(): Promise<any[]> {
 
     return await new Promise((resolve) => {
       const req = https.get(feedUrl, (response) => {
-        if (response.statusCode !== 200) {
-          console.error(`Gigsberg HTTP fel: ${response.statusCode}`);
-          return resolve(cachedTickets || []);
-        }
+        if (response.statusCode !== 200) return resolve(cachedTickets || []);
 
         const isGzip = response.headers['content-encoding'] === 'gzip' || feedUrl.endsWith('.gz');
         const stream = isGzip ? response.pipe(zlib.createGunzip()) : response;
 
         let rawData = '';
-
-        stream.on('data', (chunk) => {
-          rawData += chunk.toString('utf-8');
-        });
+        stream.on('data', (chunk) => { rawData += chunk.toString('utf-8'); });
 
         stream.on('end', () => {
           try {
             const lines = rawData.split('\n');
-            if (lines.length === 0) return resolve(cachedTickets || []);
-
-            const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-            
-            const productNameIndex = headers.indexOf('product_name');
-            const priceIndex = headers.indexOf('search_price');
-            const currencyIndex = headers.indexOf('currency');
-            const deepLinkIndex = headers.indexOf('aw_deep_link');
-            const categoryIndex = headers.indexOf('category_name');
+            if (lines.length < 2) return resolve(cachedTickets || []);
 
             const results: any[] = [];
 
@@ -53,74 +36,48 @@ export async function fetchGigsbergTickets(): Promise<any[]> {
               const line = lines[i].trim();
               if (!line) continue;
 
-              const columns = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/^"|"$/g, ''));
+              const lineLower = line.toLowerCase();
+              if (lineLower.includes(' vs ') || lineLower.includes(' v ')) {
+                const parts = line.split(',');
 
-              const category = (columns[categoryIndex] || '').toLowerCase();
-              const productName = columns[productNameIndex] || '';
-              const productNameLower = productName.toLowerCase();
+                const url = parts.find(p => p.includes('http'))?.replace(/^"|"$/g, '') || '';
+                const title = parts.find(p => p.toLowerCase().includes(' vs ') || p.toLowerCase().includes(' v '))?.replace(/^"|"$/g, '') || '';
+                
+                // Hittar priset i CSV-raden
+                const priceMatch = line.match(/\b\d+(\.\d+)?\b/g);
+                const priceNum = priceMatch ? parseFloat(priceMatch.find(p => parseFloat(p) > 10) || '0') : 0;
 
-              if (
-                category.includes('concert') || 
-                category.includes('theater') || 
-                category.includes('comedy') ||
-                category.includes('festival')
-              ) {
-                continue;
-              }
-
-              const isFootball = 
-                category.includes('football') || 
-                category.includes('soccer') ||
-                productNameLower.includes(' vs ') ||
-                productNameLower.includes(' v ') ||
-                productNameLower.includes('fc') ||
-                productNameLower.includes('united') ||
-                productNameLower.includes('city') ||
-                productNameLower.includes('real madrid') ||
-                productNameLower.includes('barcelona');
-
-              if (isFootball && productName) {
-                results.push({
-                  id: columns[deepLinkIndex] || '',
-                  title: productName,
-                  priceUSD: parseFloat(columns[priceIndex]) || 0,
-                  currency: columns[currencyIndex] || 'USD',
-                  url: columns[deepLinkIndex] || '',
-                  merchant: 'Gigsberg',
-                });
+                if (title && url) {
+                  results.push({
+                    id: url,
+                    title: title,
+                    priceUSD: priceNum || 50,
+                    currency: 'USD',
+                    url: url,
+                    merchant: 'Gigsberg',
+                  });
+                }
               }
             }
 
-            console.log(`Hämtade ${results.length} fotbollsbiljetter från Gigsberg.`);
             cachedTickets = results;
             lastFetchTime = Date.now();
             resolve(results);
-          } catch (err) {
-            console.error("Fel vid parsing av Gigsberg CSV:", err);
+          } catch {
             resolve(cachedTickets || []);
           }
         });
 
-        stream.on('error', (err) => {
-          console.error("Stream-fel i Gigsberg:", err);
-          resolve(cachedTickets || []);
-        });
+        stream.on('error', () => resolve(cachedTickets || []));
       });
 
-      req.on('error', (err) => {
-        console.error("HTTPS-fel vid Gigsberg-anrop:", err);
-        resolve(cachedTickets || []);
-      });
-
-      // 8 sekunders timeout så att anropet aldrig låser din sida
+      req.on('error', () => resolve(cachedTickets || []));
       req.setTimeout(8000, () => {
         req.destroy();
-        console.error("Gigsberg fetch timeout");
         resolve(cachedTickets || []);
       });
     });
-  } catch (globalErr) {
-    console.error("Kritiskt fel i fetchGigsbergTickets:", globalErr);
+  } catch {
     return cachedTickets || [];
   }
 }
