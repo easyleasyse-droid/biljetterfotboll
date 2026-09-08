@@ -643,14 +643,19 @@ export async function GET() {
         });
       }
 
-        // --- GIGSBERG (Ursprunglig kod) ---
+        // --- GIGSBERG ---
           const homeClean = sanitizeTeamName(formatTeamName(m.homeKey));
           const awayClean = sanitizeTeamName(formatTeamName(m.awayKey));
 
           const gigsbergData = gigsbergTickets.find((t: any) => {
             if (!t.title) return false;
-            const titleClean = sanitizeTeamName(t.title);
+            
+            // Kontrollera att datumet matchar matchens datum om datum finns med i felet
+            if (t.date && m.date && !t.date.startsWith(m.date)) {
+              return false;
+            }
 
+            const titleClean = sanitizeTeamName(t.title);
             const homeParts = homeClean.split(" ").filter(w => w.length > 2);
             const awayParts = awayClean.split(" ").filter(w => w.length > 2);
 
@@ -661,7 +666,7 @@ export async function GET() {
           });
 
           if (gigsbergData) {
-            const USD_TO_SEK = 10.5; // eller den ursprungliga växelkurs du använde
+            const USD_TO_SEK = 10.5;
             const gigsbergPriceSEK = Math.round(gigsbergData.price * USD_TO_SEK);
 
             offers.push({
