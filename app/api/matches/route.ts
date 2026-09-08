@@ -636,10 +636,18 @@ export async function GET() {
           const homeClean = sanitizeTeamName(formatTeamName(m.homeKey));
           const awayClean = sanitizeTeamName(formatTeamName(m.awayKey));
 
+          // TILLFÄLLIG LOGG
+          if (m.homeKey.includes("real") || m.homeKey.includes("bayern")) {
+            console.log("SÖKER EFTER:", homeClean, "vs", awayClean);
+            const sample = gigsbergTickets.filter((t: any) => 
+              t.title?.toLowerCase().includes("bayern") || t.title?.toLowerCase().includes("madrid") || t.title?.toLowerCase().includes("real")
+            );
+            console.log("GIGSBERG TITLAR I FEEDEN:", sample.map((t: any) => t.title));
+          }
+
           const gigsbergData = gigsbergTickets.find((t: any) => {
             const titleClean = sanitizeTeamName(t.title || "");
 
-            // Båda lagens rensade namn (eller alias) måste finnas i titeln
             const homeMatches = titleClean.includes(homeClean);
             const awayMatches = titleClean.includes(awayClean);
 
