@@ -540,7 +540,7 @@ export async function GET() {
        const [p1Rows, ticomboRows, gigsbergTickets] = (await Promise.all([
         fetchP1FeedRows().catch(() => []),
         fetchTicomboParsedRows().catch(() => []),
-        fetchGigsbergTickets().catch(() => [])
+        fetchGigsbergTickets(),
       ])) as [any[], any[], any[]];
 
     // 2. Skapa matchobjekten
