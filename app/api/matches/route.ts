@@ -642,49 +642,7 @@ export async function GET() {
           type: "ticket"
         });
       }
-
-        // --- GIGSBERG ---
-    const homeClean = sanitizeTeamName(formatTeamName(m.homeKey));
-    const awayClean = sanitizeTeamName(formatTeamName(m.awayKey));
-
-    const gigsbergData = gigsbergTickets.find((t: any) => {
-      if (!t || !t.title) return false;
-      
-      if (t.date && m.date && !t.date.startsWith(m.date)) {
-        return false;
-      }
-
-      const titleClean = sanitizeTeamName(t.title);
-      const homeParts = homeClean.split(" ").filter(w => w.length > 2);
-      const awayParts = awayClean.split(" ").filter(w => w.length > 2);
-
-      const homeMatches = homeParts.some(part => titleClean.includes(part));
-      const awayMatches = awayParts.some(part => titleClean.includes(part));
-
-      return homeMatches && awayMatches;
-    });
-
-    if (gigsbergData) {
-      const USD_TO_SEK = 10.5;
-      const gigsbergPriceSEK = Math.round((gigsbergData.priceUSD || 50) * USD_TO_SEK);
-
-      offers.push({
-        id: `o-${matchId}-gigsberg`,
-        merchantName: "Gigsberg",
-        rating: 4.5,
-        reviewsCount: 890,
-        section: "Säkrad plats",
-        category: "Standard / VIP",
-        priceSEK: gigsbergPriceSEK,
-        availableQuantity: 2,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true,
-        url: gigsbergData.url || "#",
-        type: "ticket"
-      });
-    }
     
-
       // LiveFootballTickets (Skicka till startsidan)
          const lftTargetUrl = "https://www.livefootballtickets.com/";
          const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
