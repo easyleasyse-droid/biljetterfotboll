@@ -17,28 +17,33 @@ const formatTeamName = (key: string) => {
 
 // Tvättar lagnamn från specialtecken (ü/ö/ä/ø), engelska namn och FC/AC-prefix
 const sanitizeTeamName = (name: string) => {
+  if (!name) return "";
+
   let clean = name
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Gör ü/ö/ä till u/o/a
-    .replace(/[^a-z0-9 ]/g, " ")     // Tar bort specialtecken och bindestreck
-    .replace(/\bfc\b|\bac\b|\bafc\b|\bsv\b|\bcf\b|\brcd\b|\bud\b/g, "") // Rensar prefix/suffix
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\bfc\b|\bac\b|\bafc\b|\bsv\b|\bbcf\b|\brcd\b|\bbud\b/g, "")
     .replace(/\s+/g, " ")
     .trim();
 
-  // Exakta kartläggningar för Real-lagen så de inte förväxlas
-  if (clean.includes("real madrid")) return "real madrid";
-  if (clean.includes("real betis")) return "real betis";
-  if (clean.includes("real sociedad")) return "real sociedad";
+  // Mappning för lag som heter olika i olika källor
+  const aliasMap: Record<string, string> = {
+    "inter milan": "inter",
+    "internazionale": "inter",
+    "bayern munich": "bayern",
+    "bayern munchen": "bayern",
+    "real betis": "betis",
+    "real sociedad": "sociedad",
+    "atletico madrid": "atletico",
+    "paris saint germain": "psg",
+    "ac milan": "milan",
+    "sporting cp": "sporting",
+  };
 
-  // Mappa alla bayern-varianter direkt till Gigsbergs "bayern munich"
-  if (clean.includes("bayern") || clean.includes("munchen") || clean.includes("munich")) {
-    return "bayern munich";
-  }
-
-  // Tvinga italienska Inter till "inter milan" så vi undviker Inter Miami
-  if (clean === "inter" || clean.includes("inter milan") || clean.includes("internazionale")) {
-    return "inter milan";
+  for (const [key, alias] of Object.entries(aliasMap)) {
+    if (clean.includes(key)) return alias;
   }
 
   return clean;
@@ -638,45 +643,43 @@ export async function GET() {
         });
       }
 
- // --- GIGSBERG ---
-    console.log("ANTAL GIGSBERG-BILJETTER I ARRAY:", gigsbergTickets ? gigsbergTickets.length : 0);
-
-    if (gigsbergTickets && gigsbergTickets.length > 0) {
-      console.log("EXEMPEL PÅ EN TICKET:", gigsbergTickets[0]);
-    }
-
+        // --- GIGSBERG ---
     const homeClean = sanitizeTeamName(formatTeamName(m.homeKey));
     const awayClean = sanitizeTeamName(formatTeamName(m.awayKey));
-    console.log(`JÄMFÖR LAG: Home='${homeClean}' Away='${awayClean}'`);
 
     const gigsbergData = gigsbergTickets.find((t: any) => {
-      const titleClean = sanitizeTeamName(t.title || "");
+      if (!t.title) return false;
+      const titleClean = sanitizeTeamName(t.title);
 
-      const homeMatches = titleClean.includes(homeClean);
-      const awayMatches = titleClean.includes(awayClean);
+      const homeParts = homeClean.split(" ").filter(w => w.length > 2);
+      const awayParts = awayClean.split(" ").filter(w => w.length > 2);
+
+      const homeMatches = homeParts.some(part => titleClean.includes(part));
+      const awayMatches = awayParts.some(part => titleClean.includes(part));
 
       return homeMatches && awayMatches;
     });
 
-          if (gigsbergData) {
-            const USD_TO_SEK = 10.5;
-            const gigsbergPriceSEK = Math.round(gigsbergData.priceUSD * USD_TO_SEK);
+    if (gigsbergData) {
+      const USD_TO_SEK = 10.5;
+      const gigsbergPriceSEK = Math.round(gigsbergData.priceUSD * USD_TO_SEK);
 
-            offers.push({
-              id: `o-${m.homeKey}-${m.awayKey}-gigsberg`,
-              merchantName: "Gigsberg",
-              rating: 4.5,
-              reviewsCount: 890,
-              section: "Säkrad plats",
-              category: "Standard / VIP",
-              priceSEK: gigsbergPriceSEK,
-              availableQuantity: 2,
-              deliveryType: "E-biljett (Direkt)",
-              isVerified: true,
-              url: gigsbergData.url,
-              type: "ticket"
-            });
-          }
+      offers.push({
+        id: `o-${m.homeKey}-${m.awayKey}-gigsberg`,
+        merchantName: "Gigsberg",
+        rating: 4.5,
+        reviewsCount: 890,
+        section: "Säkrad plats",
+        category: "Standard / VIP",
+        priceSEK: gigsbergPriceSEK,
+        availableQuantity: 2,
+        deliveryType: "E-biljett (Direkt)",
+        isVerified: true,
+        url: gigsbergData.url,
+        type: "ticket"
+      });
+    }
+    
 
       // LiveFootballTickets (Skicka till startsidan)
          const lftTargetUrl = "https://www.livefootballtickets.com/";
