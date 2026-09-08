@@ -20,19 +20,20 @@ const sanitizeTeamName = (name: string) => {
   let clean = name
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // ü -> u, ö -> o, ä -> a, ø -> o
-    .replace(/[^a-z0-9 ]/g, " ")     // Ta bort specialtecken
-    .replace(/\bfc\b|\bac\b|\bafc\b|\bsv\b/g, "") // Ta bort FC, AC osv.
+    .replace(/[\u0300-\u036f]/g, "") // Gör ü/ö/ä till u/o/a
+    .replace(/[^a-z0-9 ]/g, " ")     // Tar bort bindestreck och specialtecken
+    .replace(/\bfc\b|\bac\b|\bafc\b|\bsv\b|\bcf\b|\brcd\b|\bud\b/g, "") // Rensar bort FC, CF, AC etc.
     .replace(/\s+/g, " ")
     .trim();
 
-  // Mappa kända avvikelser till standardiserade namn
+  // Mappa alla tyska/svenska varianter direkt till Gigsbergs "bayern munich"
   if (clean.includes("bayern") || clean.includes("munchen") || clean.includes("munich")) {
-    clean = "bayern munich";
-  } else if (clean === "inter" || clean.includes("inter milan") || clean.includes("internazionale")) {
-    clean = "inter milan"; // Tvingar "inter" -> "inter milan" så vi inte hamnar hos Inter Miami!
-  } else if (clean.includes("inter miami")) {
-    clean = "inter miami";
+    return "bayern munich";
+  }
+
+  // Tvinga "inter milan" eller "internazionale" till "inter milan"
+  if (clean === "inter" || clean.includes("inter milan") || clean.includes("internazionale")) {
+    return "inter milan";
   }
 
   return clean;
@@ -636,18 +637,10 @@ export async function GET() {
           const homeClean = sanitizeTeamName(formatTeamName(m.homeKey));
           const awayClean = sanitizeTeamName(formatTeamName(m.awayKey));
 
-          // TILLFÄLLIG LOGG
-          if (m.homeKey.includes("real") || m.homeKey.includes("bayern")) {
-            console.log("SÖKER EFTER:", homeClean, "vs", awayClean);
-            const sample = gigsbergTickets.filter((t: any) => 
-              t.title?.toLowerCase().includes("bayern") || t.title?.toLowerCase().includes("madrid") || t.title?.toLowerCase().includes("real")
-            );
-            console.log("GIGSBERG TITLAR I FEEDEN:", sample.map((t: any) => t.title));
-          }
-
           const gigsbergData = gigsbergTickets.find((t: any) => {
             const titleClean = sanitizeTeamName(t.title || "");
 
+            // Kräv att BÅDA lagens rensade namn finns med i titeln
             const homeMatches = titleClean.includes(homeClean);
             const awayMatches = titleClean.includes(awayClean);
 
