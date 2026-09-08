@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
 import { getFootballTicketNetUrl, getChampionsTravelUrl } from "@/lib/affiliate";
-import { fetchGigsbergTickets } from '@/lib/gigsbergFeed';
+import { fetchGigsbergTickets, findGigsbergTicketInRows } from "@/lib/gigsbergFeed";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 
 export const dynamic = 'force-dynamic';
@@ -564,6 +564,7 @@ export async function GET() {
       // Slå upp biljetter i feederna
       const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date);
       const ticomboData = findTicomboTicketInRows(ticomboRows, homeName, awayName, m.date);
+      const gigsbergData = findGigsbergTicketInRows(gigsbergTickets, homeName, awayName, m.date);
 
       // Bygg listan över erbjudanden dynamiskt
       const offers: any[] = [
@@ -661,11 +662,11 @@ export async function GET() {
     });
 
     if (gigsbergData) {
-      const USD_TO_SEK = 10.5;
-      const gigsbergPriceSEK = Math.round(gigsbergData.priceUSD * USD_TO_SEK);
+      const USD_TO_SEK = 10.5; // eller den kurs du hade
+      const gigsbergPriceSEK = Math.round(gigsbergData.price * USD_TO_SEK);
 
       offers.push({
-        id: `o-${m.homeKey}-${m.awayKey}-gigsberg`,
+        id: `o-${matchId}-gigsberg`,
         merchantName: "Gigsberg",
         rating: 4.5,
         reviewsCount: 890,
