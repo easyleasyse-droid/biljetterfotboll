@@ -645,22 +645,6 @@ export async function GET() {
       }
 
         // --- GIGSBERG ---
-    const homeClean = sanitizeTeamName(formatTeamName(m.homeKey));
-    const awayClean = sanitizeTeamName(formatTeamName(m.awayKey));
-
-    const gigsbergData = gigsbergTickets.find((t: any) => {
-      if (!t.title) return false;
-      const titleClean = sanitizeTeamName(t.title);
-
-      const homeParts = homeClean.split(" ").filter(w => w.length > 2);
-      const awayParts = awayClean.split(" ").filter(w => w.length > 2);
-
-      const homeMatches = homeParts.some(part => titleClean.includes(part));
-      const awayMatches = awayParts.some(part => titleClean.includes(part));
-
-      return homeMatches && awayMatches;
-    });
-
     if (gigsbergData) {
       const USD_TO_SEK = 10.5; // eller den kurs du hade
       const gigsbergPriceSEK = Math.round(gigsbergData.price * USD_TO_SEK);
