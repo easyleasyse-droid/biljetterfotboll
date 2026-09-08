@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
 import { getFootballTicketNetUrl, getChampionsTravelUrl } from "@/lib/affiliate";
-import { fetchGigsbergTickets } from "@/lib/gigsbergFeed";
+import { fetchGigsbergTickets, findGigsbergTicketInRows } from "@/lib/gigsbergFeed";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 
 export const dynamic = 'force-dynamic';
@@ -644,46 +644,45 @@ export async function GET() {
       }
 
         // --- GIGSBERG ---
-          const homeClean = sanitizeTeamName(formatTeamName(m.homeKey));
-          const awayClean = sanitizeTeamName(formatTeamName(m.awayKey));
+    const homeClean = sanitizeTeamName(formatTeamName(m.homeKey));
+    const awayClean = sanitizeTeamName(formatTeamName(m.awayKey));
 
-          const gigsbergData = gigsbergTickets.find((t: any) => {
-            if (!t.title) return false;
-            
-            // Kontrollera att datumet matchar matchens datum om datum finns med i felet
-            if (t.date && m.date && !t.date.startsWith(m.date)) {
-              return false;
-            }
+    const gigsbergData = gigsbergTickets.find((t: any) => {
+      if (!t || !t.title) return false;
+      
+      if (t.date && m.date && !t.date.startsWith(m.date)) {
+        return false;
+      }
 
-            const titleClean = sanitizeTeamName(t.title);
-            const homeParts = homeClean.split(" ").filter(w => w.length > 2);
-            const awayParts = awayClean.split(" ").filter(w => w.length > 2);
+      const titleClean = sanitizeTeamName(t.title);
+      const homeParts = homeClean.split(" ").filter(w => w.length > 2);
+      const awayParts = awayClean.split(" ").filter(w => w.length > 2);
 
-            const homeMatches = homeParts.some(part => titleClean.includes(part));
-            const awayMatches = awayParts.some(part => titleClean.includes(part));
+      const homeMatches = homeParts.some(part => titleClean.includes(part));
+      const awayMatches = awayParts.some(part => titleClean.includes(part));
 
-            return homeMatches && awayMatches;
-          });
+      return homeMatches && awayMatches;
+    });
 
-          if (gigsbergData) {
-            const USD_TO_SEK = 10.5;
-            const gigsbergPriceSEK = Math.round(gigsbergData.search_price * USD_TO_SEK);
+    if (gigsbergData) {
+      const USD_TO_SEK = 10.5;
+      const gigsbergPriceSEK = Math.round((gigsbergData.priceUSD || 50) * USD_TO_SEK);
 
-            offers.push({
-              id: `o-${matchId}-gigsberg`,
-              merchantName: "Gigsberg",
-              rating: 4.5,
-              reviewsCount: 890,
-              section: "Säkrad plats",
-              category: "Standard / VIP",
-              priceSEK: gigsbergPriceSEK,
-              availableQuantity: 2,
-              deliveryType: "E-biljett (Direkt)",
-              isVerified: true,
-              url: gigsbergData.url,
-              type: "ticket"
-            });
-          }
+      offers.push({
+        id: `o-${matchId}-gigsberg`,
+        merchantName: "Gigsberg",
+        rating: 4.5,
+        reviewsCount: 890,
+        section: "Säkrad plats",
+        category: "Standard / VIP",
+        priceSEK: gigsbergPriceSEK,
+        availableQuantity: 2,
+        deliveryType: "E-biljett (Direkt)",
+        isVerified: true,
+        url: gigsbergData.url || "#",
+        type: "ticket"
+      });
+    }
     
 
       // LiveFootballTickets (Skicka till startsidan)
