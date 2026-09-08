@@ -17,14 +17,25 @@ const formatTeamName = (key: string) => {
 
 // Tvättar lagnamn från specialtecken (ü/ö/ä/ø), engelska namn och FC/AC-prefix
 const sanitizeTeamName = (name: string) => {
-  return name
+  let clean = name
     .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Gör ü -> u, ö -> o, ä -> a, ø -> o
-    .replace(/\bmunich\b/g, "munchen")
-    .replace(/\bmilano?\b/g, "")
-    .replace(/\bfc\b|\bac\b|\bafc\b|\bsv\b/g, "")
-    .replace(/[^a-z0-9 ]/g, "") // Tar bort specialtecken som bindestreck och snedstreck
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // ü -> u, ö -> o, ä -> a, ø -> o
+    .replace(/[^a-z0-9 ]/g, " ")     // Ta bort specialtecken
+    .replace(/\bfc\b|\bac\b|\bafc\b|\bsv\b/g, "") // Ta bort FC, AC osv.
+    .replace(/\s+/g, " ")
     .trim();
+
+  // Mappa kända avvikelser till standardiserade namn
+  if (clean.includes("bayern") || clean.includes("munchen") || clean.includes("munich")) {
+    clean = "bayern munich";
+  } else if (clean === "inter" || clean.includes("inter milan") || clean.includes("internazionale")) {
+    clean = "inter milan"; // Tvingar "inter" -> "inter milan" så vi inte hamnar hos Inter Miami!
+  } else if (clean.includes("inter miami")) {
+    clean = "inter miami";
+  }
+
+  return clean;
 };
 
 const MY_MATCHES = [
@@ -625,14 +636,12 @@ export async function GET() {
           const homeClean = sanitizeTeamName(formatTeamName(m.homeKey));
           const awayClean = sanitizeTeamName(formatTeamName(m.awayKey));
 
-          const homeCoreWord = homeClean.split(" ")[0];
-          const awayCoreWord = awayClean.split(" ")[0];
-
           const gigsbergData = gigsbergTickets.find((t: any) => {
             const titleClean = sanitizeTeamName(t.title || "");
 
-            const homeMatches = titleClean.includes(homeClean) || (homeCoreWord.length > 3 && titleClean.includes(homeCoreWord));
-            const awayMatches = titleClean.includes(awayClean) || (awayCoreWord.length > 3 && titleClean.includes(awayCoreWord));
+            // Båda lagens rensade namn (eller alias) måste finnas i titeln
+            const homeMatches = titleClean.includes(homeClean);
+            const awayMatches = titleClean.includes(awayClean);
 
             return homeMatches && awayMatches;
           });
