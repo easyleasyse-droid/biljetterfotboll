@@ -492,12 +492,11 @@ const getSearchUrl = (
   const query = encodeURIComponent(`${homeTeam} ${awayTeam}`);
 
   const domainMap: Record<string, string> = {
-    "Viagogo": `https://www.viagogo.se/Search?q=${query}`,
-    "StubHub": `https://www.stubhub.se/`,
+    "StubHub": "https://www.stubhub.se/",
     "Ticombo": `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent('https://www.ticombo.com/en/sports-tickets/football')}`,
     "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${query}`)}`,
-    "Sports Events 365": `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`
-    "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${query}`)}`,
+    "Sports Events 365": `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`,
+    "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${query}`)}`
   };
 
   return domainMap[merchantName] || `https://www.google.com/search?q=${query}`;
