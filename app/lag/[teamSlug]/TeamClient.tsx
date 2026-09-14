@@ -32,30 +32,30 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
 
   const targetKey = teamSlug.toLowerCase().trim();
 
-  // Filtrera direkt mot UPCOMING_MATCHES
+  // 1. Filtrera statisk data
   const filtered = UPCOMING_MATCHES.filter((m: any) => {
-    const home = (m.homeKey || "").toLowerCase().trim();
-    const away = (m.awayKey || "").toLowerCase().trim();
+    const home = (m.homeKey || m.homeTeam?.slug || m.homeTeam?.name || "").toLowerCase().trim();
+    const away = (m.awayKey || m.awayTeam?.slug || m.awayTeam?.name || "").toLowerCase().trim();
     return home === targetKey || away === targetKey;
   });
 
   setMatches(filtered);
   setLoading(false);
 
-  // Hämta live-priser i bakgrunden
+  // 2. Bakgrundsuppdatering av priser
   fetch("/api/matches")
     .then((res) => res.json())
     .then((data) => {
       if (Array.isArray(data) && data.length > 0) {
-        const updatedFiltered = data.filter((m: any) => {
-          const home = (m.homeKey || "").toLowerCase().trim();
-          const away = (m.awayKey || "").toLowerCase().trim();
+        const liveFiltered = data.filter((m: any) => {
+          const home = (m.homeKey || m.homeTeam?.slug || m.homeTeam?.name || "").toLowerCase().trim();
+          const away = (m.awayKey || m.awayTeam?.slug || m.awayTeam?.name || "").toLowerCase().trim();
           return home === targetKey || away === targetKey;
         });
-        setMatches(updatedFiltered);
+        if (liveFiltered.length > 0) setMatches(liveFiltered);
       }
     })
-    .catch((err) => console.error("Kunde inte hämta priser:", err));
+    .catch((err) => console.error(err));
 }, [teamSlug]);
 
 // Hjälpfunktion för att ta bort accenter (é -> e)
