@@ -30,7 +30,7 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
   useEffect(() => {
     async function fetchMatches() {
       try {
-        const res = await fetch("/api/matches");
+        const res = await fetch("/api/matches", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           setMatches(data);

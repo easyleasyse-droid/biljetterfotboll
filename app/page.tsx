@@ -58,7 +58,7 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchLiveMatches() {
       try {
-        const res = await fetch("/api/matches");
+        const res = await fetch("/api/matches", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           setMatchesData(data);

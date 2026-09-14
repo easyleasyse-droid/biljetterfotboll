@@ -24,7 +24,7 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
     async function fetchMatches() {
       try {
         setLoading(true);
-        const res = await fetch("/api/matches");
+        const res = await fetch("/api/matches", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           setMatches(data);
