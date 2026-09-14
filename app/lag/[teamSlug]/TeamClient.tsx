@@ -28,33 +28,30 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
   const teamName = seoData ? seoData.name : teamSlug.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   useEffect(() => {
-  // 1. Hämta nyckeln säkert från props/variabler i komponenten (t.ex. teamSlug eller slug)
-  const currentKey = (typeof teamKey !== "undefined" ? teamKey : (typeof teamSlug !== "undefined" ? teamSlug : "")).toLowerCase();
+  const slug = (typeof teamSlug !== "undefined" ? teamSlug : "").toLowerCase();
 
-  // 2. Sätt basdatan direkt
-  const filtered = UPCOMING_MATCHES.filter((m: any) => {
-    const home = (m.homeKey || "").toLowerCase();
-    const away = (m.awayKey || "").toLowerCase();
-    return home === currentKey || away === currentKey;
-  });
-  setMatches(filtered);
+  const filterMatches = (matchList: any[]) => {
+    return matchList.filter((m: any) => {
+      const homeKey = (m.homeKey || "").toLowerCase();
+      const awayKey = (m.awayKey || "").toLowerCase();
+      return homeKey === slug || awayKey === slug || homeKey.includes(slug) || awayKey.includes(slug);
+    });
+  };
+
+  // 1. Sätt basdatan direkt
+  setMatches(filterMatches(UPCOMING_MATCHES));
   setLoading(false);
 
-  // 3. Hämta live-priser från partner-feederna utan att krascha om något saknas
+  // 2. Uppdatera med partnerpriser i bakgrunden
   fetch("/api/matches")
     .then((res) => res.json())
     .then((data) => {
       if (Array.isArray(data) && data.length > 0) {
-        const liveFiltered = data.filter((m: any) => {
-          const home = (m.homeKey || "").toLowerCase();
-          const away = (m.awayKey || "").toLowerCase();
-          return home === currentKey || away === currentKey;
-        });
-        setMatches(liveFiltered);
+        setMatches(filterMatches(data));
       }
     })
     .catch((err) => console.error("Kunde inte hämta partnerpriser:", err));
-}, []);
+}, [teamSlug]);
 
 // Hjälpfunktion för att ta bort accenter (é -> e)
   const removeAccents = (str: string) => 

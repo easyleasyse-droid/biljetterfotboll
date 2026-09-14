@@ -635,7 +635,7 @@ export const UPCOMING_MATCHES = RAW_MATCHES.map((m: any, index: number) => {
     venue: home.stadiumName || "Arena",
     stadium: home.stadiumName || "Arena",
     league: m.league || home.league || "",
-    minPrice: 850 + (index % 5) * 120,
+    minPrice: null,
     tickets: []
   };
 });

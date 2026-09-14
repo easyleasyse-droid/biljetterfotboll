@@ -57,11 +57,11 @@ export default function HomePage() {
   const [visibleCount, setVisibleCount] = useState<number>(15);
 
   useEffect(() => {
-  // 1. Sätt basdatan direkt så att sidan renderas omedelbart utan laddningstid
+  // 1. Rendera basdatan direkt med loggor och arenor färdiga
   setMatchesData(UPCOMING_MATCHES);
   setLoading(false);
 
-  // 2. Hämta live-priser från partner-feederna i bakgrunden
+  // 2. Hämta livepriser från partners i bakgrunden
   fetch("/api/matches")
     .then((res) => res.json())
     .then((data) => {
@@ -69,7 +69,7 @@ export default function HomePage() {
         setMatchesData(data);
       }
     })
-    .catch((err) => console.error("Fel vid hämtning av partnerpriser:", err));
+    .catch((err) => console.error("Kunde inte hämta livepriser:", err));
 }, []);
 
   const teamSlugs = TEAMS_SEO_DATA ? Object.keys(TEAMS_SEO_DATA) : [];
