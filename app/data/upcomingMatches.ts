@@ -1,4 +1,4 @@
-const MY_MATCHES = [
+const UPCOMING_MATCHES = [
   { homeKey: "leeds", awayKey: "newcastle", date: "2026-09-14", time: "21:00" },
   { homeKey: "villarreal", awayKey: "real-betis", date: "2026-09-14", time: "21:00" },
   { homeKey: "inter", awayKey: "udinese", date: "2026-09-14", time: "20:45" },
