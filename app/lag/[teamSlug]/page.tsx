@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import LeagueClient from "./LeagueClient";
 import { LEAGUES_DATA } from "../../data/leagues";
 import { notFound } from "next/navigation";
