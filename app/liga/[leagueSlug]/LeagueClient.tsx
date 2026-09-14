@@ -9,7 +9,7 @@ import BookingModal from "../../components/BookingModal";
 import { LEAGUES_DATA } from "../../data/leagues";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { Trophy, Globe, Ticket, Info, ShieldCheck, MapPin, ChevronRight, Loader2 } from "lucide-react";
-import { UPCOMING_MATCHES } from "../../../data/upcomingMatches";
+import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
 export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
   const leagueData = LEAGUES_DATA[leagueSlug];

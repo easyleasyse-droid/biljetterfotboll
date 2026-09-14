@@ -13,7 +13,7 @@ import Footer from "./components/Footer";
 import Link from "next/link";
 import { TEAMS_SEO_DATA } from "./data/teams";
 import { Filter, Trophy, MapPin, Loader2 } from "lucide-react";
-import { UPCOMING_MATCHES } from "../data/upcomingMatches";
+import { UPCOMING_MATCHES } from "./data/upcomingMatches";
 
 // Nyckelord för storklubbar som lyfter en match
 const TOP_CLUBS = [

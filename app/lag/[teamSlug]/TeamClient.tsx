@@ -13,7 +13,7 @@ import {
   Calendar, MapPin, Trophy, ChevronDown, ChevronUp, Ticket, Building2, Hotel, Info, Loader2
 } from "lucide-react";
 import Image from "next/image";
-import { UPCOMING_MATCHES } from "../../../data/upcomingMatches";
+import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
 export default function TeamClient({ teamSlug }: { teamSlug: string }) {
   const [matches, setMatches] = useState<any[]>([]);
