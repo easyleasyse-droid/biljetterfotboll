@@ -1,4 +1,6 @@
-const UPCOMING_MATCHES = [
+import { TEAMS_SEO_DATA } from "./teams";
+
+const RAW_MATCHES = [
   { homeKey: "leeds", awayKey: "newcastle", date: "2026-09-14", time: "21:00" },
   { homeKey: "villarreal", awayKey: "real-betis", date: "2026-09-14", time: "21:00" },
   { homeKey: "inter", awayKey: "udinese", date: "2026-09-14", time: "20:45" },
@@ -613,5 +615,10 @@ const UPCOMING_MATCHES = [
   { homeKey: "benfica", awayKey: "lech-poznan", date: "2026-11-05", time: "21:00", league: "Europa League" },
 
 ];
-
-export { UPCOMING_MATCHES };
+export const UPCOMING_MATCHES = RAW_MATCHES.map((m: any, index: number) => ({
+  ...m,
+  id: `m-${index + 1}`,
+  homeTeam: { name: TEAMS_SEO_DATA[m.homeKey]?.name || m.homeKey },
+  awayTeam: { name: TEAMS_SEO_DATA[m.awayKey]?.name || m.awayKey },
+  venue: TEAMS_SEO_DATA[m.homeKey]?.stadiumName || "Arena",
+}));
