@@ -30,25 +30,32 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
   useEffect(() => {
   if (!teamSlug) return;
 
-  const filterMatches = (matchList: any[]) => {
-    return matchList.filter(
-      (m: any) => m.homeKey === teamSlug || m.awayKey === teamSlug
-    );
-  };
+  const targetKey = teamSlug.toLowerCase().trim();
 
-  // 1. Visar matcherna, loggorna och arenorna direkt vid sidladdning
-  setMatches(filterMatches(UPCOMING_MATCHES));
+  // Filtrera direkt mot UPCOMING_MATCHES
+  const filtered = UPCOMING_MATCHES.filter((m: any) => {
+    const home = (m.homeKey || "").toLowerCase().trim();
+    const away = (m.awayKey || "").toLowerCase().trim();
+    return home === targetKey || away === targetKey;
+  });
+
+  setMatches(filtered);
   setLoading(false);
 
-  // 2. Fyller på med priser från API:et i bakgrunden
+  // Hämta live-priser i bakgrunden
   fetch("/api/matches")
     .then((res) => res.json())
     .then((data) => {
       if (Array.isArray(data) && data.length > 0) {
-        setMatches(filterMatches(data));
+        const updatedFiltered = data.filter((m: any) => {
+          const home = (m.homeKey || "").toLowerCase().trim();
+          const away = (m.awayKey || "").toLowerCase().trim();
+          return home === targetKey || away === targetKey;
+        });
+        setMatches(updatedFiltered);
       }
     })
-    .catch((err) => console.error(err));
+    .catch((err) => console.error("Kunde inte hämta priser:", err));
 }, [teamSlug]);
 
 // Hjälpfunktion för att ta bort accenter (é -> e)

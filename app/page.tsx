@@ -47,8 +47,8 @@ function getMatchHotnessScore(match) {
 }
 
 export default function HomePage() {
-  const [matchesData, setMatchesData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [matchesData, setMatchesData] = useState(UPCOMING_MATCHES);
+  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedLeague, setSelectedLeague] = useState(null);
   const [selectedMatch, setSelectedMatch] = useState(null);
