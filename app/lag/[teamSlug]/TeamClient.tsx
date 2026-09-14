@@ -28,9 +28,26 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
   const teamName = seoData ? seoData.name : teamSlug.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   useEffect(() => {
-  setMatches(UPCOMING_MATCHES);
+  // Sätt basdatan direkt för laget
+  const filtered = UPCOMING_MATCHES.filter(
+    (m: any) => m.homeKey === teamKey || m.awayKey === teamKey
+  );
+  setMatches(filtered);
   setLoading(false);
-}, []);
+
+  // Hämta live-priser från partner-feederna
+  fetch("/api/matches")
+    .then((res) => res.json())
+    .then((data) => {
+      if (Array.isArray(data) && data.length > 0) {
+        const liveFiltered = data.filter(
+          (m: any) => m.homeKey === teamKey || m.awayKey === teamKey
+        );
+        setMatches(liveFiltered);
+      }
+    })
+    .catch((err) => console.error(err));
+}, [teamKey]);
 
 // Hjälpfunktion för att ta bort accenter (é -> e)
   const removeAccents = (str: string) => 

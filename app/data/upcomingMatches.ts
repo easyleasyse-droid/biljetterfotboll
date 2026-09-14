@@ -615,10 +615,27 @@ const RAW_MATCHES = [
   { homeKey: "benfica", awayKey: "lech-poznan", date: "2026-11-05", time: "21:00", league: "Europa League" },
 
 ];
-export const UPCOMING_MATCHES = RAW_MATCHES.map((m: any, index: number) => ({
-  ...m,
-  id: `m-${index + 1}`,
-  homeTeam: { name: TEAMS_SEO_DATA[m.homeKey]?.name || m.homeKey },
-  awayTeam: { name: TEAMS_SEO_DATA[m.awayKey]?.name || m.awayKey },
-  venue: TEAMS_SEO_DATA[m.homeKey]?.stadiumName || "Arena",
-}));
+export const UPCOMING_MATCHES = RAW_MATCHES.map((m: any, index: number) => {
+  const home = TEAMS_SEO_DATA[m.homeKey] || {};
+  const away = TEAMS_SEO_DATA[m.awayKey] || {};
+
+  return {
+    ...m,
+    id: `m-${index + 1}`,
+    homeKey: m.homeKey,
+    awayKey: m.awayKey,
+    homeTeam: {
+      name: home.name || m.homeKey,
+      logoUrl: home.logoUrl || "",
+    },
+    awayTeam: {
+      name: away.name || m.awayKey,
+      logoUrl: away.logoUrl || "",
+    },
+    venue: home.stadiumName || "Arena",
+    stadium: home.stadiumName || "Arena",
+    league: m.league || home.league || "",
+    minPrice: 850 + (index % 5) * 120,
+    tickets: []
+  };
+});
