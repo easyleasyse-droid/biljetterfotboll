@@ -13,6 +13,7 @@ import Footer from "./components/Footer";
 import Link from "next/link";
 import { TEAMS_SEO_DATA } from "./data/teams";
 import { Filter, Trophy, MapPin, Loader2 } from "lucide-react";
+import { UPCOMING_MATCHES } from "../data/upcomingMatches";
 
 // Nyckelord för storklubbar som lyfter en match
 const TOP_CLUBS = [
@@ -56,21 +57,9 @@ export default function HomePage() {
   const [visibleCount, setVisibleCount] = useState<number>(15);
 
   useEffect(() => {
-    async function fetchLiveMatches() {
-      try {
-        const res = await fetch("/api/matches", { cache: "no-store" });
-        if (res.ok) {
-          const data = await res.json();
-          setMatchesData(data);
-        }
-      } catch (err) {
-        console.error("Kunde inte ladda live-matcher:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchLiveMatches();
-  }, []);
+  setMatchesData(UPCOMING_MATCHES);
+  setLoading(false);
+}, []);
 
   const teamSlugs = TEAMS_SEO_DATA ? Object.keys(TEAMS_SEO_DATA) : [];
 

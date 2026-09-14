@@ -9,6 +9,7 @@ import BookingModal from "../../components/BookingModal";
 import { LEAGUES_DATA } from "../../data/leagues";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { Trophy, Globe, Ticket, Info, ShieldCheck, MapPin, ChevronRight, Loader2 } from "lucide-react";
+import { UPCOMING_MATCHES } from "../../../data/upcomingMatches";
 
 export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
   const leagueData = LEAGUES_DATA[leagueSlug];
@@ -21,22 +22,9 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
   const [visibleCount, setVisibleCount] = useState<number>(15);
 
   useEffect(() => {
-    async function fetchMatches() {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/matches", { cache: "no-store" });
-        if (res.ok) {
-          const data = await res.json();
-          setMatches(data);
-        }
-      } catch (err) {
-        console.error("Kunde inte hämta matcher:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchMatches();
-  }, []);
+  setMatches(UPCOMING_MATCHES);
+  setLoading(false);
+}, []);
 
   if (!leagueData) {
     return (

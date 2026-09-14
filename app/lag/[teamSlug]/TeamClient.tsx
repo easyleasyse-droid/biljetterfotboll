@@ -13,6 +13,7 @@ import {
   Calendar, MapPin, Trophy, ChevronDown, ChevronUp, Ticket, Building2, Hotel, Info, Loader2
 } from "lucide-react";
 import Image from "next/image";
+import { UPCOMING_MATCHES } from "../../../data/upcomingMatches";
 
 export default function TeamClient({ teamSlug }: { teamSlug: string }) {
   const [matches, setMatches] = useState<any[]>([]);
@@ -26,23 +27,10 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
   const cleanSlug = teamSlug.replace("-", " ");
   const teamName = seoData ? seoData.name : teamSlug.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  // Hämta matcher från API:et istället för den statiska filen
   useEffect(() => {
-    async function fetchMatches() {
-      try {
-        const res = await fetch("/api/matches", { cache: "no-store" });
-        if (res.ok) {
-          const data = await res.json();
-          setMatches(data);
-        }
-      } catch (err) {
-        console.error("Kunde inte hämta matcher till lagsidan:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchMatches();
-  }, []);
+  setMatches(UPCOMING_MATCHES);
+  setLoading(false);
+}, []);
 
 // Hjälpfunktion för att ta bort accenter (é -> e)
   const removeAccents = (str: string) => 
