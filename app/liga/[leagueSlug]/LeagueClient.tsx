@@ -22,26 +22,28 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
   const [visibleCount, setVisibleCount] = useState<number>(15);
 
   useEffect(() => {
-  // Sätt basdatan direkt för ligan
+  const currentLeagueName = leagueData?.name || "";
+
+  // 1. Sätt basdatan direkt för ligan
   const filtered = UPCOMING_MATCHES.filter(
-    (m: any) => m.league?.toLowerCase() === leagueName?.toLowerCase()
+    (m: any) => m.league?.toLowerCase() === currentLeagueName.toLowerCase()
   );
   setMatches(filtered);
   setLoading(false);
 
-  // Hämta live-priser från partner-feederna
+  // 2. Hämta live-priser från partner-feederna
   fetch("/api/matches")
     .then((res) => res.json())
     .then((data) => {
       if (Array.isArray(data) && data.length > 0) {
         const liveFiltered = data.filter(
-          (m: any) => m.league?.toLowerCase() === leagueName?.toLowerCase()
+          (m: any) => m.league?.toLowerCase() === currentLeagueName.toLowerCase()
         );
         setMatches(liveFiltered);
       }
     })
     .catch((err) => console.error(err));
-}, [leagueName]);
+}, [leagueSlug, leagueData]);
 
   if (!leagueData) {
     return (
