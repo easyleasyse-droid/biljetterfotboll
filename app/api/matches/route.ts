@@ -4,6 +4,7 @@ import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFe
 import { getFootballTicketNetUrl, getChampionsTravelUrl } from "@/lib/affiliate";
 import { fetchGigsbergTickets, findGigsbergTicketInRows } from "@/lib/gigsbergFeed";
 import { TEAMS_SEO_DATA } from "../../data/teams";
+import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
 export const dynamic = 'force-dynamic';
 
@@ -74,7 +75,7 @@ const getSearchUrl = (
 export async function GET() {
   try {
     const today = new Date().toISOString().split("T")[0];
-    const upcomingMatches = MY_MATCHES.filter((m) => m.date >= today);
+    const upcomingMatches = UPCOMING_MATCHES.filter((m) => m.date >= today);
 
     // 1. Hämta båda feederna som färdiga objekt-rader i minnet
        const [p1Rows, ticomboRows, gigsbergTickets] = (await Promise.all([
