@@ -613,3 +613,5 @@ const UPCOMING_MATCHES = [
   { homeKey: "benfica", awayKey: "lech-poznan", date: "2026-11-05", time: "21:00", league: "Europa League" },
 
 ];
+
+export { UPCOMING_MATCHES };
