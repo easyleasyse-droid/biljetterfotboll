@@ -626,11 +626,11 @@ export const UPCOMING_MATCHES = RAW_MATCHES.map((m: any, index: number) => {
     awayKey: m.awayKey,
     homeTeam: {
       name: home.name || m.homeKey,
-      logoUrl: home.logoUrl || "",
+      logoUrl: home.logo || "", // Plockar logo direkt från teams.ts
     },
     awayTeam: {
       name: away.name || m.awayKey,
-      logoUrl: away.logoUrl || "",
+      logoUrl: away.logo || "", // Plockar logo direkt från teams.ts
     },
     venue: home.stadiumName || "Arena",
     stadium: home.stadiumName || "Arena",

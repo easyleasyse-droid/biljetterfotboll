@@ -28,21 +28,19 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
   const teamName = seoData ? seoData.name : teamSlug.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   useEffect(() => {
-  const slug = (typeof teamSlug !== "undefined" ? teamSlug : "").toLowerCase();
+  if (!teamSlug) return;
 
   const filterMatches = (matchList: any[]) => {
-    return matchList.filter((m: any) => {
-      const homeKey = (m.homeKey || "").toLowerCase();
-      const awayKey = (m.awayKey || "").toLowerCase();
-      return homeKey === slug || awayKey === slug || homeKey.includes(slug) || awayKey.includes(slug);
-    });
+    return matchList.filter(
+      (m: any) => m.homeKey === teamSlug || m.awayKey === teamSlug
+    );
   };
 
-  // 1. Sätt basdatan direkt
+  // 1. Visar matcherna, loggorna och arenorna direkt vid sidladdning
   setMatches(filterMatches(UPCOMING_MATCHES));
   setLoading(false);
 
-  // 2. Uppdatera med partnerpriser i bakgrunden
+  // 2. Fyller på med priser från API:et i bakgrunden
   fetch("/api/matches")
     .then((res) => res.json())
     .then((data) => {
@@ -50,7 +48,7 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
         setMatches(filterMatches(data));
       }
     })
-    .catch((err) => console.error("Kunde inte hämta partnerpriser:", err));
+    .catch((err) => console.error(err));
 }, [teamSlug]);
 
 // Hjälpfunktion för att ta bort accenter (é -> e)

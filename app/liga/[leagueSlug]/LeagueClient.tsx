@@ -22,20 +22,19 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
   const [visibleCount, setVisibleCount] = useState<number>(15);
 
   useEffect(() => {
-  const currentLeagueName = (leagueData?.name || "").toLowerCase();
+  const currentLeagueName = leagueData?.name || "";
 
   const filterMatches = (matchList: any[]) => {
-    return matchList.filter((m: any) => {
-      const matchLeague = (m.league || "").toLowerCase();
-      return matchLeague === currentLeagueName || (currentLeagueName && matchLeague.includes(currentLeagueName));
-    });
+    return matchList.filter(
+      (m: any) => m.league?.toLowerCase() === currentLeagueName.toLowerCase()
+    );
   };
 
-  // 1. Sätt basdatan direkt (visa matcher, loggor och arenor omgående)
+  // 1. Visar ligans matcher, loggor och arenor direkt vid laddning
   setMatches(filterMatches(UPCOMING_MATCHES));
   setLoading(false);
 
-  // 2. Uppdatera med lägsta partnerpriser i bakgrunden
+  // 2. Fyller på med partnerpriser i bakgrunden
   fetch("/api/matches")
     .then((res) => res.json())
     .then((data) => {
@@ -43,7 +42,7 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
         setMatches(filterMatches(data));
       }
     })
-    .catch((err) => console.error("Kunde inte hämta partnerpriser:", err));
+    .catch((err) => console.error(err));
 }, [leagueSlug, leagueData]);
 
   if (!leagueData) {
