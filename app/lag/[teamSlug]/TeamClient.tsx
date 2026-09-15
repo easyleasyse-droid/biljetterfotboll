@@ -12,10 +12,8 @@ import { TeamCostCalculator } from "../../components/TeamCostCalculator";
 import { 
   Calendar, MapPin, Trophy, ChevronDown, ChevronUp, Ticket, Building2, Hotel, Info, Loader2
 } from "lucide-react";
-import Image from "next/image";
-import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
-// Hjälpfunktion för att berika matcher direkt med loggor och arenor utan att röra priser
+// Hjälpfunktion för att berika matcher direkt med loggor och arenor
 const enrichMatches = (matchesList) => {
   if (!Array.isArray(matchesList)) return [];
   return matchesList.map((m: any) => {
@@ -23,7 +21,7 @@ const enrichMatches = (matchesList) => {
     const awaySlug = (m.awayKey || m.awayTeam?.slug || "").toLowerCase().trim();
 
     return {
-      ...m, // Behåll ALLT från start (inklusive prisFrom, datum, tid etc.)
+      ...m,
       homeTeam: {
         ...m.homeTeam,
         logo: m.homeTeam?.logo || TEAMS_SEO_DATA[homeSlug]?.logo || "",
@@ -41,84 +39,71 @@ const enrichMatches = (matchesList) => {
 export default function TeamClient({ teamSlug }: { teamSlug: string }) {
   const targetKey = teamSlug ? teamSlug.toLowerCase().trim() : "";
 
-  // Hjälpfunktion för att filtrera direkt vid start
-  const getInitialMatches = () => {
-    if (!targetKey) return [];
-    const enrichedStatic = enrichMatches(UPCOMING_MATCHES);
-    return enrichedStatic.filter((m: any) => {
-      const home = (m.homeKey || m.homeTeam?.slug || m.homeTeam?.name || "").toLowerCase().trim();
-      const away = (m.awayKey || m.awayTeam?.slug || m.awayTeam?.name || "").toLowerCase().trim();
-      return home.includes(targetKey) || away.includes(targetKey);
-    });
-  };
-
-  // Sätt state direkt med statisk data så priser och matcher syns omedelbart (0ms)
-  const [matches, setMatches] = useState<any[]>(getInitialMatches);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [matches, setMatches] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [bookingQuantity, setBookingQuantity] = useState<number>(2);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   const seoData = TEAMS_SEO_DATA[teamSlug];
-  const teamName = seoData ? seoData.name : teamSlug.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const teamName = seoData ? seoData.name : teamSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
+  // Hämta riktiga matcher med priser direkt från den cachade API-routen
   useEffect(() => {
     if (!teamSlug) return;
 
-    // Bakgrundsuppdatering av livepriser utan att nollställa gränssnittet
+    setLoading(true);
     fetch("/api/matches")
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          const enrichedLive = enrichMatches(data);
-          const liveFiltered = enrichedLive.filter((m: any) => {
-            const home = (m.homeKey || m.homeTeam?.slug || m.homeTeam?.name || "").toLowerCase().trim();
-            const away = (m.awayKey || m.awayTeam?.slug || m.awayTeam?.name || "").toLowerCase().trim();
-            return home.includes(targetKey) || away.includes(targetKey);
-          });
-          if (liveFiltered.length > 0) {
-            setMatches(liveFiltered);
-          }
+        if (Array.isArray(data)) {
+          const enriched = enrichMatches(data);
+          setMatches(enriched);
         }
       })
-      .catch((err) => console.error(err));
-  }, [teamSlug, targetKey]);
+      .catch((err) => console.error("Kunde inte hämta matcher till lagsida:", err))
+      .finally(() => setLoading(false));
+  }, [teamSlug]);
 
   // Hjälpfunktion för att ta bort accenter (é -> e)
   const removeAccents = (str: string) => 
-    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
 
-  // Filtrera och sortera matcher
-  const filteredMatches = matches
-    .filter((match: any) => {
-      const homeName = removeAccents(match.homeTeam?.name || "").toLowerCase();
-      const awayName = removeAccents(match.awayTeam?.name || "").toLowerCase();
-      const slug = teamSlug.toLowerCase().trim();
+  // Robust filtrering som matchar både slug, lagnamn och vanliga variationer (t.ex. Prag/Prague)
+  const filteredMatches = matches.filter((match: any) => {
+    const homeName = removeAccents(match.homeTeam?.name || "").toLowerCase();
+    const awayName = removeAccents(match.awayTeam?.name || "").toLowerCase();
+    const homeKey = removeAccents(match.homeKey || "").toLowerCase();
+    const awayKey = removeAccents(match.awayKey || "").toLowerCase();
+    const slug = targetKey.replace(/-/g, " ");
 
-      // Täcker både "milan" och "ac-milan"
-      if (slug === "milan" || slug === "ac-milan") {
-        if (homeName.includes("inter") || awayName.includes("inter")) {
-          return false;
-        }
-        return homeName.includes("milan") || awayName.includes("milan");
-      }
+    if (slug === "milan" || slug === "ac milan") {
+      if (homeName.includes("inter") || awayName.includes("inter")) return false;
+      return homeName.includes("milan") || awayName.includes("milan");
+    }
 
-      // Regel för Inter
-      if (slug === "inter" || slug === "inter-milan") {
-        return homeName.includes("inter") || awayName.includes("inter");
-      }
+    if (slug === "inter" || slug === "inter milan") {
+      return homeName.includes("inter") || awayName.includes("inter");
+    }
 
-      // Standard för övriga lag
-      const targetName = removeAccents(slug.replace(/-/g, " "));
-      return homeName.includes(targetName) || awayName.includes(targetName);
-    })
-    .sort((a, b) => {
-      const timeA = a.time && a.time !== "TBD" ? a.time : "00:00";
-      const timeB = b.time && b.time !== "TBD" ? b.time : "00:00";
+    // Specialfall för lag med språkskillnader (t.ex. Slavia Prag / Slavia Prague)
+    let extraAlias = "";
+    if (slug.includes("prag")) extraAlias = "prague";
+    if (slug.includes("prague")) extraAlias = "prag";
 
-      return new Date(`${a.date}T${timeA}`).getTime() - new Date(`${b.date}T${timeB}`).getTime();
-    });
+    return (
+      homeName.includes(slug) || 
+      awayName.includes(slug) || 
+      homeKey.includes(targetKey) || 
+      awayKey.includes(targetKey) ||
+      (extraAlias && (homeName.includes(extraAlias) || awayName.includes(extraAlias)))
+    );
+  }).sort((a, b) => {
+    const timeA = a.time && a.time !== "TBD" ? a.time : "00:00";
+    const timeB = b.time && b.time !== "TBD" ? b.time : "00:00";
+    return new Date(`${a.date}T${timeA}`).getTime() - new Date(`${b.date}T${timeB}`).getTime();
+  });
 
   const handleBookOffer = (offer: any, quantity: number) => {
     setSelectedOffer(offer);
@@ -202,7 +187,7 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-20">
+            <div className="flex items-center justify-center py-20 bg-white rounded-2xl border border-slate-200 shadow-sm">
               <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
             </div>
           ) : filteredMatches.length > 0 ? (

@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import MatchList from "../../components/MatchList";
 import ComparisonDrawer from "../../components/ComparisonDrawer";
 import BookingModal from "../../components/BookingModal";
 import { LEAGUES_DATA } from "../../data/leagues";
@@ -203,72 +204,11 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
               <span>Hämtar matcher...</span>
             </div>
           ) : displayedMatches.length > 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm divide-y divide-slate-100">
-              {displayedMatches.map((match) => (
-                <div 
-                  key={match.id || `${match.homeTeam?.name}-${match.awayTeam?.name}-${match.date}`} 
-                  className="p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/80 transition-colors"
-                >
-                  {/* DATUM & ARENA */}
-                  <div className="flex items-center gap-3 min-w-[150px]">
-                    <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-2.5 text-center min-w-[64px]">
-                      <span className="block text-[11px] font-bold text-indigo-600 uppercase tracking-wide">
-                        {new Date(match.date).toLocaleDateString('sv-SE', { month: 'short' })}
-                      </span>
-                      <span className="block text-xl font-black text-slate-900 leading-none mt-0.5">
-                        {new Date(match.date).getDate()}
-                      </span>
-                    </div>
-                    <div className="text-xs text-slate-500 font-medium">
-                      <div className="font-bold text-slate-700">{match.time}</div>
-                      <div className="truncate max-w-[130px]">{match.stadium}</div>
-                    </div>
-                  </div>
-
-                  {/* LAGEN & LOGGOR */}
-                  <div className="flex items-center justify-start md:justify-center gap-3 flex-1">
-                    <div className="flex items-center gap-2.5 w-[42%] justify-end text-right">
-                      <span className="font-bold text-sm md:text-base text-slate-800 truncate">{match.homeTeam?.name}</span>
-                      {match.homeTeam?.logo ? (
-                        <img src={match.homeTeam.logo} alt="" className="h-7 w-7 object-contain shrink-0" onError={(e: any) => e.target.style.display = 'none'} />
-                      ) : (
-                        <div className="h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center font-bold text-[10px] text-slate-600 shrink-0">
-                          {match.homeTeam?.shortName || "H"}
-                        </div>
-                      )}
-                    </div>
-
-                    <span className="text-[10px] font-black bg-slate-100 text-slate-400 px-2 py-1 rounded-md shrink-0">VS</span>
-
-                    <div className="flex items-center gap-2.5 w-[42%] justify-start text-left">
-                      {match.awayTeam?.logo ? (
-                        <img src={match.awayTeam.logo} alt="" className="h-7 w-7 object-contain shrink-0" onError={(e: any) => e.target.style.display = 'none'} />
-                      ) : (
-                        <div className="h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center font-bold text-[10px] text-slate-600 shrink-0">
-                          {match.awayTeam?.shortName || "A"}
-                        </div>
-                      )}
-                      <span className="font-bold text-sm md:text-base text-slate-800 truncate">{match.awayTeam?.name}</span>
-                    </div>
-                  </div>
-
-                  {/* PRIS & KNAPP */}
-                  <div className="flex items-center justify-between md:justify-end gap-4 min-w-[180px] pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
-                    <div className="text-left md:text-right">
-                      <span className="block text-[10px] uppercase font-bold text-slate-400 tracking-wider">Pris från</span>
-                      <span className="text-base md:text-lg font-black text-slate-900">{match.priceFrom} kr</span>
-                    </div>
-                    
-                    <button 
-                      onClick={() => setSelectedMatch(match)}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm active:scale-95"
-                    >
-                      Jämför
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <MatchList 
+              matches={displayedMatches} 
+              onSelectMatch={(match: any) => setSelectedMatch(match)} 
+              selectedLeague="" 
+            />
           ) : (
             <div className="bg-white rounded-xl p-8 text-center border border-slate-200 text-slate-500 shadow-sm">
               Just nu har vi inga inlagda matcher för {leagueData.name}. Fler matcher kommer inom kort!
