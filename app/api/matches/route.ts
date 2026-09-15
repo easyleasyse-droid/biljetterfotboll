@@ -259,7 +259,7 @@ const getCachedMatchesData = unstable_cache(
           availableQuantity: 2,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: getChampionsTravelUrl(homeName),
+          url: getSearchUrl("Champions Travel", homeName, awayName),
           type: "ticket"
         }
       );
