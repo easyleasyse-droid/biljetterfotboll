@@ -12,7 +12,7 @@ import { TEAMS_SEO_DATA } from "../../data/teams";
 import { Trophy, Globe, Ticket, Info, ShieldCheck, MapPin, ChevronRight, Loader2 } from "lucide-react";
 import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
-// Hjälpfunktion för att berika matcher med saknade loggor och arenor från TEAMS_SEO_DATA
+// Hjälpfunktion för att berika matcher med loggor och arenor utan att röra befintliga priser
 const enrichMatches = (matchesList) => {
   if (!Array.isArray(matchesList)) return [];
   return matchesList.map((m: any) => {
@@ -20,7 +20,7 @@ const enrichMatches = (matchesList) => {
     const awaySlug = (m.awayKey || m.awayTeam?.slug || "").toLowerCase().trim();
 
     return {
-      ...m,
+      ...m, // Behåller ALLT från start (inklusive prisFrom, datum, tid etc.)
       homeTeam: {
         ...m.homeTeam,
         logo: m.homeTeam?.logo || TEAMS_SEO_DATA[homeSlug]?.logo || "",
@@ -29,7 +29,8 @@ const enrichMatches = (matchesList) => {
         ...m.awayTeam,
         logo: m.awayTeam?.logo || TEAMS_SEO_DATA[awaySlug]?.logo || "",
       },
-      stadium: m.stadium || m.arena || TEAMS_SEO_DATA[homeSlug]?.stadiumName || ""
+      stadium: m.stadium || m.arena || TEAMS_SEO_DATA[homeSlug]?.stadiumName || "",
+      arena: m.arena || m.stadium || TEAMS_SEO_DATA[homeSlug]?.stadiumName || ""
     };
   });
 };
@@ -37,8 +38,20 @@ const enrichMatches = (matchesList) => {
 export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
   const leagueData = LEAGUES_DATA[leagueSlug];
 
-  const [matches, setMatches] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const rawTarget = leagueData?.name || leagueSlug || "";
+  const cleanTarget = rawTarget.toLowerCase().replace(/[-_\s]/g, "");
+
+  const filterAndProcessMatches = (matchList: any[]) => {
+    const enriched = enrichMatches(matchList);
+    return enriched.filter((m: any) => {
+      const matchLeague = (m.league || "").toLowerCase().replace(/[-_\s]/g, "");
+      return matchLeague === cleanTarget || matchLeague.includes(cleanTarget) || cleanTarget.includes(matchLeague);
+    });
+  };
+
+  // Sätt rätt matcher direkt i state från start (0ms fördröjning, priserna hänger med direkt)
+  const [matches, setMatches] = useState<any[]>(() => filterAndProcessMatches(UPCOMING_MATCHES));
+  const [loading, setLoading] = useState<boolean>(false);
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [bookingQuantity, setBookingQuantity] = useState<number>(2);
@@ -47,22 +60,7 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
   useEffect(() => {
     if (!leagueSlug && !leagueData) return;
 
-    const rawTarget = leagueData?.name || leagueSlug || "";
-    const cleanTarget = rawTarget.toLowerCase().replace(/[-_\s]/g, "");
-
-    const filterAndProcessMatches = (matchList: any[]) => {
-      const enriched = enrichMatches(matchList);
-      return enriched.filter((m: any) => {
-        const matchLeague = (m.league || "").toLowerCase().replace(/[-_\s]/g, "");
-        return matchLeague === cleanTarget || matchLeague.includes(cleanTarget) || cleanTarget.includes(matchLeague);
-      });
-    };
-
-    // Visar berikade statiska matcher direkt utan fördröjning
-    setMatches(filterAndProcessMatches(UPCOMING_MATCHES));
-    setLoading(false);
-
-    // Hämtar priser och live-data i bakgrunden
+    // Hämta färska priser/live-data i bakgrunden utan att störa gränssnittet
     fetch("/api/matches")
       .then((res) => res.json())
       .then((data) => {
@@ -102,7 +100,6 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
     return dateA - dateB;
   });
 
-  // Hämta endast de matcher som ska visas baserat på pagination (visibleCount)
   const displayedMatches = sortedMatches.slice(0, visibleCount);
 
   const handleBookOffer = (offer: any, quantity: number) => {

@@ -46,7 +46,7 @@ function getMatchHotnessScore(match) {
   return score;
 }
 
-// Hjälpfunktion för att berika matcher med loggor och rätt arena (stadiumName) från teams.ts
+// Hjälpfunktion för att berika matcher med loggor och rätt arena utan att röra befintliga priser
 const enrichMatches = (matchesList) => {
   if (!Array.isArray(matchesList)) return [];
   return matchesList.map((m: any) => {
@@ -54,7 +54,7 @@ const enrichMatches = (matchesList) => {
     const awaySlug = (m.awayKey || m.awayTeam?.slug || "").toLowerCase().trim();
 
     return {
-      ...m,
+      ...m, // Behåll ALLT från start (inklusive prisFrom, datum, tid etc.)
       homeTeam: {
         ...m.homeTeam,
         logo: m.homeTeam?.logo || TEAMS_SEO_DATA[homeSlug]?.logo || "",
@@ -63,13 +63,14 @@ const enrichMatches = (matchesList) => {
         ...m.awayTeam,
         logo: m.awayTeam?.logo || TEAMS_SEO_DATA[awaySlug]?.logo || "",
       },
-      arena: m.arena || m.stadium || TEAMS_SEO_DATA[homeSlug]?.stadiumName || ""
+      arena: m.arena || m.stadium || TEAMS_SEO_DATA[homeSlug]?.stadiumName || "",
+      stadium: m.stadium || m.arena || TEAMS_SEO_DATA[homeSlug]?.stadiumName || ""
     };
   });
 };
 
 export default function HomePage() {
-  // 1. Berika den statiska datan direkt så loggor och arenor finns där på 0ms
+  // 1. Berika den statiska datan direkt så loggor, arenor och priser finns där på 0ms
   const initialEnriched = enrichMatches(UPCOMING_MATCHES);
 
   const [matchesData, setMatchesData] = useState(initialEnriched);
@@ -82,12 +83,15 @@ export default function HomePage() {
   const [visibleCount, setVisibleCount] = useState<number>(15);
 
   useEffect(() => {
-    // 2. Hämta livepriser i bakgrunden och berika dem direkt med samma data
+    // 2. Hämta livepriser i bakgrunden och berika dem tyst utan att nollställa gränssnittet
     fetch("/api/matches")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
-          setMatchesData(enrichMatches(data));
+          const enrichedLive = enrichMatches(data);
+          if (enrichedLive.length > 0) {
+            setMatchesData(enrichedLive);
+          }
         }
       })
       .catch((err) => console.error(err));

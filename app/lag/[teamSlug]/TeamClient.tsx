@@ -15,7 +15,7 @@ import {
 import Image from "next/image";
 import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
-// Hjälpfunktion för att berika matcher direkt med loggor och rätt arena (stadiumName) från teams.ts
+// Hjälpfunktion för att berika matcher direkt med loggor och arenor utan att röra priser
 const enrichMatches = (matchesList) => {
   if (!Array.isArray(matchesList)) return [];
   return matchesList.map((m: any) => {
@@ -23,7 +23,7 @@ const enrichMatches = (matchesList) => {
     const awaySlug = (m.awayKey || m.awayTeam?.slug || "").toLowerCase().trim();
 
     return {
-      ...m,
+      ...m, // Behåll ALLT från start (inklusive prisFrom, datum, tid etc.)
       homeTeam: {
         ...m.homeTeam,
         logo: m.homeTeam?.logo || TEAMS_SEO_DATA[homeSlug]?.logo || "",
@@ -32,40 +32,41 @@ const enrichMatches = (matchesList) => {
         ...m.awayTeam,
         logo: m.awayTeam?.logo || TEAMS_SEO_DATA[awaySlug]?.logo || "",
       },
-      arena: m.arena || m.stadium || TEAMS_SEO_DATA[homeSlug]?.stadiumName || ""
+      arena: m.arena || m.stadium || TEAMS_SEO_DATA[homeSlug]?.stadiumName || "",
+      stadium: m.stadium || m.arena || TEAMS_SEO_DATA[homeSlug]?.stadiumName || ""
     };
   });
 };
 
 export default function TeamClient({ teamSlug }: { teamSlug: string }) {
-  const [matches, setMatches] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const targetKey = teamSlug ? teamSlug.toLowerCase().trim() : "";
+
+  // Hjälpfunktion för att filtrera direkt vid start
+  const getInitialMatches = () => {
+    if (!targetKey) return [];
+    const enrichedStatic = enrichMatches(UPCOMING_MATCHES);
+    return enrichedStatic.filter((m: any) => {
+      const home = (m.homeKey || m.homeTeam?.slug || m.homeTeam?.name || "").toLowerCase().trim();
+      const away = (m.awayKey || m.awayTeam?.slug || m.awayTeam?.name || "").toLowerCase().trim();
+      return home.includes(targetKey) || away.includes(targetKey);
+    });
+  };
+
+  // Sätt state direkt med statisk data så priser och matcher syns omedelbart (0ms)
+  const [matches, setMatches] = useState<any[]>(getInitialMatches);
+  const [loading, setLoading] = useState<boolean>(false);
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [bookingQuantity, setBookingQuantity] = useState<number>(2);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   const seoData = TEAMS_SEO_DATA[teamSlug];
-  const cleanSlug = teamSlug.replace("-", " ");
   const teamName = seoData ? seoData.name : teamSlug.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   useEffect(() => {
     if (!teamSlug) return;
 
-    const targetKey = teamSlug.toLowerCase().trim();
-
-    // 1. Berika och filtrera statisk data direkt
-    const enrichedStatic = enrichMatches(UPCOMING_MATCHES);
-    const filtered = enrichedStatic.filter((m: any) => {
-      const home = (m.homeKey || m.homeTeam?.slug || m.homeTeam?.name || "").toLowerCase().trim();
-      const away = (m.awayKey || m.awayTeam?.slug || m.awayTeam?.name || "").toLowerCase().trim();
-      return home.includes(targetKey) || away.includes(targetKey);
-    });
-
-    setMatches(filtered);
-    setLoading(false);
-
-    // 2. Bakgrundsuppdatering av livepriser
+    // Bakgrundsuppdatering av livepriser utan att nollställa gränssnittet
     fetch("/api/matches")
       .then((res) => res.json())
       .then((data) => {
@@ -76,11 +77,13 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
             const away = (m.awayKey || m.awayTeam?.slug || m.awayTeam?.name || "").toLowerCase().trim();
             return home.includes(targetKey) || away.includes(targetKey);
           });
-          if (liveFiltered.length > 0) setMatches(liveFiltered);
+          if (liveFiltered.length > 0) {
+            setMatches(liveFiltered);
+          }
         }
       })
       .catch((err) => console.error(err));
-  }, [teamSlug]);
+  }, [teamSlug, targetKey]);
 
   // Hjälpfunktion för att ta bort accenter (é -> e)
   const removeAccents = (str: string) => 
