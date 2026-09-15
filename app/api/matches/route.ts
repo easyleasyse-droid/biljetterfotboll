@@ -16,6 +16,38 @@ const formatTeamName = (key: string) => {
     .join(" ");
 };
 
+const sanitizeTeamName = (name: string) => {
+  if (!name) return "";
+
+  let clean = name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\bfc\b|\bac\b|\bafc\b|\bsv\b|\bbcf\b|\brcd\b|\bbud\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const aliasMap: Record<string, string> = {
+    "inter milan": "inter",
+    "internazionale": "inter",
+    "bayern munich": "bayern",
+    "bayern munchen": "bayern",
+    "real betis": "betis",
+    "real sociedad": "sociedad",
+    "atletico madrid": "atletico",
+    "paris saint germain": "psg",
+    "ac milan": "milan",
+    "sporting cp": "sporting",
+  };
+
+  for (const [key, alias] of Object.entries(aliasMap)) {
+    if (clean.includes(key)) return alias;
+  }
+
+  return clean;
+};
+
 const getSearchUrl = (
   merchantName: string,
   homeTeam: string,
@@ -51,21 +83,26 @@ const getCachedMatchesData = unstable_cache(
   async () => {
     const today = new Date().toISOString().split("T")[0];
     
-    // Filtrera bort oönskade ligor (t.ex. holländska ligan om den letat sig in)
+    // Filtrera bort utgångna datum samt oönskade holländska matcher/ligor
     const upcomingMatches = UPCOMING_MATCHES.filter((m) => {
       if (m.date < today) return false;
-      const leagueName = ((m as any).league || "").toLowerCase();
-      // Exkludera oönskade ligor som Eredivisie eller liknande om de spökar
-      if (leagueName.includes("eredivisie") || leagueName.includes("holland")) {
-        return false;
-      }
-      return true;
+      
+      const leagueStr = String((m as any).league || "").toLowerCase();
+      const homeStr = String(m.homeKey || "").toLowerCase();
+      const awayStr = String(m.awayKey || "").toLowerCase();
+      
+      const dutchKeywords = ["eredivisie", "ajax", "psv", "feyenoord", "az alkmaar", "utrecht", "twente", "heerenveen", "holland", "nederlands"];
+      const isDutch = dutchKeywords.some(keyword => 
+        leagueStr.includes(keyword) || homeStr.includes(keyword) || awayStr.includes(keyword)
+      );
+
+      return !isDutch;
     });
 
     const [p1Rows, ticomboRows] = (await Promise.all([
       fetchP1FeedRows().catch(() => []),
       fetchTicomboParsedRows().catch(() => []),
-      fetchAwinOffers().catch(() => []),
+      fetchAwinOffers().catch(() => []), // Hämtar Awin-feeden
     ])) as [any[], any[], any[]];
 
     const matches = upcomingMatches.map((m, index) => {
@@ -159,7 +196,7 @@ const getCachedMatchesData = unstable_cache(
       
       const awinTickets = findAwinTicketsForMatchSync(homeName, awayName);
       for (const ticket of awinTickets) {
-        if (ticket.priceSEK && ticket.priceSEK > 50) { // Säkerställ att vi inte får in trasiga öres-priser
+        if (ticket.priceSEK && ticket.priceSEK > 50) {
           offers.push({
             id: `o-${matchId}-${ticket.merchantName.toLowerCase().replace(/\s+/g, '-')}`,
             merchantName: ticket.merchantName,
@@ -287,7 +324,7 @@ const getCachedMatchesData = unstable_cache(
 
     return matches;
   },
-  ['global-matches-cache-v2'], // Uppdaterat cache-nyckel för att tvinga fram en ren ombyggnation
+  ['global-matches-cache-v5'],
   { revalidate: 3600 }
 );
 
