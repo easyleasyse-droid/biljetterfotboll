@@ -50,9 +50,9 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
     });
   };
 
-  // Sätt rätt matcher direkt i state från start (0ms fördröjning, priserna hänger med direkt)
-  const [matches, setMatches] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  // Sätt statiska matcher direkt från start så att det inte blir tomt
+  const [matches, setMatches] = useState<any[]>(() => filterAndProcessMatches(UPCOMING_MATCHES));
+  const [loading, setLoading] = useState<boolean>(false);
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [bookingQuantity, setBookingQuantity] = useState<number>(2);
@@ -61,7 +61,7 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
   useEffect(() => {
     if (!leagueSlug && !leagueData) return;
 
-    // Hämta färska priser/live-data i bakgrunden utan att störa gränssnittet
+    // Hämta färska priser i bakgrunden utan att blockera gränssnittet
     fetch("/api/matches")
       .then((res) => res.json())
       .then((data) => {
@@ -72,7 +72,7 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
           }
         }
       })
-      .catch((err) => console.error(err));
+      .catch((err) => console.error("Kunde inte hämta live-priser till ligan:", err));
   }, [leagueSlug, leagueData]);
 
   if (!leagueData) {
