@@ -15,6 +15,28 @@ import {
 import Image from "next/image";
 import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
+// Hjälpfunktion för att berika matcher direkt med loggor och rätt arena (stadiumName) från teams.ts
+const enrichMatches = (matchesList) => {
+  if (!Array.isArray(matchesList)) return [];
+  return matchesList.map((m: any) => {
+    const homeSlug = (m.homeKey || m.homeTeam?.slug || "").toLowerCase().trim();
+    const awaySlug = (m.awayKey || m.awayTeam?.slug || "").toLowerCase().trim();
+
+    return {
+      ...m,
+      homeTeam: {
+        ...m.homeTeam,
+        logo: m.homeTeam?.logo || TEAMS_SEO_DATA[homeSlug]?.logo || "",
+      },
+      awayTeam: {
+        ...m.awayTeam,
+        logo: m.awayTeam?.logo || TEAMS_SEO_DATA[awaySlug]?.logo || "",
+      },
+      arena: m.arena || m.stadium || TEAMS_SEO_DATA[homeSlug]?.stadiumName || ""
+    };
+  });
+};
+
 export default function TeamClient({ teamSlug }: { teamSlug: string }) {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -28,37 +50,39 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
   const teamName = seoData ? seoData.name : teamSlug.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   useEffect(() => {
-  if (!teamSlug) return;
+    if (!teamSlug) return;
 
-  const targetKey = teamSlug.toLowerCase().trim();
+    const targetKey = teamSlug.toLowerCase().trim();
 
-  // 1. Filtrera statisk data
-  const filtered = UPCOMING_MATCHES.filter((m: any) => {
-    const home = (m.homeKey || m.homeTeam?.slug || m.homeTeam?.name || "").toLowerCase().trim();
-    const away = (m.awayKey || m.awayTeam?.slug || m.awayTeam?.name || "").toLowerCase().trim();
-    return home === targetKey || away === targetKey;
-  });
+    // 1. Berika och filtrera statisk data direkt
+    const enrichedStatic = enrichMatches(UPCOMING_MATCHES);
+    const filtered = enrichedStatic.filter((m: any) => {
+      const home = (m.homeKey || m.homeTeam?.slug || m.homeTeam?.name || "").toLowerCase().trim();
+      const away = (m.awayKey || m.awayTeam?.slug || m.awayTeam?.name || "").toLowerCase().trim();
+      return home.includes(targetKey) || away.includes(targetKey);
+    });
 
-  setMatches(filtered);
-  setLoading(false);
+    setMatches(filtered);
+    setLoading(false);
 
-  // 2. Bakgrundsuppdatering av priser
-  fetch("/api/matches")
-    .then((res) => res.json())
-    .then((data) => {
-      if (Array.isArray(data) && data.length > 0) {
-        const liveFiltered = data.filter((m: any) => {
-          const home = (m.homeKey || m.homeTeam?.slug || m.homeTeam?.name || "").toLowerCase().trim();
-          const away = (m.awayKey || m.awayTeam?.slug || m.awayTeam?.name || "").toLowerCase().trim();
-          return home === targetKey || away === targetKey;
-        });
-        if (liveFiltered.length > 0) setMatches(liveFiltered);
-      }
-    })
-    .catch((err) => console.error(err));
-}, [teamSlug]);
+    // 2. Bakgrundsuppdatering av livepriser
+    fetch("/api/matches")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const enrichedLive = enrichMatches(data);
+          const liveFiltered = enrichedLive.filter((m: any) => {
+            const home = (m.homeKey || m.homeTeam?.slug || m.homeTeam?.name || "").toLowerCase().trim();
+            const away = (m.awayKey || m.awayTeam?.slug || m.awayTeam?.name || "").toLowerCase().trim();
+            return home.includes(targetKey) || away.includes(targetKey);
+          });
+          if (liveFiltered.length > 0) setMatches(liveFiltered);
+        }
+      })
+      .catch((err) => console.error(err));
+  }, [teamSlug]);
 
-// Hjälpfunktion för att ta bort accenter (é -> e)
+  // Hjälpfunktion för att ta bort accenter (é -> e)
   const removeAccents = (str: string) => 
     str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
@@ -71,7 +95,6 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
 
       // Täcker både "milan" och "ac-milan"
       if (slug === "milan" || slug === "ac-milan") {
-        // Om matchen innehåller "inter", kasta bort den direkt
         if (homeName.includes("inter") || awayName.includes("inter")) {
           return false;
         }
@@ -189,13 +212,13 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
           )}
         </section>
 
-                  {!loading && filteredMatches.length > 0 && (
-            <TeamCostCalculator
-              teamName={teamName}
-              cityName={seoData?.location || "London, England"}
-              matches={filteredMatches}
-            />
-          )}
+        {!loading && filteredMatches.length > 0 && (
+          <TeamCostCalculator
+            teamName={teamName}
+            cityName={seoData?.location || "London, England"}
+            matches={filteredMatches}
+          />
+        )}
 
         {/* Info-Grid */}
         {seoData && (
@@ -203,8 +226,8 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
             <div id="biljettinfo" className="lg:col-span-2 space-y-6 scroll-mt-20">
               <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                 <h2 className="text-xl font-extrabold mb-4 flex items-center gap-2 text-slate-800">
-                <Ticket className="text-indigo-600 h-5 w-5" /> Köpa biljetter till {teamName} – Så gör du
-              </h2>
+                  <Ticket className="text-indigo-600 h-5 w-5" /> Köpa biljetter till {teamName} – Så gör du
+                </h2>
                 <p className="text-slate-600 leading-relaxed text-sm md:text-base">{seoData.howToBuy}</p>
               </div>
 
@@ -225,7 +248,7 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
               <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
                 <div className="md:col-span-2">
                   <h3 className="text-xl font-extrabold mb-3 flex items-center gap-2 text-slate-800">
-               <Trophy className="text-amber-500 h-5 w-5" /> Klubbens historia
+                    <Trophy className="text-amber-500 h-5 w-5" /> Klubbens historia
                   </h3>
                   <p className="text-slate-600 leading-relaxed text-sm md:text-base">{seoData.history}</p>
                 </div>
@@ -242,25 +265,21 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
             {/* Högerbox (Arena) */}
             <div id="arenaguide" className="space-y-6 lg:sticky lg:top-20 scroll-mt-20">
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                {/* Stor Arenabild i toppen av boxen */}
-              <div className="h-48 w-full bg-slate-100 group overflow-hidden border-b border-slate-200 relative"> {/* lade till relative här */}
-                <img 
-                  src={seoData?.stadiumLayoutImage || "/stadiums/default-stadium.jpg"} 
-                  alt={`Arenabild över ${seoData?.stadiumName || teamName}`} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                />
-                {/* Texten ligger nu i TOPPEN av bilden med en snygg toning nedåt */}
-                <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-slate-900/80 via-slate-900/40 to-transparent p-4 pb-12">
-                  <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-0.5">Hemmaborg</p>
-                  <h2 className="text-base font-black text-white tracking-tight">{seoData?.stadiumName} – Arena & Läktarinfo</h2>
+                <div className="h-48 w-full bg-slate-100 group overflow-hidden border-b border-slate-200 relative">
+                  <img 
+                    src={seoData?.stadiumLayoutImage || "/stadiums/default-stadium.jpg"} 
+                    alt={`Arenabild över ${seoData?.stadiumName || teamName}`} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                  />
+                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-slate-900/80 via-slate-900/40 to-transparent p-4 pb-12">
+                    <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-0.5">Hemmaborg</p>
+                    <h2 className="text-base font-black text-white tracking-tight">{seoData?.stadiumName} – Arena & Läktarinfo</h2>
+                  </div>
                 </div>
-              </div>
 
                 <div className="p-6">
-                  {/* Beskrivning av arenan */}
                   <p className="text-slate-600 text-sm leading-relaxed mb-6">{seoData.stadiumDescription}</p>
                   
-                  {/* Google Maps karta */}
                   {seoData.googleMapsEmbedUrl && (
                     <div className="w-full h-44 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
                       <iframe 

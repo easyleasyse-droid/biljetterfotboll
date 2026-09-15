@@ -46,8 +46,33 @@ function getMatchHotnessScore(match) {
   return score;
 }
 
+// Hjälpfunktion för att berika matcher med loggor och rätt arena (stadiumName) från teams.ts
+const enrichMatches = (matchesList) => {
+  if (!Array.isArray(matchesList)) return [];
+  return matchesList.map((m: any) => {
+    const homeSlug = (m.homeKey || m.homeTeam?.slug || "").toLowerCase().trim();
+    const awaySlug = (m.awayKey || m.awayTeam?.slug || "").toLowerCase().trim();
+
+    return {
+      ...m,
+      homeTeam: {
+        ...m.homeTeam,
+        logo: m.homeTeam?.logo || TEAMS_SEO_DATA[homeSlug]?.logo || "",
+      },
+      awayTeam: {
+        ...m.awayTeam,
+        logo: m.awayTeam?.logo || TEAMS_SEO_DATA[awaySlug]?.logo || "",
+      },
+      arena: m.arena || m.stadium || TEAMS_SEO_DATA[homeSlug]?.stadiumName || ""
+    };
+  });
+};
+
 export default function HomePage() {
-  const [matchesData, setMatchesData] = useState(UPCOMING_MATCHES);
+  // 1. Berika den statiska datan direkt så loggor och arenor finns där på 0ms
+  const initialEnriched = enrichMatches(UPCOMING_MATCHES);
+
+  const [matchesData, setMatchesData] = useState(initialEnriched);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedLeague, setSelectedLeague] = useState(null);
@@ -57,20 +82,16 @@ export default function HomePage() {
   const [visibleCount, setVisibleCount] = useState<number>(15);
 
   useEffect(() => {
-  // 1. Visar alla matcher med loggor och arenor direkt vid laddning
-  setMatchesData(UPCOMING_MATCHES);
-  setLoading(false);
-
-  // 2. Fyller på med partnerpriser i bakgrunden
-  fetch("/api/matches")
-    .then((res) => res.json())
-    .then((data) => {
-      if (Array.isArray(data) && data.length > 0) {
-        setMatchesData(data);
-      }
-    })
-    .catch((err) => console.error(err));
-}, []);
+    // 2. Hämta livepriser i bakgrunden och berika dem direkt med samma data
+    fetch("/api/matches")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setMatchesData(enrichMatches(data));
+        }
+      })
+      .catch((err) => console.error(err));
+  }, []);
 
   const teamSlugs = TEAMS_SEO_DATA ? Object.keys(TEAMS_SEO_DATA) : [];
 
@@ -83,7 +104,7 @@ export default function HomePage() {
       const q = searchText.toLowerCase();
       const matchHome = (match.homeTeam?.name || "").toLowerCase().includes(q);
       const matchAway = (match.awayTeam?.name || "").toLowerCase().includes(q);
-      const matchStadium = (match.stadium || "").toLowerCase().includes(q);
+      const matchStadium = (match.stadium || match.arena || "").toLowerCase().includes(q);
       const matchCity = (match.city || "").toLowerCase().includes(q);
       const matchLeague = (match.league || "").toLowerCase().includes(q);
 
