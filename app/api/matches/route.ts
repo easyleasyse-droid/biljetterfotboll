@@ -16,38 +16,6 @@ const formatTeamName = (key: string) => {
     .join(" ");
 };
 
-const sanitizeTeamName = (name: string) => {
-  if (!name) return "";
-
-  let clean = name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9 ]/g, " ")
-    .replace(/\bfc\b|\bac\b|\bafc\b|\bsv\b|\bbcf\b|\brcd\b|\bbud\b/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  const aliasMap: Record<string, string> = {
-    "inter milan": "inter",
-    "internazionale": "inter",
-    "bayern munich": "bayern",
-    "bayern munchen": "bayern",
-    "real betis": "betis",
-    "real sociedad": "sociedad",
-    "atletico madrid": "atletico",
-    "paris saint germain": "psg",
-    "ac milan": "milan",
-    "sporting cp": "sporting",
-  };
-
-  for (const [key, alias] of Object.entries(aliasMap)) {
-    if (clean.includes(key)) return alias;
-  }
-
-  return clean;
-};
-
 const getSearchUrl = (
   merchantName: string,
   homeTeam: string,
@@ -69,16 +37,35 @@ const getSearchUrl = (
   return domainMap[merchantName] || `https://www.google.com/search?q=${query}`;
 };
 
+const getFootballTicketNetUrl = (homeTeam: string, awayTeam: string): string => {
+  const query = `${homeTeam} ${awayTeam}`;
+  return `https://www.footballticketnet.com/search?q=${encodeURIComponent(query)}`;
+};
+
+const getChampionsTravelUrl = (homeTeam: string): string => {
+  return `https://www.championstravel.co.uk/search?q=${encodeURIComponent(homeTeam)}`;
+};
+
 // Cachad funktion för att bygga matchlistan med priser
 const getCachedMatchesData = unstable_cache(
   async () => {
     const today = new Date().toISOString().split("T")[0];
-    const upcomingMatches = UPCOMING_MATCHES.filter((m) => m.date >= today);
+    
+    // Filtrera bort oönskade ligor (t.ex. holländska ligan om den letat sig in)
+    const upcomingMatches = UPCOMING_MATCHES.filter((m) => {
+      if (m.date < today) return false;
+      const leagueName = ((m as any).league || "").toLowerCase();
+      // Exkludera oönskade ligor som Eredivisie eller liknande om de spökar
+      if (leagueName.includes("eredivisie") || leagueName.includes("holland")) {
+        return false;
+      }
+      return true;
+    });
 
     const [p1Rows, ticomboRows] = (await Promise.all([
       fetchP1FeedRows().catch(() => []),
       fetchTicomboParsedRows().catch(() => []),
-      fetchAwinOffers().catch(() => []), // Hämtar Awin-feeden och sparar i cachen
+      fetchAwinOffers().catch(() => []),
     ])) as [any[], any[], any[]];
 
     const matches = upcomingMatches.map((m, index) => {
@@ -172,20 +159,22 @@ const getCachedMatchesData = unstable_cache(
       
       const awinTickets = findAwinTicketsForMatchSync(homeName, awayName);
       for (const ticket of awinTickets) {
-        offers.push({
-          id: `o-${matchId}-${ticket.merchantName.toLowerCase().replace(/\s+/g, '-')}`,
-          merchantName: ticket.merchantName, // Blir "Gigsberg", "TicketNetwork" eller "Football Ticket Net UK"
-          rating: 4.5,
-          reviewsCount: 120,
-          section: "Standard",
-          category: "Biljetter",
-          priceSEK: ticket.priceSEK,
-          availableQuantity: 4,
-          deliveryType: "E-biljett (Direkt)",
-          isVerified: true,
-          url: ticket.url, // Awins färdiga spårningslänk direkt från feeden!
-          type: "ticket"
-        });
+        if (ticket.priceSEK && ticket.priceSEK > 50) { // Säkerställ att vi inte får in trasiga öres-priser
+          offers.push({
+            id: `o-${matchId}-${ticket.merchantName.toLowerCase().replace(/\s+/g, '-')}`,
+            merchantName: ticket.merchantName,
+            rating: 4.5,
+            reviewsCount: 120,
+            section: "Standard",
+            category: "Biljetter",
+            priceSEK: Math.round(ticket.priceSEK),
+            availableQuantity: 4,
+            deliveryType: "E-biljett (Direkt)",
+            isVerified: true,
+            url: ticket.url,
+            type: "ticket"
+          });
+        }
       }
 
       const lftTargetUrl = "https://www.livefootballtickets.com/";
@@ -245,7 +234,7 @@ const getCachedMatchesData = unstable_cache(
           availableQuantity: 6,
           deliveryType: "E-biljett / Mobil",
           isVerified: true,
-          url: getSearchUrl("Football Ticket Net", homeName, awayName),
+          url: getFootballTicketNetUrl(homeName, awayName),
           type: "ticket"
         },
         {
@@ -259,10 +248,13 @@ const getCachedMatchesData = unstable_cache(
           availableQuantity: 2,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: getSearchUrl("Champions Travel", homeName, awayName),
+          url: getChampionsTravelUrl(homeName),
           type: "ticket"
         }
       );
+
+      const validOffers = offers.filter((o) => o.priceSEK && !isNaN(o.priceSEK) && o.priceSEK > 50);
+      const lowestPrice = validOffers.length > 0 ? Math.min(...validOffers.map((o) => o.priceSEK)) : Math.round(basePrice);
 
       return {
         id: matchId,
@@ -287,7 +279,7 @@ const getCachedMatchesData = unstable_cache(
         time: m.time,
         stadium: homeInfo?.stadiumName || "Stadion",
         city: homeInfo?.location || "Europa",
-        priceFrom: Math.min(...offers.map((o) => o.priceSEK)),
+        priceFrom: lowestPrice,
         totalTicketsCount: 45,
         offers: offers
       };
@@ -295,8 +287,8 @@ const getCachedMatchesData = unstable_cache(
 
     return matches;
   },
-  ['global-matches-cache-v1'],
-  { revalidate: 3600 } // Uppdateras i bakgrunden en gång i timmen
+  ['global-matches-cache-v2'], // Uppdaterat cache-nyckel för att tvinga fram en ren ombyggnation
+  { revalidate: 3600 }
 );
 
 export async function GET() {
