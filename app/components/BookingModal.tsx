@@ -38,15 +38,25 @@ export default function BookingModal({ match, offer, quantity, onClose }: Bookin
   let destinationUrl = (offer as any).url || "";
 
   if (offer.merchantName === "Sports Events 365") {
-    destinationUrl = getAffiliateUrl(destinationUrl || "https://www.sportsevents365.com");
+    // Om offer.url finns från feeden, använd den direkt! Annars fallback till generella länken.
+    if ((offer as any).url) {
+      destinationUrl = (offer as any).url;
+    } else {
+      destinationUrl = getAffiliateUrl("https://www.sportsevents365.com");
+    }
   } else if (offer.merchantName === "Ticombo") {
-    destinationUrl = getTicomboSearchUrl(
-      match.homeTeam.name, 
-      match.awayTeam.name, 
-      match.league
-    );
+    // Om offer.url (directUrl) finns från feeden, använd den direkt! Annars sök.
+    if ((offer as any).url) {
+      destinationUrl = (offer as any).url;
+    } else {
+      destinationUrl = getTicomboSearchUrl(
+        match.homeTeam.name, 
+        match.awayTeam.name, 
+        match.league
+      );
+    }
   } else if (offer.merchantName === "P1 Travel") {
-    // Om offer.url redan har en fungerande url från backend, använd den direkt som den är!
+    // Rörs ej eftersom den redan funkar klockrent för dig!
     if ((offer as any).url) {
       destinationUrl = (offer as any).url;
     } else {
