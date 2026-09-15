@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
-import { findAwinTicketsForMatchSync } from "@/lib/awinFeed";
+import { fetchAwinOffers, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
@@ -80,7 +80,7 @@ const getCachedMatchesData = unstable_cache(
       fetchTicomboParsedRows().catch(() => []),
       fetchAwinOffers().catch(() => []), // Hämtar Awin-feeden och sparar i cachen
     ])) as [any[], any[], any[]];
-    
+
     const matches = upcomingMatches.map((m, index) => {
       const matchId = `m-${index + 1}`;
 
