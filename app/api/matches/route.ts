@@ -75,12 +75,12 @@ const getCachedMatchesData = unstable_cache(
     const today = new Date().toISOString().split("T")[0];
     const upcomingMatches = UPCOMING_MATCHES.filter((m) => m.date >= today);
 
-    const [p1Rows, ticomboRows, gigsbergTickets] = (await Promise.all([
+    const [p1Rows, ticomboRows] = (await Promise.all([
       fetchP1FeedRows().catch(() => []),
       fetchTicomboParsedRows().catch(() => []),
-      fetchGigsbergTickets().catch(() => []),
+      fetchAwinOffers().catch(() => []), // Hämtar Awin-feeden och sparar i cachen
     ])) as [any[], any[], any[]];
-
+    
     const matches = upcomingMatches.map((m, index) => {
       const matchId = `m-${index + 1}`;
 
