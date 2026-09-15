@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
-import { getFootballTicketNetUrl, getChampionsTravelUrl } from "@/lib/affiliate";
-import { fetchGigsbergTickets, findGigsbergTicketInRows } from "@/lib/gigsbergFeed";
+import { findAwinTicketsForMatch } from "@/lib/awinFeed";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
@@ -167,6 +166,24 @@ const getCachedMatchesData = unstable_cache(
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
           url: ticomboUrl || getSearchUrl("Ticombo", homeName, awayName),
+          type: "ticket"
+        });
+      }
+      
+      const awinTickets = await findAwinTicketsForMatch(homeName, awayName);
+      for (const ticket of awinTickets) {
+        offers.push({
+          id: `o-${matchId}-${ticket.merchantName.toLowerCase().replace(/\s+/g, '-')}`,
+          merchantName: ticket.merchantName, // Blir "Gigsberg", "TicketNetwork" eller "Football Ticket Net UK"
+          rating: 4.5,
+          reviewsCount: 120,
+          section: "Standard",
+          category: "Biljetter",
+          priceSEK: ticket.priceSEK,
+          availableQuantity: 4,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: ticket.url, // Awins färdiga spårningslänk direkt från feeden!
           type: "ticket"
         });
       }
