@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import MatchList from "./components/MatchList";
@@ -12,10 +12,9 @@ import Faq from "./components/Faq";
 import Footer from "./components/Footer";
 import Link from "next/link";
 import { TEAMS_SEO_DATA } from "./data/teams";
-import { Filter, Trophy, MapPin, Loader2 } from "lucide-react";
+import { Filter, Trophy, MapPin } from "lucide-react";
 import { UPCOMING_MATCHES } from "./data/upcomingMatches";
 
-// Nyckelord för storklubbar som lyfter en match
 const TOP_CLUBS = [
   "Real Madrid", "Barcelona", "Atlético Madrid", "Atletico", 
   "Bayern", "PSG", "Paris", "Inter", "Milan", "Juventus", 
@@ -23,14 +22,9 @@ const TOP_CLUBS = [
   "Chelsea", "Tottenham", "Dortmund"
 ];
 
-// Poängsystem för att räkna ut matchhetta
 function getMatchHotnessScore(match) {
   let score = 0;
-
-  // 1. Manuell utvald match (högst prioritet)
   if (match.featured) score += 100;
-
-  // 2. Champions League får extrapoäng
   if (match.league === "Champions League") score += 50;
 
   const homeName = (match.homeTeam?.name || "").toLowerCase();
@@ -39,14 +33,12 @@ function getMatchHotnessScore(match) {
   const isHomeTop = TOP_CLUBS.some((club) => homeName.includes(club.toLowerCase()));
   const isAwayTop = TOP_CLUBS.some((club) => awayName.includes(club.toLowerCase()));
 
-  // 3. Poäng per storklubb (25p för ett storlag, 50p om BÅDA är storlag)
   if (isHomeTop) score += 25;
   if (isAwayTop) score += 25;
 
   return score;
 }
 
-// Hjälpfunktion för att berika matcher med loggor och rätt arena utan att röra befintliga priser
 const enrichMatches = (matchesList) => {
   if (!Array.isArray(matchesList)) return [];
   return matchesList.map((m: any) => {
@@ -54,7 +46,7 @@ const enrichMatches = (matchesList) => {
     const awaySlug = (m.awayKey || m.awayTeam?.slug || "").toLowerCase().trim();
 
     return {
-      ...m, // Behåll ALLT från start (inklusive prisFrom, datum, tid etc.)
+      ...m,
       homeTeam: {
         ...m.homeTeam,
         logo: m.homeTeam?.logo || TEAMS_SEO_DATA[homeSlug]?.logo || "",
@@ -70,32 +62,15 @@ const enrichMatches = (matchesList) => {
 };
 
 export default function HomePage() {
-  // 1. Berika den statiska datan direkt så loggor, arenor och priser finns där på 0ms
   const initialEnriched = enrichMatches(UPCOMING_MATCHES);
 
   const [matchesData, setMatchesData] = useState(initialEnriched);
-  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedLeague, setSelectedLeague] = useState(null);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [bookingQuantity, setBookingQuantity] = useState(2);
   const [visibleCount, setVisibleCount] = useState<number>(15);
-
-  useEffect(() => {
-    // 2. Hämta livepriser i bakgrunden och berika dem tyst utan att nollställa gränssnittet
-    fetch("/api/matches")
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          const enrichedLive = enrichMatches(data);
-          if (enrichedLive.length > 0) {
-            setMatchesData(enrichedLive);
-          }
-        }
-      })
-      .catch((err) => console.error(err));
-  }, []);
 
   const teamSlugs = TEAMS_SEO_DATA ? Object.keys(TEAMS_SEO_DATA) : [];
 
@@ -118,16 +93,14 @@ export default function HomePage() {
     return true;
   });
 
-  // Sortering: Sortera i första hand på hettapoäng (högst först), därefter datum
   const sortedMatches = [...filteredMatches].sort((a, b) => {
     const scoreA = getMatchHotnessScore(a);
     const scoreB = getMatchHotnessScore(b);
 
     if (scoreA !== scoreB) {
-      return scoreB - scoreA; // Högst poäng hamnar överst
+      return scoreB - scoreA;
     }
 
-    // Om samma hettapoäng, sortera på datum/tid
     const timeA = a.time === "TBD" || !a.time ? "23:59" : a.time;
     const timeB = b.time === "TBD" || !b.time ? "23:59" : b.time;
     return `${a.date} ${timeA}`.localeCompare(`${b.date} ${timeB}`);
@@ -206,21 +179,14 @@ export default function HomePage() {
         </div>
       )}
 
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-24 gap-3 text-slate-500">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          <p className="text-sm font-medium">Hämtar dagens hetaste toppmatcher live...</p>
-        </div>
-      ) : (
-        <MatchList
-          matches={sortedMatches.slice(0, visibleCount)}
-          onSelectMatch={handleSelectMatch}
-          selectedLeague={selectedLeague}
-          totalMatchesCount={sortedMatches.length}
-          visibleCount={visibleCount}
-          onShowMore={() => setVisibleCount((prev) => prev + 15)}
-        />
-      )}
+      <MatchList
+        matches={sortedMatches.slice(0, visibleCount)}
+        onSelectMatch={handleSelectMatch}
+        selectedLeague={selectedLeague}
+        totalMatchesCount={sortedMatches.length}
+        visibleCount={visibleCount}
+        onShowMore={() => setVisibleCount((prev) => prev + 15)}
+      />
 
       <section className="bg-slate-50 border-t border-b border-slate-200 py-16 px-4">
         <div className="max-w-7xl mx-auto">
@@ -303,7 +269,6 @@ export default function HomePage() {
         />
       )}
 
-      {/* Schema.org Graph för Startsidan (WebSite, Organization & FAQ) */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
