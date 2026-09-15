@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
 import { getFootballTicketNetUrl, getChampionsTravelUrl } from "@/lib/affiliate";
@@ -16,7 +17,6 @@ const formatTeamName = (key: string) => {
     .join(" ");
 };
 
-// Tvättar lagnamn från specialtecken (ü/ö/ä/ø), engelska namn och FC/AC-prefix
 const sanitizeTeamName = (name: string) => {
   if (!name) return "";
 
@@ -29,7 +29,6 @@ const sanitizeTeamName = (name: string) => {
     .replace(/\s+/g, " ")
     .trim();
 
-  // Mappning för lag som heter olika i olika källor
   const aliasMap: Record<string, string> = {
     "inter milan": "inter",
     "internazionale": "inter",
@@ -49,7 +48,6 @@ const sanitizeTeamName = (name: string) => {
 
   return clean;
 };
-
 
 const getSearchUrl = (
   merchantName: string,
@@ -72,19 +70,18 @@ const getSearchUrl = (
   return domainMap[merchantName] || `https://www.google.com/search?q=${query}`;
 };
 
-export async function GET() {
-  try {
+// Cachad funktion för att bygga matchlistan med priser
+const getCachedMatchesData = unstable_cache(
+  async () => {
     const today = new Date().toISOString().split("T")[0];
     const upcomingMatches = UPCOMING_MATCHES.filter((m) => m.date >= today);
 
-    // 1. Hämta båda feederna som färdiga objekt-rader i minnet
-       const [p1Rows, ticomboRows, gigsbergTickets] = (await Promise.all([
-        fetchP1FeedRows().catch(() => []),
-        fetchTicomboParsedRows().catch(() => []),
-        fetchGigsbergTickets(),
-      ])) as [any[], any[], any[]];
+    const [p1Rows, ticomboRows, gigsbergTickets] = (await Promise.all([
+      fetchP1FeedRows().catch(() => []),
+      fetchTicomboParsedRows().catch(() => []),
+      fetchGigsbergTickets().catch(() => []),
+    ])) as [any[], any[], any[]];
 
-    // 2. Skapa matchobjekten
     const matches = upcomingMatches.map((m, index) => {
       const matchId = `m-${index + 1}`;
 
@@ -97,11 +94,9 @@ export async function GET() {
       const basePrice = 1100 + (index * 120) % 750;
       const EUR_TO_SEK = 11.3;
 
-      // Slå upp biljetter i feederna
       const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date);
       const ticomboData = findTicomboTicketInRows(ticomboRows, homeName, awayName, m.date);
 
-      // Bygg listan över erbjudanden dynamiskt
       const offers: any[] = [
         {
           id: `o-${matchId}-se365`,
@@ -119,10 +114,8 @@ export async function GET() {
         }
       ];
 
-      // ENDAST om P1 har biljetter
       if (p1Data) {
         const p1PriceSEK = Math.round(p1Data.price * EUR_TO_SEK);
-
         let p1Url = `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(homeName)}`)}`;
 
         if (p1Data.directUrl) {
@@ -152,7 +145,6 @@ export async function GET() {
         });
       }
 
-      // ENDAST om Ticombo har biljetter
       if (ticomboData) {
         const ticomboPriceSEK = ticomboData.currency === 'EUR'
           ? Math.round(ticomboData.price * EUR_TO_SEK)
@@ -178,12 +170,9 @@ export async function GET() {
           type: "ticket"
         });
       }
-    
-      // LiveFootballTickets (Skicka till startsidan)
-         const lftTargetUrl = "https://www.livefootballtickets.com/";
-         const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
-        
-      
+
+      const lftTargetUrl = "https://www.livefootballtickets.com/";
+      const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
 
       offers.push(
         {
@@ -228,7 +217,7 @@ export async function GET() {
           url: getSearchUrl("Viagogo", homeName, awayName),
           type: "ticket"
         },
-         {
+        {
           id: `o-${matchId}-ftn`,
           merchantName: "Football Ticket Net",
           rating: 4.6,
@@ -240,24 +229,23 @@ export async function GET() {
           deliveryType: "E-biljett / Mobil",
           isVerified: true,
           url: getFootballTicketNetUrl(homeName, awayName),
-      type: "ticket"
-    },
-    {
-      id: `o-${matchId}-champions`,
-      merchantName: "Champions Travel",
-      rating: 4.8,
-      reviewsCount: 1250,
-      section: "Officiell Långsida",
-      category: "Långsida",
-      priceSEK: Math.round(basePrice * 1.15),
-      availableQuantity: 2,
-      deliveryType: "E-biljett (Direkt)",
-      isVerified: true,
-      url: getChampionsTravelUrl(homeName),
-      type: "ticket"
-    }
-  );
-        
+          type: "ticket"
+        },
+        {
+          id: `o-${matchId}-champions`,
+          merchantName: "Champions Travel",
+          rating: 4.8,
+          reviewsCount: 1250,
+          section: "Officiell Långsida",
+          category: "Långsida",
+          priceSEK: Math.round(basePrice * 1.15),
+          availableQuantity: 2,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: getChampionsTravelUrl(homeName),
+          type: "ticket"
+        }
+      );
 
       return {
         id: matchId,
@@ -288,6 +276,15 @@ export async function GET() {
       };
     });
 
+    return matches;
+  },
+  ['global-matches-cache-v1'],
+  { revalidate: 3600 } // Uppdateras i bakgrunden en gång i timmen
+);
+
+export async function GET() {
+  try {
+    const matches = await getCachedMatchesData();
     return NextResponse.json(matches);
   } catch (error: any) {
     console.error("Fel i matches/route.ts:", error);
