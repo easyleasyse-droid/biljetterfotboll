@@ -170,7 +170,7 @@ const getCachedMatchesData = unstable_cache(
         });
       }
       
-      const awinTickets = await findAwinTicketsForMatch(homeName, awayName);
+      const awinTickets = findAwinTicketsForMatchSync(homeName, awayName);
       for (const ticket of awinTickets) {
         offers.push({
           id: `o-${matchId}-${ticket.merchantName.toLowerCase().replace(/\s+/g, '-')}`,

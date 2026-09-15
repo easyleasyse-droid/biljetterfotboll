@@ -67,13 +67,11 @@ export async function fetchAwinOffers() {
   }
 }
 
-export async function findAwinTicketsForMatch(homeTeam: string, awayTeam: string) {
-  const allOffers = await fetchAwinOffers();
-  
+export function findAwinTicketsForMatchSync(homeTeam: string, awayTeam: string) {
   const cleanHome = homeTeam.toLowerCase();
   const cleanAway = awayTeam.toLowerCase();
 
-  return allOffers.filter(offer => {
+  return cachedOffers.filter(offer => {
     const title = offer.productName;
     return title.includes(cleanHome) && title.includes(cleanAway);
   });
