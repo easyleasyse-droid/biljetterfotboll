@@ -245,7 +245,7 @@ const getCachedMatchesData = unstable_cache(
           availableQuantity: 6,
           deliveryType: "E-biljett / Mobil",
           isVerified: true,
-          url: getFootballTicketNetUrl(homeName, awayName),
+          url: getSearchUrl("Football Ticket Net", homeName, awayName),
           type: "ticket"
         },
         {
