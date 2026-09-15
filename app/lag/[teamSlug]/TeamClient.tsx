@@ -13,7 +13,6 @@ import {
   Calendar, MapPin, Trophy, ChevronDown, ChevronUp, Ticket, Building2, Hotel, Info, Loader2
 } from "lucide-react";
 
-// Hjälpfunktion för att berika matcher direkt med loggor och arenor
 const enrichMatches = (matchesList) => {
   if (!Array.isArray(matchesList)) return [];
   return matchesList.map((m: any) => {
@@ -49,7 +48,6 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
   const seoData = TEAMS_SEO_DATA[teamSlug];
   const teamName = seoData ? seoData.name : teamSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  // Hämta riktiga matcher med priser direkt från den cachade API-routen
   useEffect(() => {
     if (!teamSlug) return;
 
@@ -66,39 +64,42 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
       .finally(() => setLoading(false));
   }, [teamSlug]);
 
-  // Hjälpfunktion för att ta bort accenter (é -> e)
   const removeAccents = (str: string) => 
     str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
 
-  // Robust filtrering som matchar både slug, lagnamn och vanliga variationer (t.ex. Prag/Prague)
+  // Exakt filtrering som separerar lag som Slavia och Sparta
   const filteredMatches = matches.filter((match: any) => {
     const homeName = removeAccents(match.homeTeam?.name || "").toLowerCase();
     const awayName = removeAccents(match.awayTeam?.name || "").toLowerCase();
     const homeKey = removeAccents(match.homeKey || "").toLowerCase();
     const awayKey = removeAccents(match.awayKey || "").toLowerCase();
-    const slug = targetKey.replace(/-/g, " ");
+    
+    const cleanSlug = targetKey.replace(/-/g, " ");
 
-    if (slug === "milan" || slug === "ac milan") {
+    if (cleanSlug === "milan" || cleanSlug === "ac milan") {
       if (homeName.includes("inter") || awayName.includes("inter")) return false;
       return homeName.includes("milan") || awayName.includes("milan");
     }
 
-    if (slug === "inter" || slug === "inter milan") {
+    if (cleanSlug === "inter" || cleanSlug === "inter milan") {
       return homeName.includes("inter") || awayName.includes("inter");
     }
 
-    // Specialfall för lag med språkskillnader (t.ex. Slavia Prag / Slavia Prague)
-    let extraAlias = "";
-    if (slug.includes("prag")) extraAlias = "prague";
-    if (slug.includes("prague")) extraAlias = "prag";
+    const terms = [cleanSlug];
+    if (cleanSlug.includes("prag")) terms.push("prague");
+    if (cleanSlug.includes("prague")) terms.push("prag");
 
-    return (
-      homeName.includes(slug) || 
-      awayName.includes(slug) || 
-      homeKey.includes(targetKey) || 
-      awayKey.includes(targetKey) ||
-      (extraAlias && (homeName.includes(extraAlias) || awayName.includes(extraAlias)))
-    );
+    const matchesTeam = (name: string, key: string) => {
+      return terms.some(term => {
+        if (term.includes("prag") || term.includes("prague")) {
+          const mainPart = term.replace(/prag|prague/g, "").trim(); 
+          if (mainPart && !name.includes(mainPart) && !key.includes(mainPart)) return false;
+        }
+        return name.includes(term) || key.includes(term);
+      });
+    };
+
+    return matchesTeam(homeName, homeKey) || matchesTeam(awayName, awayKey);
   }).sort((a, b) => {
     const timeA = a.time && a.time !== "TBD" ? a.time : "00:00";
     const timeB = b.time && b.time !== "TBD" ? b.time : "00:00";
@@ -125,7 +126,7 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans scroll-smooth">
       <Header onSearchFocus={() => {}} onSelectLeague={() => {}} selectedLeague="" />
 
-      {/* Modern Hero med Bakgrundsbild */}
+      {/* Hero */}
       <div 
         className="relative bg-slate-950 text-white py-16 md:py-24 px-4 bg-cover bg-center shadow-xl"
         style={{ 
@@ -161,7 +162,7 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
         </div>
       </div>
 
-      {/* Snabbvalsmeny (Anchor Links) */}
+      {/* Snabbvalsmeny */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm hidden md:block">
         <div className="max-w-6xl mx-auto px-4 flex gap-8 h-14 items-center text-sm font-semibold text-slate-600">
           <button onClick={() => scrollToSection("matcher")} className="hover:text-indigo-600 border-b-2 border-transparent hover:border-indigo-600 h-full transition-all">Matcher</button>
@@ -172,7 +173,6 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
       </div>
 
       <main className="max-w-6xl mx-auto px-4 py-12">
-        {/* Matchlista */}
         <section id="matcher" className="mb-16 scroll-mt-20">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2.5">
@@ -208,25 +208,24 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
           />
         )}
 
-        {/* Info-Grid */}
         {seoData && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start mb-16">
             <div id="biljettinfo" className="lg:col-span-2 space-y-6 scroll-mt-20">
-              <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
                 <h2 className="text-xl font-extrabold mb-4 flex items-center gap-2 text-slate-800">
                   <Ticket className="text-indigo-600 h-5 w-5" /> Köpa biljetter till {teamName} – Så gör du
                 </h2>
                 <p className="text-slate-600 leading-relaxed text-sm md:text-base">{seoData.howToBuy}</p>
               </div>
 
-              <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
                 <h3 className="text-xl font-extrabold mb-4 flex items-center gap-2 text-slate-800">
                   <Info className="text-blue-600 h-5 w-5" /> Olika sektioner och prisnivåer
                 </h3>
                 <p className="text-slate-600 leading-relaxed text-sm md:text-base">{seoData.sectionsAndPrices}</p>
               </div>
 
-              <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
                 <h3 className="text-xl font-extrabold mb-4 flex items-center gap-2 text-slate-800">
                   <Hotel className="text-emerald-600 h-5 w-5" /> Matchpaket med boende
                 </h3>
@@ -241,27 +240,22 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
                   <p className="text-slate-600 leading-relaxed text-sm md:text-base">{seoData.history}</p>
                 </div>
                 <div className="rounded-xl overflow-hidden shadow-sm border border-slate-100 h-44 w-full">
-                  <img 
-                    src="/stadiums/default-match.jpg" 
-                    alt={`${teamName} matchatmosfär`} 
-                    className="w-full h-full object-cover" 
-                  />
+                  <img src="/stadiums/default-match.jpg" alt={`${teamName}`} className="w-full h-full object-cover" />
                 </div>
               </div>
             </div>     
 
-            {/* Högerbox (Arena) */}
             <div id="arenaguide" className="space-y-6 lg:sticky lg:top-20 scroll-mt-20">
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="h-48 w-full bg-slate-100 group overflow-hidden border-b border-slate-200 relative">
+                <div className="h-48 w-full bg-slate-100 relative">
                   <img 
                     src={seoData?.stadiumLayoutImage || "/stadiums/default-stadium.jpg"} 
-                    alt={`Arenabild över ${seoData?.stadiumName || teamName}`} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                    alt={seoData?.stadiumName} 
+                    className="w-full h-full object-cover" 
                   />
-                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-slate-900/80 via-slate-900/40 to-transparent p-4 pb-12">
+                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-slate-900/80 to-transparent p-4 pb-12">
                     <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-0.5">Hemmaborg</p>
-                    <h2 className="text-base font-black text-white tracking-tight">{seoData?.stadiumName} – Arena & Läktarinfo</h2>
+                    <h2 className="text-base font-black text-white">{seoData?.stadiumName}</h2>
                   </div>
                 </div>
 
@@ -270,16 +264,7 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
                   
                   {seoData.googleMapsEmbedUrl && (
                     <div className="w-full h-44 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-                      <iframe 
-                        src={seoData.googleMapsEmbedUrl} 
-                        width="100%" 
-                        height="100%" 
-                        style={{ border: 0 }} 
-                        allowFullScreen={false} 
-                        loading="lazy" 
-                        referrerPolicy="no-referrer-when-downgrade" 
-                        title={`Karta över ${seoData.stadiumName}`}
-                      ></iframe>
+                      <iframe src={seoData.googleMapsEmbedUrl} width="100%" height="100%" style={{ border: 0 }} loading="lazy" title="Karta"></iframe>
                     </div>
                   )}
                 </div>
@@ -288,20 +273,19 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
           </div>
         )}
 
-        {/* FAQ Sektion */}
         {seoData && seoData.faqs && seoData.faqs.length > 0 && (
           <section id="faq" className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm max-w-4xl scroll-mt-20">
-            <h2 className="text-2xl font-black mb-6 text-slate-800 flex items-center gap-2">Vanliga frågor om biljetter till {teamName}</h2>
+            <h2 className="text-2xl font-black mb-6 text-slate-800">Vanliga frågor om biljetter till {teamName}</h2>
             <div className="divide-y divide-slate-200">
               {seoData.faqs.map((faq: any, index: number) => {
                 const isOpen = openFaqIndex === index;
                 return (
-                  <div key={index} className="py-4 first:pt-0 last:pb-0">
-                    <button onClick={() => toggleFaq(index)} className="w-full flex items-center justify-between text-left font-bold text-slate-700 hover:text-indigo-600 transition-colors text-sm md:text-base py-2">
+                  <div key={index} className="py-4">
+                    <button onClick={() => toggleFaq(index)} className="w-full flex items-center justify-between text-left font-bold text-slate-700 hover:text-indigo-600 py-2">
                       <span>{faq.question}</span>
-                      {isOpen ? <ChevronUp className="h-5 w-5 text-indigo-500 shrink-0" /> : <ChevronDown className="h-5 w-5 text-slate-400 shrink-0" />}
+                      {isOpen ? <ChevronUp className="h-5 w-5 text-indigo-500" /> : <ChevronDown className="h-5 w-5 text-slate-400" />}
                     </button>
-                    {isOpen && <div className="mt-2 pr-6 text-slate-600 text-sm md:text-base leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">{faq.answer}</div>}
+                    {isOpen && <div className="mt-2 text-slate-600 text-sm bg-slate-50 p-4 rounded-xl border border-slate-100">{faq.answer}</div>}
                   </div>
                 );
               })}

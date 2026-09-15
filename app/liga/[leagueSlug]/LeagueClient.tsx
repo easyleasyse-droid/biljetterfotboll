@@ -51,8 +51,8 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
   };
 
   // Sätt rätt matcher direkt i state från start (0ms fördröjning, priserna hänger med direkt)
-  const [matches, setMatches] = useState<any[]>(() => filterAndProcessMatches(UPCOMING_MATCHES));
-  const [loading, setLoading] = useState<boolean>(false);
+  const [matches, setMatches] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [bookingQuantity, setBookingQuantity] = useState<number>(2);
