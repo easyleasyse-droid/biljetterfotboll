@@ -78,12 +78,12 @@ const getChampionsTravelUrl = (homeTeam: string): string => {
   return `https://www.championstravel.co.uk/search?q=${encodeURIComponent(homeTeam)}`;
 };
 
-// Cachad funktion för att bygga matchlistan med priser
+// Cachad funktion för att bygga matchlistan med priser och fullständig struktur
 const getCachedMatchesData = unstable_cache(
   async () => {
     const today = new Date().toISOString().split("T")[0];
     
-    // Filtrera bort utgångna datum samt oönskade holländska matcher/ligor
+    // Server-side filtrering för att rensa bort utgångna datum och oönskade holländska matcher/ligor
     const upcomingMatches = UPCOMING_MATCHES.filter((m) => {
       if (m.date < today) return false;
       
@@ -102,7 +102,7 @@ const getCachedMatchesData = unstable_cache(
     const [p1Rows, ticomboRows] = (await Promise.all([
       fetchP1FeedRows().catch(() => []),
       fetchTicomboParsedRows().catch(() => []),
-      fetchAwinOffers().catch(() => []), // Hämtar Awin-feeden
+      fetchAwinOffers().catch(() => []),
     ])) as [any[], any[], any[]];
 
     const matches = upcomingMatches.map((m, index) => {
@@ -219,6 +219,20 @@ const getCachedMatchesData = unstable_cache(
 
       offers.push(
         {
+          id: `o-${matchId}-gigsberg`,
+          merchantName: "Gigsberg",
+          rating: 4.6,
+          reviewsCount: 890,
+          section: "Standard / Kortsida",
+          category: "Biljetter",
+          priceSEK: Math.round(basePrice * 1.05),
+          availableQuantity: 5,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: getSearchUrl("Gigsberg", homeName, awayName),
+          type: "ticket"
+        },
+        {
           id: `o-${matchId}-lft`,
           merchantName: "LiveFootballTickets",
           rating: 4.8,
@@ -324,7 +338,7 @@ const getCachedMatchesData = unstable_cache(
 
     return matches;
   },
-  ['global-matches-cache-v5'],
+  ['global-matches-cache-v7'],
   { revalidate: 3600 }
 );
 
