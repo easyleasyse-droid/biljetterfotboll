@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import MatchList from "./components/MatchList";
@@ -12,7 +12,7 @@ import Faq from "./components/Faq";
 import Footer from "./components/Footer";
 import Link from "next/link";
 import { TEAMS_SEO_DATA } from "./data/teams";
-import { Filter, Trophy, MapPin } from "lucide-react";
+import { Filter, Trophy, MapPin, Loader2 } from "lucide-react";
 import { UPCOMING_MATCHES } from "./data/upcomingMatches";
 
 const TOP_CLUBS = [
@@ -65,12 +65,24 @@ export default function HomePage() {
   const initialEnriched = enrichMatches(UPCOMING_MATCHES);
 
   const [matchesData, setMatchesData] = useState(initialEnriched);
+  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedLeague, setSelectedLeague] = useState(null);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [bookingQuantity, setBookingQuantity] = useState(2);
   const [visibleCount, setVisibleCount] = useState<number>(15);
+
+  useEffect(() => {
+    fetch("/api/matches")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setMatchesData(enrichMatches(data));
+        }
+      })
+      .catch((err) => console.error(err));
+  }, []);
 
   const teamSlugs = TEAMS_SEO_DATA ? Object.keys(TEAMS_SEO_DATA) : [];
 
@@ -179,14 +191,21 @@ export default function HomePage() {
         </div>
       )}
 
-      <MatchList
-        matches={sortedMatches.slice(0, visibleCount)}
-        onSelectMatch={handleSelectMatch}
-        selectedLeague={selectedLeague}
-        totalMatchesCount={sortedMatches.length}
-        visibleCount={visibleCount}
-        onShowMore={() => setVisibleCount((prev) => prev + 15)}
-      />
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-24 gap-3 text-slate-500">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <p className="text-sm font-medium">Hämtar dagens hetaste toppmatcher live...</p>
+        </div>
+      ) : (
+        <MatchList
+          matches={sortedMatches.slice(0, visibleCount)}
+          onSelectMatch={handleSelectMatch}
+          selectedLeague={selectedLeague}
+          totalMatchesCount={sortedMatches.length}
+          visibleCount={visibleCount}
+          onShowMore={() => setVisibleCount((prev) => prev + 15)}
+        />
+      )}
 
       <section className="bg-slate-50 border-t border-b border-slate-200 py-16 px-4">
         <div className="max-w-7xl mx-auto">
