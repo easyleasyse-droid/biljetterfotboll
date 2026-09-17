@@ -57,28 +57,30 @@ const getSearchUrl = (
 ): string => {
   if (customUrl) return customUrl;
 
-  const query = encodeURIComponent(`${homeTeam} ${awayTeam}`);
-  const affiliateId = "3043299"; // Ditt Publicist-ID
+  // Rensa bort "FC", "AC" osv för rena sökord på biljettsajterna
+  const cleanHome = homeTeam.replace(/\bfc\b|\bac\b|\bafc\b|\bsc\b/gi, "").trim();
+  const homeQuery = encodeURIComponent(cleanHome);
+  const affiliateId = "3043299"; // Ditt Publicist ID
 
   const domainMap: Record<string, string> = {
     "StubHub": "https://www.stubhub.se/",
     "Ticombo": `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent('https://www.ticombo.com/en/sports-tickets/football')}`,
-    "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${query}`)}`,
+    "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${homeQuery}`)}`,
     "Sports Events 365": `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`,
-    "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=${affiliateId}&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${query}`)}`,
-    "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=89223&awinaffid=${affiliateId}&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${query}`)}`
+    "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=${affiliateId}&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${homeQuery}`)}`,
+    "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=89223&awinaffid=${affiliateId}&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${homeQuery}`)}`
   };
 
-  return domainMap[merchantName] || `https://www.google.com/search?q=${query}`;
+  return domainMap[merchantName] || `https://www.google.com/search?q=${homeQuery}`;
 };
 
-const getFootballTicketNetUrl = (homeTeam: string, awayTeam: string): string => {
-  const query = `${homeTeam} ${awayTeam}`;
-  return `https://www.footballticketnet.com/search?q=${encodeURIComponent(query)}`;
+const getFootballTicketNetUrl = (): string => {
+  return "https://www.footballticketnet.com";
 };
 
 const getChampionsTravelUrl = (homeTeam: string): string => {
-  return `https://www.championstravel.co.uk/search?q=${encodeURIComponent(homeTeam)}`;
+  const cleanHome = homeTeam.replace(/\bfc\b|\bac\b|\bafc\b/gi, "").trim();
+  return `https://www.championstravel.co.uk/search?q=${encodeURIComponent(cleanHome)}`;
 };
 
 // Cachad funktion för att bygga matchlistan med priser
@@ -185,7 +187,7 @@ const getCachedMatchesData = unstable_cache(
         });
       }
 
-      // Sök i Awin Feed (Gigsberg, TicketNetwork, Football Ticket Net)
+      // Sök i Awin Feed (Gigsberg, TicketNetwork, etc.)
       const awinTickets = findAwinTicketsForMatchSync(awinRows, cleanHome, cleanAway);
       const matchedAwinMerchants = new Set<string>();
 
@@ -213,7 +215,7 @@ const getCachedMatchesData = unstable_cache(
         }
       }
 
-      // Reservlänk för Gigsberg om matchen inte hittas live i Awin-feeden
+      // Reservlänk för Gigsberg om matchen saknas i Awin-feeden (använder ett mer realistiskt marknadspris)
       if (!matchedAwinMerchants.has("gigsberg")) {
         offers.push({
           id: `o-${matchId}-gigsberg`,
@@ -222,7 +224,7 @@ const getCachedMatchesData = unstable_cache(
           reviewsCount: 890,
           section: "Standard / Kortsida",
           category: "Biljetter",
-          priceSEK: Math.round(basePrice * 1.05),
+          priceSEK: Math.max(2800, Math.round(basePrice * 1.8)),
           availableQuantity: 5,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
@@ -231,7 +233,7 @@ const getCachedMatchesData = unstable_cache(
         });
       }
 
-      // Reservlänk för TicketNetwork om matchen inte hittas live i Awin-feeden
+      // Reservlänk för TicketNetwork om matchen saknas i Awin-feeden
       if (!matchedAwinMerchants.has("ticketnetwork")) {
         offers.push({
           id: `o-${matchId}-ticketnetwork`,
@@ -240,7 +242,7 @@ const getCachedMatchesData = unstable_cache(
           reviewsCount: 620,
           section: "Standard / VIP",
           category: "Biljetter",
-          priceSEK: Math.round(basePrice * 1.1),
+          priceSEK: Math.max(2500, Math.round(basePrice * 1.7)),
           availableQuantity: 4,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
@@ -306,7 +308,7 @@ const getCachedMatchesData = unstable_cache(
           availableQuantity: 6,
           deliveryType: "E-biljett / Mobil",
           isVerified: true,
-          url: getFootballTicketNetUrl(homeName, awayName),
+          url: getFootballTicketNetUrl(),
           type: "ticket"
         },
         {
@@ -356,7 +358,7 @@ const getCachedMatchesData = unstable_cache(
 
     return matches;
   },
-  ['global-matches-cache-v3'],
+  ['global-matches-cache-v5'],
   { revalidate: 3600 }
 );
 
