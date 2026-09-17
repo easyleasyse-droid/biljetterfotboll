@@ -129,15 +129,29 @@ export function findAwinTicketsForMatchSync(
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]/g, "");
+      .replace(/[^a-z0-9 ]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
 
-  const hTeam = clean(homeTeam);
-  const aTeam = clean(awayTeam);
+  // Rensa bort vanliga utfyllnadsord som ofta skapar problem i flöden
+  const stripCommonWords = (s: string) =>
+    s.replace(/\bfc\b|\bac\b|\bfutboll\b|\bfootball\b|\bvs\b|\bv\b/g, "").trim();
+
+  const hClean = stripCommonWords(clean(homeTeam));
+  const aClean = stripCommonWords(clean(awayTeam));
+
+  // Dela upp i enskilda ord (t.ex. "real madrid" -> ["real", "madrid"])
+  const hWords = hClean.split(" ").filter(w => w.length > 2);
+  const aWords = aClean.split(" ").filter(w => w.length > 2);
 
   return rows.filter((row) => {
     const title = clean(row.productName);
-    const matchesHome = title.includes(hTeam) || hTeam.split(" ").some(w => w.length > 3 && title.includes(w));
-    const matchesAway = title.includes(aTeam) || aTeam.split(" ").some(w => w.length > 3 && title.includes(w));
+
+    // Kontrollera att ALLA signifikanta ord för hemmalaget finns i titeln
+    const matchesHome = hWords.length > 0 && hWords.every(word => title.includes(word));
+    
+    // Kontrollera att ALLA signifikanta ord för bortalaget finns i titeln
+    const matchesAway = aWords.length > 0 && aWords.every(word => title.includes(word));
 
     return matchesHome && matchesAway;
   });
