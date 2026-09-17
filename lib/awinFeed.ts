@@ -119,13 +119,26 @@ export async function fetchAwinOffers() {
 
 export function findAwinTicketsForMatchSync(
   rows: AwinTicketRow[],
-  cleanHome: string,
-  cleanAway: string
+  homeTeam: string,
+  awayTeam: string
 ): AwinTicketRow[] {
   if (!rows || rows.length === 0) return [];
 
+  const clean = (str: string) =>
+    str
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "");
+
+  const hTeam = clean(homeTeam);
+  const aTeam = clean(awayTeam);
+
   return rows.filter((row) => {
-    const title = row.productName.toLowerCase();
-    return title.includes(cleanHome) && title.includes(cleanAway);
+    const title = clean(row.productName);
+    const matchesHome = title.includes(hTeam) || hTeam.split(" ").some(w => w.length > 3 && title.includes(w));
+    const matchesAway = title.includes(aTeam) || aTeam.split(" ").some(w => w.length > 3 && title.includes(w));
+
+    return matchesHome && matchesAway;
   });
 }
