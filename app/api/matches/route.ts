@@ -87,11 +87,11 @@ const getCachedMatchesData = unstable_cache(
 
       const offers: any[] = [];
 
-      // 1. P1 Travel Feed
+      // 1. P1 Travel Feed (Endast om match hittas)
       const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date);
-      if (p1Data) {
+      if (p1Data && p1Data.price > 0) {
         const p1PriceSEK = Math.round(p1Data.price * EUR_TO_SEK);
-        let p1Url = `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(homeName)}`)}`;
+        let p1Url = p1Data.directUrl || getSearchUrl("P1 Travel", homeName, awayName);
 
         if (p1Data.directUrl) {
           if (p1Data.directUrl.startsWith('http://') || p1Data.directUrl.startsWith('https://')) {
@@ -120,9 +120,9 @@ const getCachedMatchesData = unstable_cache(
         });
       }
 
-      // 2. Ticombo Feed
+      // 2. Ticombo Feed (Endast om match hittas)
       const ticomboData = findTicomboTicketInRows(ticomboRows, homeName, awayName, m.date);
-      if (ticomboData) {
+      if (ticomboData && ticomboData.price > 0) {
         const ticomboPriceSEK = ticomboData.currency === 'EUR'
           ? Math.round(ticomboData.price * EUR_TO_SEK)
           : Math.round(ticomboData.price);
@@ -148,7 +148,7 @@ const getCachedMatchesData = unstable_cache(
         });
       }
 
-      // 3. Awin Feed (Gigsberg, Football Ticket Net, TicketNetwork)
+      // 3. Awin Feed (Gigsberg, Football Ticket Net, TicketNetwork - Endast om de finns i feeden)
       const awinTickets = findAwinTicketsForMatchSync(awinRows, homeName, awayName);
 
       if (Array.isArray(awinTickets) && awinTickets.length > 0) {
@@ -220,43 +220,7 @@ const getCachedMatchesData = unstable_cache(
         }
       }
 
-      // Om Gigsberg saknades i feeden för denna match, lägg till sök-fallback
-      if (!offers.some(o => o.merchantName === "Gigsberg")) {
-        offers.push({
-          id: `o-${matchId}-gigsberg`,
-          merchantName: "Gigsberg",
-          rating: 4.7,
-          reviewsCount: 890,
-          section: "Standard / Kortsida",
-          category: "Biljetter",
-          priceSEK: Math.round(basePrice * 1.05),
-          availableQuantity: 5,
-          deliveryType: "E-biljett (Direkt)",
-          isVerified: true,
-          url: getSearchUrl("Gigsberg", homeName, awayName),
-          type: "ticket"
-        });
-      }
-
-      // Om Football Ticket Net saknades i feeden, lägg till sök-fallback
-      if (!offers.some(o => o.merchantName === "Football Ticket Net")) {
-        offers.push({
-          id: `o-${matchId}-ftn`,
-          merchantName: "Football Ticket Net",
-          rating: 4.6,
-          reviewsCount: 380,
-          section: "Sittplats / Sektion valfri",
-          category: "Standard / VIP",
-          priceSEK: Math.round(basePrice * 0.95),
-          availableQuantity: 6,
-          deliveryType: "E-biljett / Mobil",
-          isVerified: true,
-          url: getSearchUrl("Football Ticket Net", homeName, awayName),
-          type: "ticket"
-        });
-      }
-
-      // 4. Övriga partners och sök-fallbacks
+      // 4. Övriga partners utan livefeed (visas alltid som sök-alternativ tills du får feed)
       const lftTargetUrl = "https://www.livefootballtickets.com/";
       const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
 
@@ -333,6 +297,7 @@ const getCachedMatchesData = unstable_cache(
         }
       );
 
+      // Beräkna lägsta pris baserat på de faktiska erbjudanden som finns
       const validPrices = offers.map((o) => o.priceSEK).filter((p) => p > 0);
       const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : basePrice;
 
@@ -367,7 +332,7 @@ const getCachedMatchesData = unstable_cache(
 
     return matches;
   },
-  ['global-matches-cache-v11'],
+  ['global-matches-cache-v12'], // Uppdaterad cachenyckel för att tvinga fram nya datan
   { revalidate: 3600 }
 );
 

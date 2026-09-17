@@ -71,7 +71,7 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
     const idxSearchPrice = headers.indexOf('search_price');
     const idxDisplayPrice = headers.indexOf('display_price');
     const idxStorePrice = headers.indexOf('store_price');
-    const idxPrice = headers.indexOf('price'); // Lagt till standardpris-kolumnen
+    const idxPrice = headers.indexOf('price');
     const idxMerchant = headers.indexOf('merchant_name');
     const idxCurrency = headers.indexOf('currency');
 
@@ -88,8 +88,14 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
       const deepLink = cols[idxDeepLink] || cols[idxMerchantDeep] || '#';
       const currency = (cols[idxCurrency] || 'USD').toUpperCase();
 
-      // Letar i alla tänkbara priskolumner så ingen partner missas
-      const rawPriceStr = cols[idxDisplayPrice] || cols[idxSearchPrice] || cols[idxStorePrice] || cols[idxPrice] || "0";
+      // Prioriterar search_price (lägsta från-pris) för att hitta bästa priset
+      const rawPriceStr =
+        cols[idxSearchPrice] ||
+        cols[idxDisplayPrice] ||
+        cols[idxStorePrice] ||
+        (idxPrice !== -1 ? cols[idxPrice] : '') ||
+        "0";
+
       if (!productName || !rawPriceStr) continue;
 
       const cleanPriceStr = rawPriceStr.replace(/\s/g, '').replace(',', '.');
@@ -124,31 +130,59 @@ export async function fetchAwinOffers() {
   return getAwinData();
 }
 
-// Smartare synonym- och matchningsfunktion
+// Utökad och smartare synonym- och matchningsfunktion för europeiska klubbar
 const getTeamKeywords = (teamName: string): string[] => {
-  const clean = teamName
+  if (!teamName) return [];
+
+  // Normalisera och ta bort accenter (å, ä, ö, é, etc.)
+  const normalized = teamName
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  // Tvätta bort vanliga klubb-prefix och suffix som stör matchningen
+  const cleaned = normalized
+    .replace(/\b(fc|ac|cf|afc|sc|sv|fk|vfb|vfl|rb|cd|ud|rcd|sporting|club|de|d'|del)\b/g, " ")
     .replace(/[^a-z0-9 ]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
-  const keywords = [clean];
+  const keywords: string[] = [];
 
-  if (clean.includes("manchester city") || clean.includes("man city")) {
-    keywords.push("man city", "manchester city");
-  } else if (clean.includes("manchester united") || clean.includes("man utd")) {
-    keywords.push("man utd", "manchester united");
-  } else if (clean.includes("tottenham") || clean.includes("spurs")) {
-    keywords.push("tottenham", "spurs");
-  } else if (clean.includes("inter")) {
-    keywords.push("inter", "internazionale");
-  } else if (clean.includes("bayern")) {
-    keywords.push("bayern");
+  if (cleaned.length > 0) {
+    keywords.push(cleaned);
   }
 
-  return Array.from(new Set(keywords));
+  // Specifika synonymer och smeknamn för storklubbar
+  if (normalized.includes("manchester city") || normalized.includes("man city")) {
+    keywords.push("man city", "manchester city");
+  } else if (normalized.includes("manchester united") || normalized.includes("man utd")) {
+    keywords.push("man utd", "manchester united");
+  } else if (normalized.includes("tottenham") || normalized.includes("spurs")) {
+    keywords.push("tottenham", "spurs");
+  } else if (normalized.includes("barcelona") || normalized.includes("barca")) {
+    keywords.push("barcelona", "barca");
+  } else if (normalized.includes("atletico madrid") || normalized.includes("atl. madrid")) {
+    keywords.push("atletico", "atletico madrid");
+  } else if (normalized.includes("real madrid")) {
+    keywords.push("real madrid");
+  } else if (normalized.includes("paris saint germain") || normalized.includes("psg")) {
+    keywords.push("psg", "paris", "paris sg");
+  } else if (normalized.includes("inter") || normalized.includes("internazionale")) {
+    keywords.push("inter", "internazionale");
+  } else if (normalized.includes("milan") && !normalized.includes("inter")) {
+    keywords.push("ac milan", "milan");
+  } else if (normalized.includes("bayern")) {
+    keywords.push("bayern", "bayern munich", "bayern munchen");
+  } else if (normalized.includes("dortmund") || normalized.includes("bvb")) {
+    keywords.push("dortmund", "bvb");
+  } else if (normalized.includes("juventus") || normalized.includes("juve")) {
+    keywords.push("juventus", "juve");
+  } else if (normalized.includes("sporting cp") || normalized.includes("sporting lisbon")) {
+    keywords.push("sporting");
+  }
+
+  return Array.from(new Set(keywords.filter((kw) => kw.length > 1)));
 };
 
 export function findAwinTicketsForMatchSync(
@@ -170,10 +204,12 @@ export function findAwinTicketsForMatchSync(
   const homeKeywords = getTeamKeywords(homeTeam);
   const awayKeywords = getTeamKeywords(awayTeam);
 
+  if (homeKeywords.length === 0 || awayKeywords.length === 0) return [];
+
   return rows.filter((row) => {
     const title = cleanTitle(row.productName);
 
-    // Kräver att minst ett nyckelord/variant för hemmalaget OCH bortalaget finns i titeln
+    // Kräver att minst ett giltigt nyckelord för hemmalaget OCH bortalaget finns i titeln
     const matchesHome = homeKeywords.some((kw) => title.includes(kw));
     const matchesAway = awayKeywords.some((kw) => title.includes(kw));
 
