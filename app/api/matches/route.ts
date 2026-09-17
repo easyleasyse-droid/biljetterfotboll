@@ -50,7 +50,6 @@ const getCachedMatchesData = unstable_cache(
   async () => {
     const today = new Date().toISOString().split("T")[0];
     
-    // Server-side filtrering för att rensa bort utgångna datum och oönskade holländska matcher/ligor
     const upcomingMatches = UPCOMING_MATCHES.filter((m) => {
       if (m.date < today) return false;
       
@@ -87,7 +86,7 @@ const getCachedMatchesData = unstable_cache(
 
       const offers: any[] = [];
 
-      // 1. P1 Travel Feed (Endast om match hittas)
+      // 1. P1 Travel Feed
       const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date);
       if (p1Data && p1Data.price > 0) {
         const p1PriceSEK = Math.round(p1Data.price * EUR_TO_SEK);
@@ -120,7 +119,7 @@ const getCachedMatchesData = unstable_cache(
         });
       }
 
-      // 2. Ticombo Feed (Endast om match hittas)
+      // 2. Ticombo Feed
       const ticomboData = findTicomboTicketInRows(ticomboRows, homeName, awayName, m.date);
       if (ticomboData && ticomboData.price > 0) {
         const ticomboPriceSEK = ticomboData.currency === 'EUR'
@@ -148,79 +147,96 @@ const getCachedMatchesData = unstable_cache(
         });
       }
 
-      // 3. Awin Feed (Gigsberg, Football Ticket Net, TicketNetwork - Endast om de finns i feeden)
+      // 3. Awin Feed (Gigsberg, Football Ticket Net, TicketNetwork)
       const awinTickets = findAwinTicketsForMatchSync(awinRows, homeName, awayName);
 
       if (Array.isArray(awinTickets) && awinTickets.length > 0) {
         // Gigsberg
-        const gigsbergMatch = awinTickets.find(
-          (t) => t.merchantName.toLowerCase().includes("gigsberg")
+        const gigsbergMatches = awinTickets.filter(
+          (t) => t.merchantName.toLowerCase().includes("gigsberg") || t.merchantId === "122390"
         );
-        if (gigsbergMatch && gigsbergMatch.priceSEK > 0) {
-          offers.push({
-            id: `o-${matchId}-gigsberg`,
-            merchantName: "Gigsberg",
-            rating: 4.7,
-            reviewsCount: 890,
-            section: "Verifierad Marknadsplats",
-            category: "Standard / VIP",
-            priceSEK: gigsbergMatch.priceSEK,
-            availableQuantity: 6,
-            deliveryType: "E-biljett (Direkt)",
-            isVerified: true,
-            url: gigsbergMatch.url,
-            type: "ticket"
-          });
+        if (gigsbergMatches.length > 0) {
+          const bestGigsberg = gigsbergMatches.reduce((prev, curr) => 
+            prev.priceSEK < curr.priceSEK ? prev : curr
+          );
+          if (bestGigsberg.priceSEK > 0) {
+            offers.push({
+              id: `o-${matchId}-gigsberg`,
+              merchantName: "Gigsberg",
+              rating: 4.7,
+              reviewsCount: 890,
+              section: "Verifierad Marknadsplats",
+              category: "Standard / VIP",
+              priceSEK: bestGigsberg.priceSEK,
+              availableQuantity: 6,
+              deliveryType: "E-biljett (Direkt)",
+              isVerified: true,
+              url: bestGigsberg.url,
+              type: "ticket"
+            });
+          }
         }
 
         // Football Ticket Net
-        const ftnMatch = awinTickets.find(
+        const ftnMatches = awinTickets.filter(
           (t) =>
             t.merchantName.toLowerCase().includes("football ticket") ||
-            t.merchantName.toLowerCase().includes("footballticketnet")
+            t.merchantName.toLowerCase().includes("footballticketnet") ||
+            t.merchantName.toLowerCase().includes("ftn")
         );
-        if (ftnMatch && ftnMatch.priceSEK > 0) {
-          offers.push({
-            id: `o-${matchId}-ftn`,
-            merchantName: "Football Ticket Net",
-            rating: 4.6,
-            reviewsCount: 380,
-            section: "Sittplats / Sektion valfri",
-            category: "Standard / VIP",
-            priceSEK: ftnMatch.priceSEK,
-            availableQuantity: 6,
-            deliveryType: "E-biljett / Mobil",
-            isVerified: true,
-            url: ftnMatch.url,
-            type: "ticket"
-          });
+        if (ftnMatches.length > 0) {
+          const bestFTN = ftnMatches.reduce((prev, curr) => 
+            prev.priceSEK < curr.priceSEK ? prev : curr
+          );
+          if (bestFTN.priceSEK > 0) {
+            offers.push({
+              id: `o-${matchId}-ftn`,
+              merchantName: "Football Ticket Net",
+              rating: 4.6,
+              reviewsCount: 380,
+              section: "Sittplats / Sektion valfri",
+              category: "Standard / VIP",
+              priceSEK: bestFTN.priceSEK,
+              availableQuantity: 6,
+              deliveryType: "E-biljett / Mobil",
+              isVerified: true,
+              url: bestFTN.url,
+              type: "ticket"
+            });
+          }
         }
 
         // TicketNetwork
-        const tnMatch = awinTickets.find(
+        const tnMatches = awinTickets.filter(
           (t) =>
             t.merchantName.toLowerCase().includes("ticketnetwork") ||
-            t.merchantName.toLowerCase().includes("ticket network")
+            t.merchantName.toLowerCase().includes("ticket network") ||
+            t.merchantId === "12028"
         );
-        if (tnMatch && tnMatch.priceSEK > 0) {
-          offers.push({
-            id: `o-${matchId}-ticketnetwork`,
-            merchantName: "TicketNetwork",
-            rating: 4.5,
-            reviewsCount: 1120,
-            section: "Verifierad Säljare",
-            category: "Standard / VIP",
-            priceSEK: tnMatch.priceSEK,
-            availableQuantity: 5,
-            deliveryType: "E-biljett (Direkt)",
-            isVerified: true,
-            url: tnMatch.url,
-            type: "ticket"
-          });
+        if (tnMatches.length > 0) {
+          const bestTN = tnMatches.reduce((prev, curr) => 
+            prev.priceSEK < curr.priceSEK ? prev : curr
+          );
+          if (bestTN.priceSEK > 0) {
+            offers.push({
+              id: `o-${matchId}-ticketnetwork`,
+              merchantName: "TicketNetwork",
+              rating: 4.5,
+              reviewsCount: 1120,
+              section: "Verifierad Säljare",
+              category: "Standard / VIP",
+              priceSEK: bestTN.priceSEK,
+              availableQuantity: 5,
+              deliveryType: "E-biljett (Direkt)",
+              isVerified: true,
+              url: bestTN.url,
+              type: "ticket"
+            });
+          }
         }
       }
 
-      // 4. Övriga partners utan livefeed (visas alltid som sök-alternativ tills du får feed)
+      // 4. Övriga partners utan livefeed
       const lftTargetUrl = "https://www.livefootballtickets.com/";
       const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
 
@@ -297,7 +313,6 @@ const getCachedMatchesData = unstable_cache(
         }
       );
 
-      // Beräkna lägsta pris baserat på de faktiska erbjudanden som finns
       const validPrices = offers.map((o) => o.priceSEK).filter((p) => p > 0);
       const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : basePrice;
 
@@ -332,7 +347,7 @@ const getCachedMatchesData = unstable_cache(
 
     return matches;
   },
-  ['global-matches-cache-v12'], // Uppdaterad cachenyckel för att tvinga fram nya datan
+  ['global-matches-cache-v13'],
   { revalidate: 3600 }
 );
 

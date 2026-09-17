@@ -5,6 +5,7 @@ const gunzip = promisify(zlib.gunzip);
 
 export interface AwinTicketRow {
   merchantName: string;
+  merchantId: string;
   productName: string;
   priceSEK: number;
   url: string;
@@ -73,6 +74,7 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
     const idxStorePrice = headers.indexOf('store_price');
     const idxPrice = headers.indexOf('price');
     const idxMerchant = headers.indexOf('merchant_name');
+    const idxMerchantId = headers.indexOf('merchant_id');
     const idxCurrency = headers.indexOf('currency');
 
     const rows: AwinTicketRow[] = [];
@@ -85,23 +87,23 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
 
       const productName = cols[idxProductName];
       const merchantName = cols[idxMerchant] || 'Awin Partner';
+      const merchantId = cols[idxMerchantId] || '';
       const deepLink = cols[idxDeepLink] || cols[idxMerchantDeep] || '#';
       const currency = (cols[idxCurrency] || 'USD').toUpperCase();
 
-      // Prioriterar search_price (lägsta från-pris) för att hitta bästa priset
-      const rawPriceStr =
-        cols[idxSearchPrice] ||
-        cols[idxDisplayPrice] ||
-        cols[idxStorePrice] ||
-        (idxPrice !== -1 ? cols[idxPrice] : '') ||
-        "0";
+      // Hämtar det första giltiga priset (> 0) från kolumnerna
+      const searchP = parseFloat((cols[idxSearchPrice] || '').replace(',', '.'));
+      const displayP = parseFloat((cols[idxDisplayPrice] || '').replace(',', '.'));
+      const storeP = parseFloat((cols[idxStorePrice] || '').replace(',', '.'));
+      const stdP = idxPrice !== -1 ? parseFloat((cols[idxPrice] || '').replace(',', '.')) : 0;
 
-      if (!productName || !rawPriceStr) continue;
+      let price = 0;
+      if (!isNaN(searchP) && searchP > 0) price = searchP;
+      else if (!isNaN(displayP) && displayP > 0) price = displayP;
+      else if (!isNaN(storeP) && storeP > 0) price = storeP;
+      else if (!isNaN(stdP) && stdP > 0) price = stdP;
 
-      const cleanPriceStr = rawPriceStr.replace(/\s/g, '').replace(',', '.');
-      let price = parseFloat(cleanPriceStr);
-
-      if (isNaN(price) || price <= 0) continue;
+      if (!productName || price <= 0) continue;
 
       let rate = 9.83; // USD
       if (currency === 'EUR') rate = 11.28;
@@ -112,6 +114,7 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
 
       rows.push({
         merchantName,
+        merchantId,
         productName,
         priceSEK,
         url: deepLink,
@@ -130,17 +133,14 @@ export async function fetchAwinOffers() {
   return getAwinData();
 }
 
-// Utökad och smartare synonym- och matchningsfunktion för europeiska klubbar
 const getTeamKeywords = (teamName: string): string[] => {
   if (!teamName) return [];
 
-  // Normalisera och ta bort accenter (å, ä, ö, é, etc.)
   const normalized = teamName
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 
-  // Tvätta bort vanliga klubb-prefix och suffix som stör matchningen
   const cleaned = normalized
     .replace(/\b(fc|ac|cf|afc|sc|sv|fk|vfb|vfl|rb|cd|ud|rcd|sporting|club|de|d'|del)\b/g, " ")
     .replace(/[^a-z0-9 ]/g, " ")
@@ -153,7 +153,6 @@ const getTeamKeywords = (teamName: string): string[] => {
     keywords.push(cleaned);
   }
 
-  // Specifika synonymer och smeknamn för storklubbar
   if (normalized.includes("manchester city") || normalized.includes("man city")) {
     keywords.push("man city", "manchester city");
   } else if (normalized.includes("manchester united") || normalized.includes("man utd")) {
@@ -178,8 +177,6 @@ const getTeamKeywords = (teamName: string): string[] => {
     keywords.push("dortmund", "bvb");
   } else if (normalized.includes("juventus") || normalized.includes("juve")) {
     keywords.push("juventus", "juve");
-  } else if (normalized.includes("sporting cp") || normalized.includes("sporting lisbon")) {
-    keywords.push("sporting");
   }
 
   return Array.from(new Set(keywords.filter((kw) => kw.length > 1)));
@@ -209,10 +206,26 @@ export function findAwinTicketsForMatchSync(
   return rows.filter((row) => {
     const title = cleanTitle(row.productName);
 
-    // Kräver att minst ett giltigt nyckelord för hemmalaget OCH bortalaget finns i titeln
-    const matchesHome = homeKeywords.some((kw) => title.includes(kw));
-    const matchesAway = awayKeywords.some((kw) => title.includes(kw));
+    // Hitta var i titeln hemmalagets respektive bortalagets nyckelord dyker upp
+    let homePos = -1;
+    for (const kw of homeKeywords) {
+      const pos = title.indexOf(kw);
+      if (pos !== -1) {
+        homePos = pos;
+        break;
+      }
+    }
 
-    return matchesHome && matchesAway;
+    let awayPos = -1;
+    for (const kw of awayKeywords) {
+      const pos = title.indexOf(kw);
+      if (pos !== -1) {
+        awayPos = pos;
+        break;
+      }
+    }
+
+    // Kräver att BÅDA lagen finns OCH att hemmalaget står FÖRE bortalaget i produktnamnet
+    return homePos !== -1 && awayPos !== -1 && homePos < awayPos;
   });
 }
