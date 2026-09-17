@@ -8,12 +8,14 @@ export interface AwinTicketRow {
   merchantId: string;
   productName: string;
   priceSEK: number;
+  rawPrice: number;
+  currency: string;
   url: string;
 }
 
 let cachedAwinRows: AwinTicketRow[] | null = null;
 let lastFetchTime = 0;
-const CACHE_DURATION_MS = 12 * 60 * 60 * 1000; // 12 timmar
+const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 timme cache i minnet
 
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
@@ -79,6 +81,14 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
 
     const rows: AwinTicketRow[] = [];
 
+    // Uppdaterade valutakurser till SEK
+    const RATES: Record<string, number> = {
+      GBP: 13.35,
+      EUR: 11.25,
+      USD: 10.35,
+      SEK: 1.0,
+    };
+
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
@@ -89,9 +99,8 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
       const merchantName = cols[idxMerchant] || 'Awin Partner';
       const merchantId = cols[idxMerchantId] || '';
       const deepLink = cols[idxDeepLink] || cols[idxMerchantDeep] || '#';
-      const currency = (cols[idxCurrency] || 'USD').toUpperCase();
+      const currency = (cols[idxCurrency] || 'GBP').toUpperCase();
 
-      // Hämtar det första giltiga priset (> 0) från kolumnerna
       const searchP = parseFloat((cols[idxSearchPrice] || '').replace(',', '.'));
       const displayP = parseFloat((cols[idxDisplayPrice] || '').replace(',', '.'));
       const storeP = parseFloat((cols[idxStorePrice] || '').replace(',', '.'));
@@ -105,11 +114,7 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
 
       if (!productName || price <= 0) continue;
 
-      let rate = 9.83; // USD
-      if (currency === 'EUR') rate = 11.28;
-      else if (currency === 'GBP') rate = 13.15;
-      else if (currency === 'SEK') rate = 1.0;
-
+      const rate = RATES[currency] || RATES.GBP;
       const priceSEK = Math.round(price * rate);
 
       rows.push({
@@ -117,6 +122,8 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
         merchantId,
         productName,
         priceSEK,
+        rawPrice: price,
+        currency,
         url: deepLink,
       });
     }
@@ -165,6 +172,10 @@ const getTeamKeywords = (teamName: string): string[] => {
     keywords.push("atletico", "atletico madrid");
   } else if (normalized.includes("real madrid")) {
     keywords.push("real madrid");
+  } else if (normalized.includes("real betis") || normalized.includes("betis")) {
+    keywords.push("real betis", "betis");
+  } else if (normalized.includes("getafe")) {
+    keywords.push("getafe");
   } else if (normalized.includes("paris saint germain") || normalized.includes("psg")) {
     keywords.push("psg", "paris", "paris sg");
   } else if (normalized.includes("inter") || normalized.includes("internazionale")) {
@@ -206,7 +217,6 @@ export function findAwinTicketsForMatchSync(
   return rows.filter((row) => {
     const title = cleanTitle(row.productName);
 
-    // Hitta var i titeln hemmalagets respektive bortalagets nyckelord dyker upp
     let homePos = -1;
     for (const kw of homeKeywords) {
       const pos = title.indexOf(kw);

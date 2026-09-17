@@ -6,7 +6,8 @@ import { fetchAwinOffers, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
-export const dynamic = 'force-dynamic';
+// Blixtsnabb laddning: Vercel cachar resultatet i 1 timme (ISR)
+export const revalidate = 3600;
 
 const formatTeamName = (key: string) => {
   if (!key) return "";
@@ -71,7 +72,7 @@ const getCachedMatchesData = unstable_cache(
       fetchAwinOffers().catch(() => []),
     ])) as [any[], any[], any[]];
 
-    const EUR_TO_SEK = 11.28;
+    const EUR_TO_SEK = 11.25;
 
     const matches = upcomingMatches.map((m, index) => {
       const matchId = `m-${index + 1}`;
@@ -86,7 +87,7 @@ const getCachedMatchesData = unstable_cache(
 
       const offers: any[] = [];
 
-      // 1. P1 Travel Feed
+      // 1. P1 Travel Feed (Visas bara om träff finns)
       const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date);
       if (p1Data && p1Data.price > 0) {
         const p1PriceSEK = Math.round(p1Data.price * EUR_TO_SEK);
@@ -119,7 +120,7 @@ const getCachedMatchesData = unstable_cache(
         });
       }
 
-      // 2. Ticombo Feed
+      // 2. Ticombo Feed (Visas bara om träff finns)
       const ticomboData = findTicomboTicketInRows(ticomboRows, homeName, awayName, m.date);
       if (ticomboData && ticomboData.price > 0) {
         const ticomboPriceSEK = ticomboData.currency === 'EUR'
@@ -147,13 +148,16 @@ const getCachedMatchesData = unstable_cache(
         });
       }
 
-      // 3. Awin Feed (Gigsberg, Football Ticket Net, TicketNetwork)
+      // 3. Awin Feed (Strikt filtrerat per merchant)
       const awinTickets = findAwinTicketsForMatchSync(awinRows, homeName, awayName);
 
       if (Array.isArray(awinTickets) && awinTickets.length > 0) {
-        // Gigsberg
+        // Gigsberg - Endast biljetter som TILLHÖR Gigsberg
         const gigsbergMatches = awinTickets.filter(
-          (t) => t.merchantName.toLowerCase().includes("gigsberg") || t.merchantId === "122390"
+          (t) =>
+            t.merchantName.toLowerCase().includes("gigsberg") ||
+            t.merchantId === "122390" ||
+            t.merchantId === "107817"
         );
         if (gigsbergMatches.length > 0) {
           const bestGigsberg = gigsbergMatches.reduce((prev, curr) => 
@@ -177,12 +181,12 @@ const getCachedMatchesData = unstable_cache(
           }
         }
 
-        // Football Ticket Net
+        // Football Ticket Net - Endast biljetter som TILLHÖR Football Ticket Net
         const ftnMatches = awinTickets.filter(
           (t) =>
-            t.merchantName.toLowerCase().includes("football ticket") ||
-            t.merchantName.toLowerCase().includes("footballticketnet") ||
-            t.merchantName.toLowerCase().includes("ftn")
+            t.merchantName.toLowerCase().includes("football") ||
+            t.merchantName.toLowerCase().includes("ftn") ||
+            t.merchantId === "113393"
         );
         if (ftnMatches.length > 0) {
           const bestFTN = ftnMatches.reduce((prev, curr) => 
@@ -206,11 +210,12 @@ const getCachedMatchesData = unstable_cache(
           }
         }
 
-        // TicketNetwork
+        // TicketNetwork - Endast biljetter som TILLHÖR TicketNetwork
         const tnMatches = awinTickets.filter(
           (t) =>
             t.merchantName.toLowerCase().includes("ticketnetwork") ||
             t.merchantName.toLowerCase().includes("ticket network") ||
+            t.merchantId === "117212" ||
             t.merchantId === "12028"
         );
         if (tnMatches.length > 0) {
@@ -236,7 +241,7 @@ const getCachedMatchesData = unstable_cache(
         }
       }
 
-      // 4. Övriga partners utan livefeed
+      // 4. Övriga partners utan livefeed (Sök-fallback)
       const lftTargetUrl = "https://www.livefootballtickets.com/";
       const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
 
@@ -347,7 +352,7 @@ const getCachedMatchesData = unstable_cache(
 
     return matches;
   },
-  ['global-matches-cache-v13'],
+  ['global-matches-cache-v15'],
   { revalidate: 3600 }
 );
 
