@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { UPCOMING_MATCHES } from "@/data/upcomingMatches";
 import { TEAMS_SEO_DATA } from "@/data/teams";
 import { getP1Data, findP1TicketInRows } from "@/lib/p1Feed";
-import { getTicomboData, findTicomboTicketInRows } from "@/lib/ticomboFeed";
+import { fetchTicomboParsedRows, findTicomboTicketInRows } from "@/lib/ticomboFeed";
 import { getAwinData, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
 
 export const revalidate = 3600; // Cache i 1 timme
@@ -54,7 +54,7 @@ const getSearchUrl = (
 async function getCachedMatchesData() {
   const [p1Rows, ticomboRows, awinRows] = await Promise.all([
     getP1Data(),
-    getTicomboData(),
+    fetchTicomboParsedRows(),
     getAwinData(),
   ]);
 
