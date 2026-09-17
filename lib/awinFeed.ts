@@ -5,6 +5,7 @@ const gunzip = promisify(zlib.gunzip);
 
 export interface AwinTicketRow {
   merchantName: string;
+  merchantId?: string;
   productName: string;
   priceSEK: number;
   url: string;
@@ -72,6 +73,7 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
     const idxDisplayPrice = headers.indexOf('display_price');
     const idxStorePrice = headers.indexOf('store_price');
     const idxMerchant = headers.indexOf('merchant_name');
+    const idxMerchantId = headers.indexOf('merchant_id');
     const idxCurrency = headers.indexOf('currency');
 
     const rows: AwinTicketRow[] = [];
@@ -84,6 +86,7 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
 
       const productName = cols[idxProductName];
       const merchantName = cols[idxMerchant] || 'Awin Partner';
+      const merchantId = cols[idxMerchantId] || '';
       const deepLink = cols[idxDeepLink] || cols[idxMerchantDeep] || '#';
       const currency = (cols[idxCurrency] || 'USD').toUpperCase();
 
@@ -111,6 +114,7 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
 
       rows.push({
         merchantName,
+        merchantId,
         productName,
         priceSEK,
         url: deepLink,
@@ -164,7 +168,7 @@ export function findAwinTicketsForMatchSync(
   rows: AwinTicketRow[],
   homeTeam: string,
   awayTeam: string,
-  matchDate?: string // Valfritt datum t.ex. "2026-09-17" eller "2026-10-10"
+  matchDate?: string
 ): AwinTicketRow[] {
   if (!rows || rows.length === 0) return [];
 
@@ -188,12 +192,6 @@ export function findAwinTicketsForMatchSync(
     const matchesAway = awayKeywords.some((kw) => title.includes(kw));
 
     if (!matchesHome || !matchesAway) return false;
-
-    // Om matchen spelas under 2026, sortera bort gamla matcher (t.ex. februari 2026 eller 2025)
-    if (matchDate) {
-      const year = matchDate.split('-')[0]; // t.ex. "2026"
-      // Om produktlänken/namnet explicit pekar på ett gammalt event/datum kan vi validera det
-    }
 
     return true;
   });
