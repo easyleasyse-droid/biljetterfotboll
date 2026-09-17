@@ -5,15 +5,24 @@ const gunzip = promisify(zlib.gunzip);
 
 export interface AwinTicketRow {
   merchantName: string;
-  merchantId?: string;
+  merchantId: string;
   productName: string;
   priceSEK: number;
+  rawPrice: number;
+  currency: string;
   url: string;
 }
 
 let cachedAwinRows: AwinTicketRow[] | null = null;
 let lastFetchTime = 0;
-const CACHE_DURATION_MS = 12 * 60 * 60 * 1000; // 12 timmar
+const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 timmes cache
+
+const FEED_URLS = [
+  // Gigsberg
+  "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/cid/592/fid/117212/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/",
+  // Football Ticket Net
+  "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/fid/113393/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/"
+];
 
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
@@ -42,21 +51,10 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
-export async function getAwinData(): Promise<AwinTicketRow[]> {
-  const now = Date.now();
-  if (cachedAwinRows && now - lastFetchTime < CACHE_DURATION_MS) {
-    return cachedAwinRows;
-  }
-
-  const feedUrl =
-    process.env.AWIN_PRODUCT_FEED_URL ||
-    "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/cid/271,592/fid/107817,113393,117212/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/";
-
+async function fetchSingleFeed(url: string): Promise<AwinTicketRow[]> {
   try {
-    const res = await fetch(feedUrl, { cache: 'no-store' });
-    if (!res.ok) {
-      return cachedAwinRows || [];
-    }
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return [];
 
     const buffer = Buffer.from(await res.arrayBuffer());
     const unzipped = await gunzip(buffer);
@@ -78,38 +76,56 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
 
     const rows: AwinTicketRow[] = [];
 
+    // Uppdaterade växelkurser mot SEK
+    const RATES: Record<string, number> = {
+      GBP: 13.15,
+      EUR: 11.25,
+      USD: 9.80,
+      SEK: 1.0,
+    };
+
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
 
       const cols = parseCSVLine(line);
 
-      const productName = cols[idxProductName];
+      const productName = cols[idxProductName] || '';
       const merchantName = cols[idxMerchant] || 'Awin Partner';
       const merchantId = cols[idxMerchantId] || '';
       const deepLink = cols[idxDeepLink] || cols[idxMerchantDeep] || '#';
-      const currency = (cols[idxCurrency] || 'USD').toUpperCase();
+      let currency = (cols[idxCurrency] || '').toUpperCase();
 
-      if (!productName) continue;
+      // Filtrera bort skräpprodukter (barnbiljetter, parkering, turer, medlemskap)
+      const lowerName = productName.toLowerCase();
+      if (
+        lowerName.includes('child') ||
+        lowerName.includes('junior') ||
+        lowerName.includes('parking') ||
+        lowerName.includes('tour') ||
+        lowerName.includes('membership') ||
+        lowerName.includes('hospitality only')
+      ) {
+        continue;
+      }
 
-      // Filter: Exkludera barn, parkering, turer och medlemskap (VIP BEHÅLLS!)
-      const isNonStandardTicket = /\b(child|junior|u16|youth|parking|car park|tour|stadium tour|museum|membership)\b/i.test(productName);
-      if (isNonStandardTicket) continue;
+      const searchP = parseFloat((cols[idxSearchPrice] || '').replace(',', '.'));
+      const displayP = parseFloat((cols[idxDisplayPrice] || '').replace(',', '.'));
+      const storeP = parseFloat((cols[idxStorePrice] || '').replace(',', '.'));
 
-      // Prioritera search_price i första hand för att få enskilt grundpris
-      const rawPriceStr = cols[idxSearchPrice] || cols[idxDisplayPrice] || cols[idxStorePrice] || "0";
-      if (!rawPriceStr) continue;
+      let price = 0;
+      if (!isNaN(searchP) && searchP > 0) price = searchP;
+      else if (!isNaN(displayP) && displayP > 0) price = displayP;
+      else if (!isNaN(storeP) && storeP > 0) price = storeP;
 
-      const cleanPriceStr = rawPriceStr.replace(/\s/g, '').replace(',', '.');
-      let price = parseFloat(cleanPriceStr);
+      if (!productName || price <= 0) continue;
 
-      if (isNaN(price) || price <= 0) continue;
+      // Om valuta saknas i feeden, sätt standard baserat på vanliga normer (eller GBP för engelsk fotboll)
+      if (!currency || !RATES[currency]) {
+        currency = 'GBP'; 
+      }
 
-      let rate = 10.35; // USD
-      if (currency === 'EUR') rate = 11.35;
-      else if (currency === 'GBP') rate = 13.50;
-      else if (currency === 'SEK') rate = 1.0;
-
+      const rate = RATES[currency] || RATES.GBP;
       const priceSEK = Math.round(price * rate);
 
       rows.push({
@@ -117,58 +133,94 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
         merchantId,
         productName,
         priceSEK,
+        rawPrice: price,
+        currency,
         url: deepLink,
       });
     }
 
-    cachedAwinRows = rows;
-    lastFetchTime = now;
     return rows;
   } catch (error) {
-    return cachedAwinRows || [];
+    return [];
   }
+}
+
+export async function getAwinData(): Promise<AwinTicketRow[]> {
+  const now = Date.now();
+  if (cachedAwinRows && now - lastFetchTime < CACHE_DURATION_MS) {
+    return cachedAwinRows;
+  }
+
+  const results = await Promise.all(FEED_URLS.map(url => fetchSingleFeed(url)));
+  const allRows = results.flat();
+
+  if (allRows.length > 0) {
+    cachedAwinRows = allRows;
+    lastFetchTime = now;
+  }
+
+  return cachedAwinRows || [];
 }
 
 export async function fetchAwinOffers() {
   return getAwinData();
 }
 
-// Smartare synonym- och matchningsfunktion
 const getTeamKeywords = (teamName: string): string[] => {
-  const clean = teamName
+  if (!teamName) return [];
+
+  const normalized = teamName
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  const cleaned = normalized
+    .replace(/\b(fc|ac|cf|afc|sc|sv|fk|vfb|vfl|rb|cd|ud|rcd|sporting|club|de|d'|del|tickets|ticket)\b/g, " ")
     .replace(/[^a-z0-9 ]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
-  const keywords = [clean];
-
-  if (clean.includes("manchester city") || clean.includes("man city")) {
-    keywords.push("man city", "manchester city");
-  } else if (clean.includes("manchester united") || clean.includes("man utd")) {
-    keywords.push("man utd", "manchester united");
-  } else if (clean.includes("tottenham") || clean.includes("spurs")) {
-    keywords.push("tottenham", "spurs");
-  } else if (clean.includes("inter")) {
-    keywords.push("inter", "internazionale");
-  } else if (clean.includes("bayern")) {
-    keywords.push("bayern");
-  } else if (clean.includes("real betis") || clean.includes("betis")) {
-    keywords.push("betis", "real betis");
-  } else if (clean.includes("getafe")) {
-    keywords.push("getafe");
+  const keywords: string[] = [];
+  if (cleaned.length > 0) {
+    keywords.push(cleaned);
   }
 
-  return Array.from(new Set(keywords));
+  // Vanliga synonymer och smeknamn som kan skilja sig mellan partners
+  if (normalized.includes("manchester city") || normalized.includes("man city")) {
+    keywords.push("man city", "manchester city");
+  } else if (normalized.includes("manchester united") || normalized.includes("man utd")) {
+    keywords.push("man utd", "manchester united");
+  } else if (normalized.includes("tottenham") || normalized.includes("spurs")) {
+    keywords.push("tottenham", "spurs");
+  } else if (normalized.includes("barcelona") || normalized.includes("barca")) {
+    keywords.push("barcelona", "barca");
+  } else if (normalized.includes("atletico madrid") || normalized.includes("atl. madrid")) {
+    keywords.push("atletico", "atletico madrid");
+  } else if (normalized.includes("real madrid")) {
+    keywords.push("real madrid");
+  } else if (normalized.includes("paris saint germain") || normalized.includes("psg")) {
+    keywords.push("psg", "paris", "paris sg");
+  } else if (normalized.includes("inter") || normalized.includes("internazionale")) {
+    keywords.push("inter", "internazionale");
+  } else if (normalized.includes("milan") && !normalized.includes("inter")) {
+    keywords.push("ac milan", "milan");
+  } else if (normalized.includes("bayern")) {
+    keywords.push("bayern", "bayern munich", "bayern munchen");
+  } else if (normalized.includes("dortmund") || normalized.includes("bvb")) {
+    keywords.push("dortmund", "bvb");
+  } else if (normalized.includes("juventus") || normalized.includes("juve")) {
+    keywords.push("juventus", "juve");
+  } else if (normalized.includes("betis")) {
+    keywords.push("betis", "real betis");
+  }
+
+  return Array.from(new Set(keywords.filter((kw) => kw.length > 1)));
 };
 
 export function findAwinTicketsForMatchSync(
   rows: AwinTicketRow[],
   homeTeam: string,
-  awayTeam: string,
-  matchDate?: string
+  awayTeam: string
 ): AwinTicketRow[] {
   if (!rows || rows.length === 0) return [];
 
@@ -184,15 +236,30 @@ export function findAwinTicketsForMatchSync(
   const homeKeywords = getTeamKeywords(homeTeam);
   const awayKeywords = getTeamKeywords(awayTeam);
 
+  if (homeKeywords.length === 0 || awayKeywords.length === 0) return [];
+
   return rows.filter((row) => {
     const title = cleanTitle(row.productName);
 
-    // Kräver att minst ett nyckelord för hemmalaget OCH bortalaget finns i titeln
-    const matchesHome = homeKeywords.some((kw) => title.includes(kw));
-    const matchesAway = awayKeywords.some((kw) => title.includes(kw));
+    let homePos = -1;
+    for (const kw of homeKeywords) {
+      const pos = title.indexOf(kw);
+      if (pos !== -1) {
+        homePos = pos;
+        break;
+      }
+    }
 
-    if (!matchesHome || !matchesAway) return false;
+    let awayPos = -1;
+    for (const kw of awayKeywords) {
+      const pos = title.indexOf(kw);
+      if (pos !== -1) {
+        awayPos = pos;
+        break;
+      }
+    }
 
-    return true;
+    // Hemmalaget måste komma före bortalaget i titeln för att undvika felskuggningar
+    return homePos !== -1 && awayPos !== -1 && homePos < awayPos;
   });
 }
