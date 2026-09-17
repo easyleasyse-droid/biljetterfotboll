@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
-import { fetchTicomboParsedRows, findTicomboTicketInRows } from "@/lib/ticomboFeed";
+import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
 import { fetchAwinOffers, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
@@ -33,6 +33,9 @@ const getSearchUrl = (
     "Ticombo": `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent('https://www.ticombo.com/en/sports-tickets/football')}`,
     "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(cleanHome)}`)}`,
     "Sports Events 365": `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`,
+    "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${combinedQuery}`)}`,
+    "Football Ticket Net": `https://www.footballticketnet.com/search?q=${combinedQuery}`,
+    "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=12028&awinaffid=3043299&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${combinedQuery}`)}`
   };
 
   return domainMap[merchantName] || `https://www.google.com/search?q=${combinedQuery}`;
@@ -46,7 +49,22 @@ const getChampionsTravelUrl = (homeTeam: string): string => {
 const getCachedMatchesData = unstable_cache(
   async () => {
     const today = new Date().toISOString().split("T")[0];
-    const upcomingMatches = UPCOMING_MATCHES.filter((m) => m.date >= today);
+    
+    // Server-side filtrering för att rensa bort utgångna datum och oönskade holländska matcher/ligor
+    const upcomingMatches = UPCOMING_MATCHES.filter((m) => {
+      if (m.date < today) return false;
+      
+      const leagueStr = String((m as any).league || "").toLowerCase();
+      const homeStr = String(m.homeKey || "").toLowerCase();
+      const awayStr = String(m.awayKey || "").toLowerCase();
+      
+      const dutchKeywords = ["eredivisie", "ajax", "psv", "feyenoord", "az alkmaar", "utrecht", "twente", "heerenveen", "holland", "nederlands"];
+      const isDutch = dutchKeywords.some(keyword => 
+        leagueStr.includes(keyword) || homeStr.includes(keyword) || awayStr.includes(keyword)
+      );
+
+      return !isDutch;
+    });
 
     const [p1Rows, ticomboRows, awinRows] = (await Promise.all([
       fetchP1FeedRows().catch(() => []),
@@ -67,9 +85,6 @@ const getCachedMatchesData = unstable_cache(
 
       const basePrice = 1100 + (index * 120) % 750;
 
-      // -------------------------------------------------------------
-      // LIVE FEEDS (Endast biljetter som faktiskt hittas läggs till)
-      // -------------------------------------------------------------
       const offers: any[] = [];
 
       // 1. P1 Travel Feed
@@ -133,7 +148,7 @@ const getCachedMatchesData = unstable_cache(
         });
       }
 
-      // 3. Awin Feed (Gigsberg, FootballTicketNet, TicketNetwork)
+      // 3. Awin Feed (Gigsberg, Football Ticket Net, TicketNetwork)
       const awinTickets = findAwinTicketsForMatchSync(awinRows, homeName, awayName);
 
       if (Array.isArray(awinTickets) && awinTickets.length > 0) {
@@ -158,7 +173,7 @@ const getCachedMatchesData = unstable_cache(
           });
         }
 
-        // FootballTicketNet
+        // Football Ticket Net
         const ftnMatch = awinTickets.find(
           (t) =>
             t.merchantName.toLowerCase().includes("football ticket") ||
@@ -205,9 +220,43 @@ const getCachedMatchesData = unstable_cache(
         }
       }
 
-      // -------------------------------------------------------------
-      // SÖK-FALLBACKS / ICKE FEED-PARTNERS (Visas som sökalternativ)
-      // -------------------------------------------------------------
+      // Om Gigsberg saknades i feeden för denna match, lägg till sök-fallback
+      if (!offers.some(o => o.merchantName === "Gigsberg")) {
+        offers.push({
+          id: `o-${matchId}-gigsberg`,
+          merchantName: "Gigsberg",
+          rating: 4.7,
+          reviewsCount: 890,
+          section: "Standard / Kortsida",
+          category: "Biljetter",
+          priceSEK: Math.round(basePrice * 1.05),
+          availableQuantity: 5,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: getSearchUrl("Gigsberg", homeName, awayName),
+          type: "ticket"
+        });
+      }
+
+      // Om Football Ticket Net saknades i feeden, lägg till sök-fallback
+      if (!offers.some(o => o.merchantName === "Football Ticket Net")) {
+        offers.push({
+          id: `o-${matchId}-ftn`,
+          merchantName: "Football Ticket Net",
+          rating: 4.6,
+          reviewsCount: 380,
+          section: "Sittplats / Sektion valfri",
+          category: "Standard / VIP",
+          priceSEK: Math.round(basePrice * 0.95),
+          availableQuantity: 6,
+          deliveryType: "E-biljett / Mobil",
+          isVerified: true,
+          url: getSearchUrl("Football Ticket Net", homeName, awayName),
+          type: "ticket"
+        });
+      }
+
+      // 4. Övriga partners och sök-fallbacks
       const lftTargetUrl = "https://www.livefootballtickets.com/";
       const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
 
@@ -318,7 +367,7 @@ const getCachedMatchesData = unstable_cache(
 
     return matches;
   },
-  ['global-matches-cache-v10'],
+  ['global-matches-cache-v11'],
   { revalidate: 3600 }
 );
 

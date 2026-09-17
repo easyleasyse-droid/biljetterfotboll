@@ -12,9 +12,8 @@ export interface AwinTicketRow {
 
 let cachedAwinRows: AwinTicketRow[] | null = null;
 let lastFetchTime = 0;
-const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6 timmar
+const CACHE_DURATION_MS = 12 * 60 * 60 * 1000; // 12 timmar
 
-// Hjälpfunktion som hanterar kommatecken inuti citattecken i CSV-filer
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
   let startValue = 0;
@@ -55,7 +54,6 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
   try {
     const res = await fetch(feedUrl, { cache: 'no-store' });
     if (!res.ok) {
-      console.error("Kunde inte hämta Awin-feed:", res.statusText);
       return cachedAwinRows || [];
     }
 
@@ -69,53 +67,52 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
     const headers = parseCSVLine(lines[0]);
     const idxDeepLink = headers.indexOf('aw_deep_link');
     const idxProductName = headers.indexOf('product_name');
-    const idxPrice = headers.indexOf('search_price');
+    const idxSearchPrice = headers.indexOf('search_price');
+    const idxDisplayPrice = headers.indexOf('display_price');
+    const idxStorePrice = headers.indexOf('store_price');
     const idxMerchant = headers.indexOf('merchant_name');
     const idxCurrency = headers.indexOf('currency');
 
     const rows: AwinTicketRow[] = [];
-    const EUR_TO_SEK = 11.28;
-    const GBP_TO_SEK = 13.50;
 
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
 
       const cols = parseCSVLine(line);
-      if (cols.length <= Math.max(idxDeepLink, idxProductName, idxPrice, idxMerchant)) continue;
 
       const productName = cols[idxProductName];
-      const priceStr = cols[idxPrice];
       const merchantName = cols[idxMerchant] || 'Awin Partner';
       const deepLink = cols[idxDeepLink] || '#';
-      const currency = (cols[idxCurrency] || 'EUR').toUpperCase();
+      const currency = (cols[idxCurrency] || 'USD').toUpperCase();
 
-      if (!productName || !priceStr) continue;
+      const rawPriceStr = cols[idxDisplayPrice] || cols[idxSearchPrice] || cols[idxStorePrice] || "0";
+      if (!productName || !rawPriceStr) continue;
 
-      let price = parseFloat(priceStr.replace(',', '.'));
-      if (isNaN(price) || price <= 0) continue;
+      const cleanPriceStr = rawPriceStr.replace(/\s/g, '').replace(',', '.');
+      let price = parseFloat(cleanPriceStr);
 
-      // Valutaomräkning
-      if (currency === 'EUR') {
-        price *= EUR_TO_SEK;
-      } else if (currency === 'GBP') {
-        price *= GBP_TO_SEK;
-      }
+      if (isNaN(price) || price <= 10) continue;
+
+      let rate = 9.83; // USD
+      if (currency === 'EUR') rate = 11.28;
+      else if (currency === 'GBP') rate = 13.15;
+      else if (currency === 'SEK') rate = 1.0;
+
+      const priceSEK = Math.round(price * rate);
 
       rows.push({
         merchantName,
         productName,
-        priceSEK: Math.round(price),
+        priceSEK,
         url: deepLink,
       });
     }
 
     cachedAwinRows = rows;
     lastFetchTime = now;
-    console.log(`Laddade in ${rows.length} giltiga produkter från Awin-feeden.`);
     return rows;
   } catch (error) {
-    console.error("Fel vid parsning av Awin-feed:", error);
     return cachedAwinRows || [];
   }
 }
@@ -136,15 +133,25 @@ export function findAwinTicketsForMatchSync(
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\bfc\b|\bac\b|\bafc\b|\bsc\b|\bsv\b/g, "")
-      .replace(/[^a-z0-9]/g, "");
+      .replace(/[^a-z0-9 ]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
 
-  const hTeam = clean(homeTeam);
-  const aTeam = clean(awayTeam);
+  const stripCommonWords = (s: string) =>
+    s.replace(/\bfc\b|\bac\b|\bfutboll\b|\bfootball\b|\bvs\b|\bv\b/g, "").trim();
+
+  const hClean = stripCommonWords(clean(homeTeam));
+  const aClean = stripCommonWords(clean(awayTeam));
+
+  const hWords = hClean.split(" ").filter(w => w.length > 2);
+  const aWords = aClean.split(" ").filter(w => w.length > 2);
 
   return rows.filter((row) => {
     const title = clean(row.productName);
-    // Kräver att både hemmalag och bortalag finns med i produktnamnet
-    return title.includes(hTeam) && title.includes(aTeam);
+
+    const matchesHome = hWords.length > 0 && hWords.every(word => title.includes(word));
+    const matchesAway = aWords.length > 0 && aWords.every(word => title.includes(word));
+
+    return matchesHome && matchesAway;
   });
 }
