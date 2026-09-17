@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { UPCOMING_MATCHES } from "@/data/upcomingMatches";
-import { TEAMS_SEO_DATA } from "@/data/teams";
+import { UPCOMING_MATCHES } from "@/app/data/UPCOMING_MATCHES";
+import { TEAMS_SEO_DATA } from "@/app/data/teams";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from "@/lib/ticomboFeed";
 import { getAwinData, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
@@ -173,7 +173,7 @@ async function getCachedMatchesData() {
           availableQuantity: 4,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: ticket.url, // Riktig direktlänk från Awin-feeden
+          url: ticket.url,
           type: "ticket"
         });
       }
