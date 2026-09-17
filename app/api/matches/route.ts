@@ -149,7 +149,9 @@ const getCachedMatchesData = unstable_cache(
       }
 
       // 3. Awin Feed (Strikt filtrerat per merchant)
-      const awinTickets = findAwinTicketsForMatchSync(awinRows, homeName, awayName);
+      const awinTickets = findAwinTicketsForMatchSync(awinRows, homeName, awayName, {
+        targetDate: new Date(m.date), // Byt ut m.date till den datavariabel du använder för matchen i din loop
+      });
 
       if (Array.isArray(awinTickets) && awinTickets.length > 0) {
         // Gigsberg - Endast biljetter som TILLHÖR Gigsberg

@@ -7,6 +7,7 @@ export interface AwinTicketRow {
   merchantName: string;
   merchantId: string;
   productName: string;
+  description: string;
   priceSEK: number;
   rawPrice: number;
   currency: string;
@@ -209,6 +210,7 @@ async function fetchSingleFeed(feed: FeedConfig, ratesPerSEK: Record<string, num
     const idxDeepLink = headers.indexOf('aw_deep_link');
     const idxMerchantDeep = headers.indexOf('merchant_deep_link');
     const idxProductName = headers.indexOf('product_name');
+    const idxDescription = headers.indexOf('description');
     const idxSearchPrice = headers.indexOf('search_price');
     const idxDisplayPrice = headers.indexOf('display_price');
     const idxStorePrice = headers.indexOf('store_price');
@@ -233,6 +235,7 @@ async function fetchSingleFeed(feed: FeedConfig, ratesPerSEK: Record<string, num
       const merchantName = cols[idxMerchant] || feed.label;
       const merchantId = cols[idxMerchantId] || '';
       const deepLink = cols[idxDeepLink] || cols[idxMerchantDeep] || '#';
+      const description = cols[idxDescription] || '';
 
       // Prisprioritet: search_price (aktuellt/kampanjpris) > display_price
       // (visningspris, kan innehålla frakt) > store_price (ofta ORDINARIE
@@ -263,6 +266,7 @@ async function fetchSingleFeed(feed: FeedConfig, ratesPerSEK: Record<string, num
         merchantName,
         merchantId,
         productName,
+        description,
         priceSEK,
         rawPrice: price,
         currency,
@@ -375,6 +379,63 @@ interface KeywordMatch {
   end: number;
 }
 
+// ---------------------------------------------------------------------------
+// Datumextrahering
+// ---------------------------------------------------------------------------
+// Awins standardkolumner innehåller inget separat "event_date"-fält, men
+// säljare skriver ofta in matchdatumet i product_name och/eller description
+// (t.ex. "Liverpool vs Manchester City - Sat Oct 10, 2026" eller
+// "10 October 2026"). Vi försöker tolka detta i fritext så att vi kan
+// filtrera bort inaktuella/gamla listningar (t.ex. en kvarliggande post för
+// samma lagpar från en tidigare säsongsmatch).
+const MONTHS: Record<string, number> = {
+  jan: 0, january: 0,
+  feb: 1, february: 1,
+  mar: 2, march: 2,
+  apr: 3, april: 3,
+  may: 4,
+  jun: 5, june: 5,
+  jul: 6, july: 6,
+  aug: 7, august: 7,
+  sep: 8, sept: 8, september: 8,
+  oct: 9, october: 9,
+  nov: 10, november: 10,
+  dec: 11, december: 11,
+};
+
+function extractDateFromText(text: string): Date | null {
+  if (!text) return null;
+
+  // ISO-format: 2026-10-10
+  const iso = text.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
+  if (iso) {
+    const date = new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+    if (!isNaN(date.getTime())) return date;
+  }
+
+  // "10 October 2026" / "10th Oct 2026"
+  const dayMonthYear = text.match(/\b(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3,9})\.?\s+(\d{4})\b/);
+  if (dayMonthYear) {
+    const monthKey = dayMonthYear[2].toLowerCase();
+    if (monthKey in MONTHS) {
+      const date = new Date(Number(dayMonthYear[3]), MONTHS[monthKey], Number(dayMonthYear[1]));
+      if (!isNaN(date.getTime())) return date;
+    }
+  }
+
+  // "October 10, 2026" / "Oct 10 2026"
+  const monthDayYear = text.match(/\b([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})\b/);
+  if (monthDayYear) {
+    const monthKey = monthDayYear[1].toLowerCase();
+    if (monthKey in MONTHS) {
+      const date = new Date(Number(monthDayYear[3]), MONTHS[monthKey], Number(monthDayYear[2]));
+      if (!isNaN(date.getTime())) return date;
+    }
+  }
+
+  return null;
+}
+
 // Hittar det FÖRSTA (längsta, mest specifika) nyckelordet som förekommer i
 // titeln som ett HELT ORD (ord-gräns), inte som en delsträng inuti ett annat
 // ord. Detta stoppar t.ex. att "inter" råkar matcha inuti "international".
@@ -391,10 +452,22 @@ function findKeywordMatch(title: string, keywords: string[]): KeywordMatch | nul
   return null;
 }
 
+export interface FindMatchOptions {
+  // Skicka in den KÄNDA kickoff-tiden för matchen (från er egen fixtur-data).
+  // Detta är mycket pålitligare än att förlita sig på att kunna tolka datum
+  // ur säljarens fritext, och gör att gamla/felaktiga listningar för samma
+  // lagpar (t.ex. en kvarliggande post från en tidigare säsongsmöte) filtreras bort.
+  targetDate?: Date;
+  // Hur många dagars avvikelse från targetDate som tolereras. Default 3 dagar
+  // (täcker in tidszonsskillnader och att vissa säljare anger fel klockslag).
+  dateToleranceDays?: number;
+}
+
 export function findAwinTicketsForMatchSync(
   rows: AwinTicketRow[],
   homeTeam: string,
-  awayTeam: string
+  awayTeam: string,
+  options?: FindMatchOptions
 ): AwinTicketRow[] {
   if (!rows || rows.length === 0) return [];
 
@@ -403,7 +476,7 @@ export function findAwinTicketsForMatchSync(
 
   if (homeKeywords.length === 0 || awayKeywords.length === 0) return [];
 
-  return rows.filter((row) => {
+  const candidates = rows.filter((row) => {
     const title = normalizeTeamString(row.productName);
 
     const homeMatch = findKeywordMatch(title, homeKeywords);
@@ -417,4 +490,31 @@ export function findAwinTicketsForMatchSync(
     // Awins struktur är nästan alltid "Hemmalag vs Bortalag" - kräv den ordningen.
     return homeMatch.index < awayMatch.index;
   });
+
+  const targetDate = options?.targetDate;
+  if (!targetDate) return candidates;
+
+  const toleranceMs = (options?.dateToleranceDays ?? 3) * 24 * 60 * 60 * 1000;
+
+  const withParsedDate = candidates.map((row) => ({
+    row,
+    date: extractDateFromText(`${row.productName} ${row.description}`),
+  }));
+
+  return withParsedDate
+    // Behåll rader vars datum ligger inom toleransen ELLER där vi inte
+    // kunde tolka ett datum alls (hellre visa en osäker rad än att tappa
+    // en giltig biljett bara för att vår regex missade formatet).
+    .filter(({ date }) => !date || Math.abs(date.getTime() - targetDate.getTime()) <= toleranceMs)
+    // Sortera så att rader med känt datum närmast targetDate hamnar först,
+    // och rader utan tolkningsbart datum hamnar sist.
+    .sort((a, b) => {
+      if (a.date && b.date) {
+        return Math.abs(a.date.getTime() - targetDate.getTime()) - Math.abs(b.date.getTime() - targetDate.getTime());
+      }
+      if (a.date && !b.date) return -1;
+      if (!a.date && b.date) return 1;
+      return 0;
+    })
+    .map(({ row }) => row);
 }
