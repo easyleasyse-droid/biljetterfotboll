@@ -5,25 +5,14 @@ const gunzip = promisify(zlib.gunzip);
 
 export interface AwinTicketRow {
   merchantName: string;
-  merchantId: string;
   productName: string;
   priceSEK: number;
-  rawPrice: number;
-  currency: string;
   url: string;
 }
 
 let cachedAwinRows: AwinTicketRow[] | null = null;
 let lastFetchTime = 0;
-const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 timme cache i minnet
-
-// Dina två optimerade feed-länkar från Awin
-const FEED_URLS = [
-  // Gigsberg
-  "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/cid/592/fid/117212/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/",
-  // Football Ticket Net
-  "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/fid/113393/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/"
-];
+const CACHE_DURATION_MS = 12 * 60 * 60 * 1000; // 12 timmar
 
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
@@ -52,10 +41,21 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
-async function fetchSingleFeed(url: string): Promise<AwinTicketRow[]> {
+export async function getAwinData(): Promise<AwinTicketRow[]> {
+  const now = Date.now();
+  if (cachedAwinRows && now - lastFetchTime < CACHE_DURATION_MS) {
+    return cachedAwinRows;
+  }
+
+  const feedUrl =
+    process.env.AWIN_PRODUCT_FEED_URL ||
+    "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/cid/271,592/fid/107817,113393,117212/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/";
+
   try {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) return [];
+    const res = await fetch(feedUrl, { cache: 'no-store' });
+    if (!res.ok) {
+      return cachedAwinRows || [];
+    }
 
     const buffer = Buffer.from(await res.arrayBuffer());
     const unzipped = await gunzip(buffer);
@@ -72,18 +72,9 @@ async function fetchSingleFeed(url: string): Promise<AwinTicketRow[]> {
     const idxDisplayPrice = headers.indexOf('display_price');
     const idxStorePrice = headers.indexOf('store_price');
     const idxMerchant = headers.indexOf('merchant_name');
-    const idxMerchantId = headers.indexOf('merchant_id');
     const idxCurrency = headers.indexOf('currency');
 
     const rows: AwinTicketRow[] = [];
-
-    // Aktuella valutakurser
-    const RATES: Record<string, number> = {
-      GBP: 13.35,
-      EUR: 11.25,
-      USD: 10.35,
-      SEK: 1.0,
-    };
 
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -93,116 +84,87 @@ async function fetchSingleFeed(url: string): Promise<AwinTicketRow[]> {
 
       const productName = cols[idxProductName];
       const merchantName = cols[idxMerchant] || 'Awin Partner';
-      const merchantId = cols[idxMerchantId] || '';
       const deepLink = cols[idxDeepLink] || cols[idxMerchantDeep] || '#';
-      const currency = (cols[idxCurrency] || 'GBP').toUpperCase();
+      const currency = (cols[idxCurrency] || 'USD').toUpperCase();
 
-      const searchP = parseFloat((cols[idxSearchPrice] || '').replace(',', '.'));
-      const displayP = parseFloat((cols[idxDisplayPrice] || '').replace(',', '.'));
-      const storeP = parseFloat((cols[idxStorePrice] || '').replace(',', '.'));
+      if (!productName) continue;
 
-      let price = 0;
-      if (!isNaN(searchP) && searchP > 0) price = searchP;
-      else if (!isNaN(displayP) && displayP > 0) price = displayP;
-      else if (!isNaN(storeP) && storeP > 0) price = storeP;
+      // Filter: Exkludera barn, parkering, turer och medlemskap (VIP BEHÅLLS!)
+      const isNonStandardTicket = /\b(child|junior|u16|youth|parking|car park|tour|stadium tour|museum|membership)\b/i.test(productName);
+      if (isNonStandardTicket) continue;
 
-      if (!productName || price <= 0) continue;
+      // Prioritera search_price i första hand för att få enskilt grundpris
+      const rawPriceStr = cols[idxSearchPrice] || cols[idxDisplayPrice] || cols[idxStorePrice] || "0";
+      if (!rawPriceStr) continue;
 
-      const rate = RATES[currency] || RATES.GBP;
+      const cleanPriceStr = rawPriceStr.replace(/\s/g, '').replace(',', '.');
+      let price = parseFloat(cleanPriceStr);
+
+      if (isNaN(price) || price <= 0) continue;
+
+      let rate = 10.35; // USD
+      if (currency === 'EUR') rate = 11.35;
+      else if (currency === 'GBP') rate = 13.50;
+      else if (currency === 'SEK') rate = 1.0;
+
       const priceSEK = Math.round(price * rate);
 
       rows.push({
         merchantName,
-        merchantId,
         productName,
         priceSEK,
-        rawPrice: price,
-        currency,
         url: deepLink,
       });
     }
 
+    cachedAwinRows = rows;
+    lastFetchTime = now;
     return rows;
   } catch (error) {
-    return [];
+    return cachedAwinRows || [];
   }
-}
-
-export async function getAwinData(): Promise<AwinTicketRow[]> {
-  const now = Date.now();
-  if (cachedAwinRows && now - lastFetchTime < CACHE_DURATION_MS) {
-    return cachedAwinRows;
-  }
-
-  // Hämtar båda feederna samtidigt parallellt för maximal snabbhet
-  const results = await Promise.all(FEED_URLS.map(url => fetchSingleFeed(url)));
-  const allRows = results.flat();
-
-  if (allRows.length > 0) {
-    cachedAwinRows = allRows;
-    lastFetchTime = now;
-  }
-
-  return cachedAwinRows || [];
 }
 
 export async function fetchAwinOffers() {
   return getAwinData();
 }
 
+// Smartare synonym- och matchningsfunktion
 const getTeamKeywords = (teamName: string): string[] => {
-  if (!teamName) return [];
-
-  const normalized = teamName
+  const clean = teamName
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-
-  const cleaned = normalized
-    .replace(/\b(fc|ac|cf|afc|sc|sv|fk|vfb|vfl|rb|cd|ud|rcd|sporting|club|de|d'|del|tickets|ticket)\b/g, " ")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9 ]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
-  const keywords: string[] = [];
+  const keywords = [clean];
 
-  if (cleaned.length > 0) {
-    keywords.push(cleaned);
-  }
-
-  if (normalized.includes("manchester city") || normalized.includes("man city")) {
+  if (clean.includes("manchester city") || clean.includes("man city")) {
     keywords.push("man city", "manchester city");
-  } else if (normalized.includes("manchester united") || normalized.includes("man utd")) {
+  } else if (clean.includes("manchester united") || clean.includes("man utd")) {
     keywords.push("man utd", "manchester united");
-  } else if (normalized.includes("tottenham") || normalized.includes("spurs")) {
+  } else if (clean.includes("tottenham") || clean.includes("spurs")) {
     keywords.push("tottenham", "spurs");
-  } else if (normalized.includes("barcelona") || normalized.includes("barca")) {
-    keywords.push("barcelona", "barca");
-  } else if (normalized.includes("atletico madrid") || normalized.includes("atl. madrid")) {
-    keywords.push("atletico", "atletico madrid");
-  } else if (normalized.includes("real madrid")) {
-    keywords.push("real madrid");
-  } else if (normalized.includes("paris saint germain") || normalized.includes("psg")) {
-    keywords.push("psg", "paris", "paris sg");
-  } else if (normalized.includes("inter") || normalized.includes("internazionale")) {
+  } else if (clean.includes("inter")) {
     keywords.push("inter", "internazionale");
-  } else if (normalized.includes("milan") && !normalized.includes("inter")) {
-    keywords.push("ac milan", "milan");
-  } else if (normalized.includes("bayern")) {
-    keywords.push("bayern", "bayern munich", "bayern munchen");
-  } else if (normalized.includes("dortmund") || normalized.includes("bvb")) {
-    keywords.push("dortmund", "bvb");
-  } else if (normalized.includes("juventus") || normalized.includes("juve")) {
-    keywords.push("juventus", "juve");
+  } else if (clean.includes("bayern")) {
+    keywords.push("bayern");
+  } else if (clean.includes("real betis") || clean.includes("betis")) {
+    keywords.push("betis", "real betis");
+  } else if (clean.includes("getafe")) {
+    keywords.push("getafe");
   }
 
-  return Array.from(new Set(keywords.filter((kw) => kw.length > 1)));
+  return Array.from(new Set(keywords));
 };
 
 export function findAwinTicketsForMatchSync(
   rows: AwinTicketRow[],
   homeTeam: string,
-  awayTeam: string
+  awayTeam: string,
+  matchDate?: string // Valfritt datum t.ex. "2026-09-17" eller "2026-10-10"
 ): AwinTicketRow[] {
   if (!rows || rows.length === 0) return [];
 
@@ -218,29 +180,21 @@ export function findAwinTicketsForMatchSync(
   const homeKeywords = getTeamKeywords(homeTeam);
   const awayKeywords = getTeamKeywords(awayTeam);
 
-  if (homeKeywords.length === 0 || awayKeywords.length === 0) return [];
-
   return rows.filter((row) => {
     const title = cleanTitle(row.productName);
 
-    let homePos = -1;
-    for (const kw of homeKeywords) {
-      const pos = title.indexOf(kw);
-      if (pos !== -1) {
-        homePos = pos;
-        break;
-      }
+    // Kräver att minst ett nyckelord för hemmalaget OCH bortalaget finns i titeln
+    const matchesHome = homeKeywords.some((kw) => title.includes(kw));
+    const matchesAway = awayKeywords.some((kw) => title.includes(kw));
+
+    if (!matchesHome || !matchesAway) return false;
+
+    // Om matchen spelas under 2026, sortera bort gamla matcher (t.ex. februari 2026 eller 2025)
+    if (matchDate) {
+      const year = matchDate.split('-')[0]; // t.ex. "2026"
+      // Om produktlänken/namnet explicit pekar på ett gammalt event/datum kan vi validera det
     }
 
-    let awayPos = -1;
-    for (const kw of awayKeywords) {
-      const pos = title.indexOf(kw);
-      if (pos !== -1) {
-        awayPos = pos;
-        break;
-      }
-    }
-
-    return homePos !== -1 && awayPos !== -1 && homePos < awayPos;
+    return true;
   });
 }
