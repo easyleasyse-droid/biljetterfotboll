@@ -17,6 +17,14 @@ let cachedAwinRows: AwinTicketRow[] | null = null;
 let lastFetchTime = 0;
 const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 timme cache i minnet
 
+// Dina två optimerade feed-länkar från Awin
+const FEED_URLS = [
+  // Gigsberg
+  "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/cid/592/fid/117212/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/",
+  // Football Ticket Net
+  "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/fid/113393/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/"
+];
+
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
   let startValue = 0;
@@ -44,21 +52,10 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
-export async function getAwinData(): Promise<AwinTicketRow[]> {
-  const now = Date.now();
-  if (cachedAwinRows && now - lastFetchTime < CACHE_DURATION_MS) {
-    return cachedAwinRows;
-  }
-
-  const feedUrl =
-    process.env.AWIN_PRODUCT_FEED_URL ||
-    "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/cid/271,592/fid/107817,113393,117212/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/";
-
+async function fetchSingleFeed(url: string): Promise<AwinTicketRow[]> {
   try {
-    const res = await fetch(feedUrl, { cache: 'no-store' });
-    if (!res.ok) {
-      return cachedAwinRows || [];
-    }
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return [];
 
     const buffer = Buffer.from(await res.arrayBuffer());
     const unzipped = await gunzip(buffer);
@@ -74,14 +71,13 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
     const idxSearchPrice = headers.indexOf('search_price');
     const idxDisplayPrice = headers.indexOf('display_price');
     const idxStorePrice = headers.indexOf('store_price');
-    const idxPrice = headers.indexOf('price');
     const idxMerchant = headers.indexOf('merchant_name');
     const idxMerchantId = headers.indexOf('merchant_id');
     const idxCurrency = headers.indexOf('currency');
 
     const rows: AwinTicketRow[] = [];
 
-    // Uppdaterade valutakurser till SEK
+    // Aktuella valutakurser
     const RATES: Record<string, number> = {
       GBP: 13.35,
       EUR: 11.25,
@@ -104,13 +100,11 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
       const searchP = parseFloat((cols[idxSearchPrice] || '').replace(',', '.'));
       const displayP = parseFloat((cols[idxDisplayPrice] || '').replace(',', '.'));
       const storeP = parseFloat((cols[idxStorePrice] || '').replace(',', '.'));
-      const stdP = idxPrice !== -1 ? parseFloat((cols[idxPrice] || '').replace(',', '.')) : 0;
 
       let price = 0;
       if (!isNaN(searchP) && searchP > 0) price = searchP;
       else if (!isNaN(displayP) && displayP > 0) price = displayP;
       else if (!isNaN(storeP) && storeP > 0) price = storeP;
-      else if (!isNaN(stdP) && stdP > 0) price = stdP;
 
       if (!productName || price <= 0) continue;
 
@@ -128,12 +122,28 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
       });
     }
 
-    cachedAwinRows = rows;
-    lastFetchTime = now;
     return rows;
   } catch (error) {
-    return cachedAwinRows || [];
+    return [];
   }
+}
+
+export async function getAwinData(): Promise<AwinTicketRow[]> {
+  const now = Date.now();
+  if (cachedAwinRows && now - lastFetchTime < CACHE_DURATION_MS) {
+    return cachedAwinRows;
+  }
+
+  // Hämtar båda feederna samtidigt parallellt för maximal snabbhet
+  const results = await Promise.all(FEED_URLS.map(url => fetchSingleFeed(url)));
+  const allRows = results.flat();
+
+  if (allRows.length > 0) {
+    cachedAwinRows = allRows;
+    lastFetchTime = now;
+  }
+
+  return cachedAwinRows || [];
 }
 
 export async function fetchAwinOffers() {
@@ -149,7 +159,7 @@ const getTeamKeywords = (teamName: string): string[] => {
     .replace(/[\u0300-\u036f]/g, "");
 
   const cleaned = normalized
-    .replace(/\b(fc|ac|cf|afc|sc|sv|fk|vfb|vfl|rb|cd|ud|rcd|sporting|club|de|d'|del)\b/g, " ")
+    .replace(/\b(fc|ac|cf|afc|sc|sv|fk|vfb|vfl|rb|cd|ud|rcd|sporting|club|de|d'|del|tickets|ticket)\b/g, " ")
     .replace(/[^a-z0-9 ]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -172,10 +182,6 @@ const getTeamKeywords = (teamName: string): string[] => {
     keywords.push("atletico", "atletico madrid");
   } else if (normalized.includes("real madrid")) {
     keywords.push("real madrid");
-  } else if (normalized.includes("real betis") || normalized.includes("betis")) {
-    keywords.push("real betis", "betis");
-  } else if (normalized.includes("getafe")) {
-    keywords.push("getafe");
   } else if (normalized.includes("paris saint germain") || normalized.includes("psg")) {
     keywords.push("psg", "paris", "paris sg");
   } else if (normalized.includes("inter") || normalized.includes("internazionale")) {
@@ -235,7 +241,6 @@ export function findAwinTicketsForMatchSync(
       }
     }
 
-    // Kräver att BÅDA lagen finns OCH att hemmalaget står FÖRE bortalaget i produktnamnet
     return homePos !== -1 && awayPos !== -1 && homePos < awayPos;
   });
 }
