@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from "@/lib/ticomboFeed";
-import { getAwinData, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
+import { fetchAwinOffers, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
@@ -51,7 +51,7 @@ const getCachedMatchesData = unstable_cache(
     const [p1Rows, ticomboRows, awinRows] = (await Promise.all([
       fetchP1FeedRows().catch(() => []),
       fetchTicomboParsedRows().catch(() => []),
-      getAwinData().catch(() => []),
+      fetchAwinOffers().catch(() => []),
     ])) as [any[], any[], any[]];
 
     const EUR_TO_SEK = 11.28;

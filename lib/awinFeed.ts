@@ -57,7 +57,6 @@ export async function fetchAwinOffers(): Promise<any[]> {
     const lines = text.split("\n").filter(l => l.trim().length > 0);
     if (lines.length < 2) return [];
 
-    // Detektera om det är komma eller semikolon som separator
     const separator = lines[0].includes(";") ? ";" : ",";
     const headers = lines[0].split(separator).map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
     
@@ -82,19 +81,19 @@ export function findAwinTicketsForMatchSync(
   awinRows: any[],
   homeTeam: string,
   awayTeam: string
-): Array<{ merchantName: string; priceSEK: number; url: string }> {
+): Array<{ merchantName: string; merchantId: string; priceSEK: number; url: string }> {
   if (!Array.isArray(awinRows) || awinRows.length === 0) return [];
 
   const cleanHome = sanitizeTeamName(homeTeam);
   const cleanAway = sanitizeTeamName(awayTeam);
   if (!cleanHome || !cleanAway) return [];
 
-  const results: Array<{ merchantName: string; priceSEK: number; url: string }> = [];
+  const results: Array<{ merchantName: string; merchantId: string; priceSEK: number; url: string }> = [];
 
   for (const row of awinRows) {
-    // Sök igenom vanliga kolumnnamn oavsett små/stora bokstäver
     const productName = (row["product_name"] || row["title"] || row["productname"] || row["name"] || "").toLowerCase();
     const merchantName = row["merchant_name"] || row["merchantname"] || row["advertiser_name"] || row["merchant"] || "Awin Partner";
+    const merchantId = row["merchant_id"] || row["merchantid"] || row["advertiser_id"] || "";
     const rawPrice = row["search_price"] || row["price"] || row["aw_price"] || "0";
     const currency = (row["currency"] || row["aw_currency"] || "EUR").toUpperCase();
     const url = row["aw_deep_link"] || row["merchant_deep_link"] || row["url"] || row["deeplink"] || "";
@@ -110,7 +109,6 @@ export function findAwinTicketsForMatchSync(
     const hasAway = cleanProduct.includes(cleanAway);
 
     if (hasHome && hasAway) {
-      // Hantera pris med både punkt och komma (t.ex. "1,200.50" eller "1200,50")
       const cleanPriceStr = rawPrice.replace(/\s/g, "").replace(",", ".");
       const numericPrice = parseFloat(cleanPriceStr.replace(/[^0-9.]/g, ""));
       
@@ -121,6 +119,7 @@ export function findAwinTicketsForMatchSync(
 
       results.push({
         merchantName,
+        merchantId,
         priceSEK,
         url
       });
