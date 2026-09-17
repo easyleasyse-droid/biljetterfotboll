@@ -13,16 +13,35 @@ export interface AwinTicketRow {
   url: string;
 }
 
+interface FeedConfig {
+  label: string;
+  url: string;
+  // Om raden saknar/har en okänd valutakod används denna som sista utväg.
+  // Sätt detta till den valuta affiliaten faktiskt fakturerar i (inte en gissning på "GBP för allt").
+  defaultCurrency: string;
+}
+
+// Lägg till fler feeds här (t.ex. TicketNetwork) genom att bara lägga till ett objekt till.
+const FEED_CONFIGS: FeedConfig[] = [
+  {
+    label: 'Gigsberg',
+    defaultCurrency: 'EUR',
+    url: "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/cid/592/fid/117212/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/",
+  },
+  {
+    label: 'FootballTicketNet',
+    defaultCurrency: 'GBP',
+    url: "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/fid/113393/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/",
+  },
+];
+
 let cachedAwinRows: AwinTicketRow[] | null = null;
 let lastFetchTime = 0;
 const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 timmes cache
 
-const FEED_URLS = [
-  // Gigsberg
-  "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/cid/592/fid/117212/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/",
-  // Football Ticket Net
-  "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/fid/113393/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/"
-];
+// ---------------------------------------------------------------------------
+// CSV-parsning
+// ---------------------------------------------------------------------------
 
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
@@ -51,9 +70,132 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
-async function fetchSingleFeed(url: string): Promise<AwinTicketRow[]> {
+// ---------------------------------------------------------------------------
+// Prisparsning
+// ---------------------------------------------------------------------------
+// Awin-feeds levererar priser i blandade format: "129.99", "129,99",
+// "1,299.00" (US-tusentalsavgränsare) och "1.299,00" (EU-tusentalsavgränsare).
+// Ett naivt replace(',', '.') förstör US-formatet ("1,299.00" -> "1.299.00").
+// Denna funktion avgör vilken separator som är decimaltecknet genom att titta
+// på den SISTA förekommande separatorn: om den följs av 1-2 siffror är det
+// decimaltecknet, annars är den en tusentalsavgränsare.
+function parsePrice(raw: string | undefined | null): number {
+  if (!raw) return NaN;
+
+  // Rensa bort valutasymboler, mellanslag, NBSP etc. Behåll siffror, . , och -
+  let s = raw.replace(/[^\d.,-]/g, '').trim();
+  if (!s) return NaN;
+
+  const lastComma = s.lastIndexOf(',');
+  const lastDot = s.lastIndexOf('.');
+  const lastSepIndex = Math.max(lastComma, lastDot);
+
+  if (lastSepIndex === -1) {
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  const decimalDigits = s.length - lastSepIndex - 1;
+  const isDecimalSeparator = decimalDigits > 0 && decimalDigits <= 2;
+
+  let normalized: string;
+  if (isDecimalSeparator) {
+    const intPart = s.slice(0, lastSepIndex).replace(/[.,]/g, '');
+    const decPart = s.slice(lastSepIndex + 1);
+    normalized = `${intPart}.${decPart}`;
+  } else {
+    // Ingen riktig decimaldel i slutet -> alla separatorer är tusentalsavgränsare
+    normalized = s.replace(/[.,]/g, '');
+  }
+
+  const n = parseFloat(normalized);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+// ---------------------------------------------------------------------------
+// Växelkurser (SEK som bas), med liveuppdatering + fallback
+// ---------------------------------------------------------------------------
+// FALLBACK_RATES_PER_SEK = hur många enheter av valutan man får för 1 SEK.
+// Används bara om den externa kurs-API:n inte går att nå (nätverksfel, timeout etc.)
+const FALLBACK_RATES_PER_SEK: Record<string, number> = {
+  SEK: 1,
+  GBP: 1 / 13.15,
+  EUR: 1 / 11.25,
+  USD: 1 / 9.80,
+};
+
+interface RatesCache {
+  ratesPerSEK: Record<string, number>;
+  fetchedAt: number;
+}
+
+let ratesCache: RatesCache | null = null;
+const RATES_CACHE_DURATION_MS = 60 * 60 * 1000; // 1 timme
+
+async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(url, { cache: 'no-store' });
+    return await fetch(url, { cache: 'no-store', signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function getRatesPerSEK(): Promise<Record<string, number>> {
+  const now = Date.now();
+  if (ratesCache && now - ratesCache.fetchedAt < RATES_CACHE_DURATION_MS) {
+    return ratesCache.ratesPerSEK;
+  }
+
+  try {
+    // Gratis, nyckelfritt API. Ger "hur mycket av valuta X man får för 1 SEK".
+    const res = await fetchWithTimeout('https://open.er-api.com/v6/latest/SEK', 5000);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.result === 'success' && data.rates) {
+        const ratesPerSEK: Record<string, number> = { SEK: 1, ...data.rates };
+        ratesCache = { ratesPerSEK, fetchedAt: now };
+        return ratesPerSEK;
+      }
+    }
+  } catch {
+    // Nätverksfel/timeout -> fall igenom till fallback nedan
+  }
+
+  // Om vi har en gammal (utgången) cache är den fortfarande bättre än en
+  // statisk konstant som kan vara flera år gammal, så återanvänd den.
+  if (ratesCache) return ratesCache.ratesPerSEK;
+
+  return FALLBACK_RATES_PER_SEK;
+}
+
+function convertToSEK(amount: number, currency: string, ratesPerSEK: Record<string, number>): number | null {
+  const rate = ratesPerSEK[currency];
+  if (!rate || rate <= 0 || !Number.isFinite(amount)) return null;
+  return Math.round(amount / rate);
+}
+
+// ---------------------------------------------------------------------------
+// Feed-hämtning
+// ---------------------------------------------------------------------------
+
+const KNOWN_CURRENCIES = new Set(['SEK', 'GBP', 'EUR', 'USD']);
+
+const JUNK_PRODUCT_KEYWORDS = [
+  'child',
+  'junior',
+  'infant',
+  'parking',
+  'car park',
+  'tour',
+  'membership',
+  'hospitality only',
+];
+
+async function fetchSingleFeed(feed: FeedConfig, ratesPerSEK: Record<string, number>): Promise<AwinTicketRow[]> {
+  try {
+    const res = await fetchWithTimeout(feed.url, 20000);
     if (!res.ok) return [];
 
     const buffer = Buffer.from(await res.arrayBuffer());
@@ -76,14 +218,6 @@ async function fetchSingleFeed(url: string): Promise<AwinTicketRow[]> {
 
     const rows: AwinTicketRow[] = [];
 
-    // Uppdaterade växelkurser mot SEK
-    const RATES: Record<string, number> = {
-      GBP: 13.15,
-      EUR: 11.25,
-      USD: 9.80,
-      SEK: 1.0,
-    };
-
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
@@ -91,48 +225,39 @@ async function fetchSingleFeed(url: string): Promise<AwinTicketRow[]> {
       const cols = parseCSVLine(line);
 
       const productName = cols[idxProductName] || '';
-      const merchantName = cols[idxMerchant] || 'Awin Partner';
+      if (!productName) continue;
+
+      const lowerName = productName.toLowerCase();
+      if (JUNK_PRODUCT_KEYWORDS.some((kw) => lowerName.includes(kw))) continue;
+
+      const merchantName = cols[idxMerchant] || feed.label;
       const merchantId = cols[idxMerchantId] || '';
       const deepLink = cols[idxDeepLink] || cols[idxMerchantDeep] || '#';
-      let currency = (cols[idxCurrency] || '').toUpperCase();
 
-      // Filtrera bort skräpprodukter (barnbiljetter, parkering, turer, medlemskap)
-      const lowerName = productName.toLowerCase();
-      if (
-        lowerName.includes('child') ||
-        lowerName.includes('junior') ||
-        lowerName.includes('parking') ||
-        lowerName.includes('tour') ||
-        lowerName.includes('membership') ||
-        lowerName.includes('hospitality only')
-      ) {
-        continue;
+      // Prisprioritet: search_price (aktuellt/kampanjpris) > display_price
+      // (visningspris, kan innehålla frakt) > store_price (ofta ORDINARIE
+      // pris innan rabatt - används bara om inget annat finns).
+      const searchP = parsePrice(cols[idxSearchPrice]);
+      const displayP = parsePrice(cols[idxDisplayPrice]);
+      const storeP = parsePrice(cols[idxStorePrice]);
+
+      let price = NaN;
+      if (Number.isFinite(searchP) && searchP > 0) price = searchP;
+      else if (Number.isFinite(displayP) && displayP > 0) price = displayP;
+      else if (Number.isFinite(storeP) && storeP > 0) price = storeP;
+
+      if (!Number.isFinite(price) || price <= 0) continue;
+
+      // Valuta: använd feedens angivna värde om det är en valuta vi känner
+      // igen, annars fall tillbaka på feedens KÄNDA standardvaluta (inte en
+      // global gissning på GBP för alla affiliates).
+      let currency = (cols[idxCurrency] || '').trim().toUpperCase();
+      if (!KNOWN_CURRENCIES.has(currency)) {
+        currency = feed.defaultCurrency;
       }
 
-      const searchP = parseFloat((cols[idxSearchPrice] || '').replace(',', '.'));
-      const displayP = parseFloat((cols[idxDisplayPrice] || '').replace(',', '.'));
-      const storeP = parseFloat((cols[idxStorePrice] || '').replace(',', '.'));
-
-      let price = 0;
-      if (!isNaN(searchP) && searchP > 0) price = searchP;
-      else if (!isNaN(displayP) && displayP > 0) price = displayP;
-      else if (!isNaN(storeP) && storeP > 0) price = storeP;
-
-      if (!productName || price <= 0) continue;
-
-      // Om valuta saknas i feeden, sätt standard baserat på vanliga normer (eller GBP för engelsk fotboll)
-      if (!currency || !RATES[currency]) {
-        currency = 'GBP'; 
-      }
-
-      const rate = RATES[currency] || RATES.GBP;
-      const priceSEK = Math.round(price * rate);
-
-      // --- LÄGG TILL HÄR FÖR ATT FELSÖKA ---
-      if (merchantName.toLowerCase().includes('gigsberg')) {
-      console.log(`DEBUG GIGSBERG: ${productName} | search_price: ${cols[idxSearchPrice]} | display_price: ${cols[idxDisplayPrice]} | valda priset: ${priceSEK} SEK`);
-}
-// ------------------------------------
+      const priceSEK = convertToSEK(price, currency, ratesPerSEK);
+      if (priceSEK === null) continue; // kunde inte räkna om priset säkert - hoppa hellre än att visa fel pris
 
       rows.push({
         merchantName,
@@ -146,7 +271,7 @@ async function fetchSingleFeed(url: string): Promise<AwinTicketRow[]> {
     }
 
     return rows;
-  } catch (error) {
+  } catch {
     return [];
   }
 }
@@ -157,7 +282,8 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
     return cachedAwinRows;
   }
 
-  const results = await Promise.all(FEED_URLS.map(url => fetchSingleFeed(url)));
+  const ratesPerSEK = await getRatesPerSEK();
+  const results = await Promise.all(FEED_CONFIGS.map((feed) => fetchSingleFeed(feed, ratesPerSEK)));
   const allRows = results.flat();
 
   if (allRows.length > 0) {
@@ -172,56 +298,98 @@ export async function fetchAwinOffers() {
   return getAwinData();
 }
 
-const getTeamKeywords = (teamName: string): string[] => {
+// ---------------------------------------------------------------------------
+// Lagmatchning
+// ---------------------------------------------------------------------------
+
+// Generiska klubbsuffix/prefix som INTE är del av lagets identitet och som
+// tryggt kan strippas bort. OBS: "united"/"city" ingår MEDVETET INTE här
+// eftersom de är en del av själva lagnamnet för t.ex. Manchester United/City.
+const CLUB_SUFFIX_WORDS = new Set([
+  'fc', 'afc', 'cf', 'sc', 'sv', 'fk', 'vfb', 'vfl', 'rb', 'cd', 'ud', 'rcd', 'ac',
+  'calcio', 'club', 'futbol', 'football', 'soccer', 'sporting', 'de', 'del',
+  'tickets', 'ticket',
+]);
+
+// Kända alias-grupper. Om ett lags namn matchar NÅGOT alias i en grupp så
+// blir HELA gruppen sökbara nyckelord för det laget. Detta löser t.ex.
+// "Man City" i en feed vs "Manchester City" som användaren skickar in.
+const TEAM_ALIAS_GROUPS: string[][] = [
+  ['manchester city', 'man city'],
+  ['manchester united', 'man utd', 'man united'],
+  ['tottenham hotspur', 'tottenham', 'spurs'],
+  ['barcelona', 'barca', 'fc barcelona'],
+  ['atletico madrid', 'atletico de madrid', 'atl madrid', 'atletico'],
+  ['real madrid'],
+  ['real betis', 'betis'],
+  ['paris saint germain', 'paris sg', 'psg'],
+  ['internazionale', 'inter milan', 'inter'],
+  ['ac milan', 'milan'],
+  ['bayern munich', 'bayern munchen', 'bayern'],
+  ['borussia dortmund', 'dortmund', 'bvb'],
+  ['juventus', 'juve'],
+];
+
+function normalizeTeamString(input: string): string {
+  return input
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // ta bort diakritiska tecken (é, ñ, ü ...)
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function stripClubSuffixes(normalized: string): string {
+  const tokens = normalized.split(' ').filter(Boolean);
+  const filtered = tokens.filter((t) => !CLUB_SUFFIX_WORDS.has(t));
+  return filtered.join(' ').trim();
+}
+
+// Returnerar en lista av sökbara nyckelord för laget, sorterade LÄNGST FÖRST
+// så att t.ex. "ac milan" testas innan "milan" (undviker felmatchning mot
+// Inter Milan-produkter och liknande).
+function getTeamKeywords(teamName: string): string[] {
   if (!teamName) return [];
 
-  const normalized = teamName
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+  const normalized = normalizeTeamString(teamName);
+  const cleaned = stripClubSuffixes(normalized);
 
-  const cleaned = normalized
-    .replace(/\b(fc|ac|cf|afc|sc|sv|fk|vfb|vfl|rb|cd|ud|rcd|sporting|club|de|d'|del|tickets|ticket)\b/g, " ")
-    .replace(/[^a-z0-9 ]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const keywords = new Set<string>();
+  if (cleaned) keywords.add(cleaned);
+  if (normalized && normalized !== cleaned) keywords.add(normalized);
 
-  const keywords: string[] = [];
-  if (cleaned.length > 0) {
-    keywords.push(cleaned);
+  for (const group of TEAM_ALIAS_GROUPS) {
+    if (group.some((alias) => normalized.includes(alias) || cleaned.includes(alias))) {
+      group.forEach((alias) => keywords.add(alias));
+    }
   }
 
-  // Vanliga synonymer och smeknamn som kan skilja sig mellan partners
-  if (normalized.includes("manchester city") || normalized.includes("man city")) {
-    keywords.push("man city", "manchester city");
-  } else if (normalized.includes("manchester united") || normalized.includes("man utd")) {
-    keywords.push("man utd", "manchester united");
-  } else if (normalized.includes("tottenham") || normalized.includes("spurs")) {
-    keywords.push("tottenham", "spurs");
-  } else if (normalized.includes("barcelona") || normalized.includes("barca")) {
-    keywords.push("barcelona", "barca");
-  } else if (normalized.includes("atletico madrid") || normalized.includes("atl. madrid")) {
-    keywords.push("atletico", "atletico madrid");
-  } else if (normalized.includes("real madrid")) {
-    keywords.push("real madrid");
-  } else if (normalized.includes("paris saint germain") || normalized.includes("psg")) {
-    keywords.push("psg", "paris", "paris sg");
-  } else if (normalized.includes("inter") || normalized.includes("internazionale")) {
-    keywords.push("inter", "internazionale");
-  } else if (normalized.includes("milan") && !normalized.includes("inter")) {
-    keywords.push("ac milan", "milan");
-  } else if (normalized.includes("bayern")) {
-    keywords.push("bayern", "bayern munich", "bayern munchen");
-  } else if (normalized.includes("dortmund") || normalized.includes("bvb")) {
-    keywords.push("dortmund", "bvb");
-  } else if (normalized.includes("juventus") || normalized.includes("juve")) {
-    keywords.push("juventus", "juve");
-  } else if (normalized.includes("betis")) {
-    keywords.push("betis", "real betis");
-  }
+  return Array.from(keywords)
+    .filter((k) => k.length > 1)
+    .sort((a, b) => b.length - a.length);
+}
 
-  return Array.from(new Set(keywords.filter((kw) => kw.length > 1)));
-};
+interface KeywordMatch {
+  index: number;
+  end: number;
+}
+
+// Hittar det FÖRSTA (längsta, mest specifika) nyckelordet som förekommer i
+// titeln som ett HELT ORD (ord-gräns), inte som en delsträng inuti ett annat
+// ord. Detta stoppar t.ex. att "inter" råkar matcha inuti "international".
+function findKeywordMatch(title: string, keywords: string[]): KeywordMatch | null {
+  for (const kw of keywords) {
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`(^|\\s)${escaped}(\\s|$)`, 'i');
+    const match = re.exec(title);
+    if (match) {
+      const start = match.index + match[1].length;
+      return { index: start, end: start + kw.length };
+    }
+  }
+  return null;
+}
 
 export function findAwinTicketsForMatchSync(
   rows: AwinTicketRow[],
@@ -230,42 +398,23 @@ export function findAwinTicketsForMatchSync(
 ): AwinTicketRow[] {
   if (!rows || rows.length === 0) return [];
 
-  const cleanTitle = (str: string) =>
-    str
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9 ]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-
   const homeKeywords = getTeamKeywords(homeTeam);
   const awayKeywords = getTeamKeywords(awayTeam);
 
   if (homeKeywords.length === 0 || awayKeywords.length === 0) return [];
 
   return rows.filter((row) => {
-    const title = cleanTitle(row.productName);
+    const title = normalizeTeamString(row.productName);
 
-    let homePos = -1;
-    for (const kw of homeKeywords) {
-      const pos = title.indexOf(kw);
-      if (pos !== -1) {
-        homePos = pos;
-        break;
-      }
-    }
+    const homeMatch = findKeywordMatch(title, homeKeywords);
+    const awayMatch = findKeywordMatch(title, awayKeywords);
 
-    let awayPos = -1;
-    for (const kw of awayKeywords) {
-      const pos = title.indexOf(kw);
-      if (pos !== -1) {
-        awayPos = pos;
-        break;
-      }
-    }
+    if (!homeMatch || !awayMatch) return false;
 
-    // Hemmalaget måste komma före bortalaget i titeln för att undvika felskuggningar
-    return homePos !== -1 && awayPos !== -1 && homePos < awayPos;
+    // Träffarna får inte överlappa (kan hända om lagnamnen delar ord)
+    if (homeMatch.index < awayMatch.end && awayMatch.index < homeMatch.end) return false;
+
+    // Awins struktur är nästan alltid "Hemmalag vs Bortalag" - kräv den ordningen.
+    return homeMatch.index < awayMatch.index;
   });
 }
