@@ -12,7 +12,35 @@ export interface AwinTicketRow {
 
 let cachedAwinRows: AwinTicketRow[] | null = null;
 let lastFetchTime = 0;
-const CACHE_DURATION_MS = 12 * 60 * 60 * 1000; // Cachar i 12 timmar i minnet
+const CACHE_DURATION_MS = 12 * 60 * 60 * 1000; // 12 timmar
+
+// Hjälpfunktion för att dela CSV-rader korrekt även när fält innehåller kommatecken
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let startValue = 0;
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') {
+      inQuotes = !inQuotes;
+    } else if (line[i] === ',' && !inQuotes) {
+      let val = line.substring(startValue, i).trim();
+      if (val.startsWith('"') && val.endsWith('"')) {
+        val = val.substring(1, val.length - 1).replace(/""/g, '"');
+      }
+      result.push(val);
+      startValue = i + 1;
+    }
+  }
+
+  let val = line.substring(startValue).trim();
+  if (val.startsWith('"') && val.endsWith('"')) {
+    val = val.substring(1, val.length - 1).replace(/""/g, '"');
+  }
+  result.push(val);
+
+  return result;
+}
 
 export async function getAwinData(): Promise<AwinTicketRow[]> {
   const now = Date.now();
@@ -25,7 +53,6 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
     "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/cid/271,592/fid/107817,113393,117212/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/";
 
   try {
-    console.log("Hämtar Awin-feed...");
     const res = await fetch(feedUrl, { cache: 'no-store' });
     if (!res.ok) {
       console.error("Misslyckades att hämta Awin feed:", res.statusText);
@@ -33,18 +60,18 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
     }
 
     const buffer = Buffer.from(await res.arrayBuffer());
-    console.log("Packar upp Gzip Awin-feed...");
     const unzipped = await gunzip(buffer);
     const csvText = unzipped.toString('utf-8');
 
     const lines = csvText.split('\n');
     if (lines.length < 2) return [];
 
-    const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
+    const headers = parseCSVLine(lines[0]);
     const idxDeepLink = headers.indexOf('aw_deep_link');
     const idxProductName = headers.indexOf('product_name');
     const idxPrice = headers.indexOf('search_price');
     const idxMerchant = headers.indexOf('merchant_name');
+    const idxCurrency = headers.indexOf('currency');
 
     const rows: AwinTicketRow[] = [];
 
@@ -52,27 +79,31 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
       const line = lines[i].trim();
       if (!line) continue;
 
-      const cols = line.split(',').map((c) => c.trim().replace(/^"|"$/g, ''));
+      const cols = parseCSVLine(line);
 
       const productName = cols[idxProductName];
       const priceStr = cols[idxPrice];
       const merchantName = cols[idxMerchant] || 'Awin Partner';
       const deepLink = cols[idxDeepLink] || '#';
+      const currency = cols[idxCurrency] || 'EUR';
 
       if (!productName || !priceStr) continue;
 
-      const price = parseFloat(priceStr);
-      if (!isNaN(price) && price > 0) {
-        rows.push({
-          merchantName,
-          productName,
-          priceSEK: price,
-          url: deepLink,
-        });
-      }
+      let price = parseFloat(priceStr.replace(',', '.'));
+      if (isNaN(price) || price <= 0) continue;
+
+      // Omräkning till SEK ifall Awin-feeden levererar i EUR eller GBP
+      if (currency === 'EUR') price *= 11.3;
+      else if (currency === 'GBP') price *= 13.5;
+
+      rows.push({
+        merchantName,
+        productName,
+        priceSEK: Math.round(price),
+        url: deepLink,
+      });
     }
 
-    console.log(`Awin-feed klar! Laddade in ${rows.length} produkter.`);
     cachedAwinRows = rows;
     lastFetchTime = now;
     return rows;
@@ -82,7 +113,6 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
   }
 }
 
-// Kompatibilitetsfunktion ifall route.ts anropar fetchAwinOffers
 export async function fetchAwinOffers() {
   return getAwinData();
 }
