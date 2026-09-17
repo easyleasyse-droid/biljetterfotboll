@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from "@/lib/ticomboFeed";
-import { fetchAwinOffers, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
+import { getAwinData, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
@@ -84,10 +84,10 @@ const getCachedMatchesData = unstable_cache(
     const today = new Date().toISOString().split("T")[0];
     const upcomingMatches = UPCOMING_MATCHES.filter((m) => m.date >= today);
 
-    const [p1Rows, ticomboRows] = (await Promise.all([
+    const [p1Rows, ticomboRows, awinRows] = (await Promise.all([
       fetchP1FeedRows().catch(() => []),
       fetchTicomboParsedRows().catch(() => []),
-      fetchAwinOffers().catch(() => []), // Hämtar Awin-feeden och sparar i cachen
+      getAwinData().catch(() => []),
     ])) as [any[], any[], any[]];
 
     const matches = upcomingMatches.map((m, index) => {
@@ -178,23 +178,25 @@ const getCachedMatchesData = unstable_cache(
           type: "ticket"
         });
       }
-      
-      const awinTickets = findAwinTicketsForMatchSync(homeName, awayName);
-      for (const ticket of awinTickets) {
-        offers.push({
-          id: `o-${matchId}-${ticket.merchantName.toLowerCase().replace(/\s+/g, '-')}`,
-          merchantName: ticket.merchantName,
-          rating: 4.5,
-          reviewsCount: 120,
-          section: "Standard",
-          category: "Biljetter",
-          priceSEK: ticket.priceSEK,
-          availableQuantity: 4,
-          deliveryType: "E-biljett (Direkt)",
-          isVerified: true,
-          url: ticket.url,
-          type: "ticket"
-        });
+
+      const awinTickets = findAwinTicketsForMatchSync(awinRows, homeName, awayName);
+      if (Array.isArray(awinTickets)) {
+        for (const ticket of awinTickets) {
+          offers.push({
+            id: `o-${matchId}-${ticket.merchantName.toLowerCase().replace(/\s+/g, '-')}`,
+            merchantName: ticket.merchantName,
+            rating: 4.5,
+            reviewsCount: 120,
+            section: "Standard",
+            category: "Biljetter",
+            priceSEK: ticket.priceSEK,
+            availableQuantity: 4,
+            deliveryType: "E-biljett (Direkt)",
+            isVerified: true,
+            url: ticket.url,
+            type: "ticket"
+          });
+        }
       }
 
       const lftTargetUrl = "https://www.livefootballtickets.com/";
