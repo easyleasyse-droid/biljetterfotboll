@@ -1,130 +1,150 @@
-// lib/awinFeed.ts
+import zlib from 'zlib';
+import { promisify } from 'util';
 
-const sanitizeTeamName = (name: string) => {
-  if (!name) return "";
+const gunzip = promisify(zlib.gunzip);
 
-  let clean = name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9 ]/g, " ")
-    .replace(/\bfc\b|\bac\b|\bafc\b|\bsv\b|\bbcf\b|\brcd\b|\bbud\b|\bsc\b/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+export interface AwinTicketRow {
+  merchantName: string;
+  productName: string;
+  priceSEK: number;
+  url: string;
+}
 
-  const aliasMap: Record<string, string> = {
-    "inter milan": "inter",
-    "internazionale": "inter",
-    "bayern munich": "bayern",
-    "bayern munchen": "bayern",
-    "real betis": "betis",
-    "real sociedad": "sociedad",
-    "atletico madrid": "atletico",
-    "paris saint germain": "psg",
-    "ac milan": "milan",
-    "sporting cp": "sporting",
-  };
+let cachedAwinRows: AwinTicketRow[] | null = null;
+let lastFetchTime = 0;
+const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6 timmar
 
-  for (const [key, alias] of Object.entries(aliasMap)) {
-    if (clean.includes(key)) return alias;
+// Hjälpfunktion som hanterar kommatecken inuti citattecken i CSV-filer
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let startValue = 0;
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') {
+      inQuotes = !inQuotes;
+    } else if (line[i] === ',' && !inQuotes) {
+      let val = line.substring(startValue, i).trim();
+      if (val.startsWith('"') && val.endsWith('"')) {
+        val = val.substring(1, val.length - 1).replace(/""/g, '"');
+      }
+      result.push(val);
+      startValue = i + 1;
+    }
   }
 
-  return clean;
-};
-
-const CURRENCY_RATES: Record<string, number> = {
-  EUR: 11.28,
-  GBP: 13.45,
-  USD: 10.30,
-  SEK: 1.0,
-};
-
-export async function fetchAwinOffers(): Promise<any[]> {
-  const feedUrl = process.env.AWIN_PRODUCT_FEED_URL;
-  if (!feedUrl) {
-    console.log("AWIN_PRODUCT_FEED_URL saknas i miljövariablerna.");
-    return [];
+  let val = line.substring(startValue).trim();
+  if (val.startsWith('"') && val.endsWith('"')) {
+    val = val.substring(1, val.length - 1).replace(/""/g, '"');
   }
+  result.push(val);
+
+  return result;
+}
+
+export async function getAwinData(): Promise<AwinTicketRow[]> {
+  const now = Date.now();
+  if (cachedAwinRows && now - lastFetchTime < CACHE_DURATION_MS) {
+    return cachedAwinRows;
+  }
+
+  const feedUrl =
+    process.env.AWIN_PRODUCT_FEED_URL ||
+    "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/cid/271,592/fid/107817,113393,117212/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/";
 
   try {
-    const res = await fetch(feedUrl, { next: { revalidate: 3600 } });
+    const res = await fetch(feedUrl, { cache: 'no-store' });
     if (!res.ok) {
-      console.log("Kunde inte hämta Awin-feed, status:", res.status);
-      return [];
+      console.error("Kunde inte hämta Awin-feed:", res.statusText);
+      return cachedAwinRows || [];
     }
-    
-    const text = await res.text();
-    const lines = text.split("\n").filter(l => l.trim().length > 0);
+
+    const buffer = Buffer.from(await res.arrayBuffer());
+    const unzipped = await gunzip(buffer);
+    const csvText = unzipped.toString('utf-8');
+
+    const lines = csvText.split('\n');
     if (lines.length < 2) return [];
 
-    const separator = lines[0].includes(";") ? ";" : ",";
-    const headers = lines[0].split(separator).map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
-    
-    const parsedRows = lines.slice(1).map(line => {
-      const cols = line.split(separator).map(c => c.trim().replace(/^"|"$/g, ''));
-      const row: Record<string, string> = {};
-      headers.forEach((h, i) => {
-        row[h] = cols[i] || "";
-      });
-      return row;
-    });
+    const headers = parseCSVLine(lines[0]);
+    const idxDeepLink = headers.indexOf('aw_deep_link');
+    const idxProductName = headers.indexOf('product_name');
+    const idxPrice = headers.indexOf('search_price');
+    const idxMerchant = headers.indexOf('merchant_name');
+    const idxCurrency = headers.indexOf('currency');
 
-    console.log(`Awin-feed inläst. Antal rader: ${parsedRows.length}`);
-    return parsedRows;
-  } catch (err) {
-    console.error("Fel vid hämtning av Awin feed:", err);
-    return [];
+    const rows: AwinTicketRow[] = [];
+    const EUR_TO_SEK = 11.28;
+    const GBP_TO_SEK = 13.50;
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const cols = parseCSVLine(line);
+      if (cols.length <= Math.max(idxDeepLink, idxProductName, idxPrice, idxMerchant)) continue;
+
+      const productName = cols[idxProductName];
+      const priceStr = cols[idxPrice];
+      const merchantName = cols[idxMerchant] || 'Awin Partner';
+      const deepLink = cols[idxDeepLink] || '#';
+      const currency = (cols[idxCurrency] || 'EUR').toUpperCase();
+
+      if (!productName || !priceStr) continue;
+
+      let price = parseFloat(priceStr.replace(',', '.'));
+      if (isNaN(price) || price <= 0) continue;
+
+      // Valutaomräkning
+      if (currency === 'EUR') {
+        price *= EUR_TO_SEK;
+      } else if (currency === 'GBP') {
+        price *= GBP_TO_SEK;
+      }
+
+      rows.push({
+        merchantName,
+        productName,
+        priceSEK: Math.round(price),
+        url: deepLink,
+      });
+    }
+
+    cachedAwinRows = rows;
+    lastFetchTime = now;
+    console.log(`Laddade in ${rows.length} giltiga produkter från Awin-feeden.`);
+    return rows;
+  } catch (error) {
+    console.error("Fel vid parsning av Awin-feed:", error);
+    return cachedAwinRows || [];
   }
 }
 
+export async function fetchAwinOffers() {
+  return getAwinData();
+}
+
 export function findAwinTicketsForMatchSync(
-  awinRows: any[],
+  rows: AwinTicketRow[],
   homeTeam: string,
   awayTeam: string
-): Array<{ merchantName: string; merchantId: string; priceSEK: number; url: string }> {
-  if (!Array.isArray(awinRows) || awinRows.length === 0) return [];
+): AwinTicketRow[] {
+  if (!rows || rows.length === 0) return [];
 
-  const cleanHome = sanitizeTeamName(homeTeam);
-  const cleanAway = sanitizeTeamName(awayTeam);
-  if (!cleanHome || !cleanAway) return [];
-
-  const results: Array<{ merchantName: string; merchantId: string; priceSEK: number; url: string }> = [];
-
-  for (const row of awinRows) {
-    const productName = (row["product_name"] || row["title"] || row["productname"] || row["name"] || "").toLowerCase();
-    const merchantName = row["merchant_name"] || row["merchantname"] || row["advertiser_name"] || row["merchant"] || "Awin Partner";
-    const merchantId = row["merchant_id"] || row["merchantid"] || row["advertiser_id"] || "";
-    const rawPrice = row["search_price"] || row["price"] || row["aw_price"] || "0";
-    const currency = (row["currency"] || row["aw_currency"] || "EUR").toUpperCase();
-    const url = row["aw_deep_link"] || row["merchant_deep_link"] || row["url"] || row["deeplink"] || "";
-
-    if (!productName || !url) continue;
-
-    const cleanProduct = productName
+  const clean = (str: string) =>
+    str
+      .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9 ]/g, " ");
+      .replace(/\bfc\b|\bac\b|\bafc\b|\bsc\b|\bsv\b/g, "")
+      .replace(/[^a-z0-9]/g, "");
 
-    const hasHome = cleanProduct.includes(cleanHome);
-    const hasAway = cleanProduct.includes(cleanAway);
+  const hTeam = clean(homeTeam);
+  const aTeam = clean(awayTeam);
 
-    if (hasHome && hasAway) {
-      const cleanPriceStr = rawPrice.replace(/\s/g, "").replace(",", ".");
-      const numericPrice = parseFloat(cleanPriceStr.replace(/[^0-9.]/g, ""));
-      
-      if (isNaN(numericPrice) || numericPrice <= 0) continue;
-
-      const rate = CURRENCY_RATES[currency] || 11.28;
-      const priceSEK = Math.round(numericPrice * rate);
-
-      results.push({
-        merchantName,
-        merchantId,
-        priceSEK,
-        url
-      });
-    }
-  }
-
-  return results;
+  return rows.filter((row) => {
+    const title = clean(row.productName);
+    // Kräver att både hemmalag och bortalag finns med i produktnamnet
+    return title.includes(hTeam) && title.includes(aTeam);
+  });
 }
