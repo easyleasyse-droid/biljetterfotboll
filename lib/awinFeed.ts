@@ -14,7 +14,6 @@ let cachedAwinRows: AwinTicketRow[] | null = null;
 let lastFetchTime = 0;
 const CACHE_DURATION_MS = 12 * 60 * 60 * 1000; // 12 timmar
 
-// Hjälpfunktion för att dela CSV-rader korrekt även när fält innehåller kommatecken
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
   let startValue = 0;
@@ -69,11 +68,14 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
     const headers = parseCSVLine(lines[0]);
     const idxDeepLink = headers.indexOf('aw_deep_link');
     const idxProductName = headers.indexOf('product_name');
-    const idxPrice = headers.indexOf('search_price');
+    const idxSearchPrice = headers.indexOf('search_price');
+    const idxDisplayPrice = headers.indexOf('display_price');
+    const idxStorePrice = headers.indexOf('store_price');
     const idxMerchant = headers.indexOf('merchant_name');
     const idxCurrency = headers.indexOf('currency');
 
     const rows: AwinTicketRow[] = [];
+    const foundMerchants = new Set<string>();
 
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -82,27 +84,43 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
       const cols = parseCSVLine(line);
 
       const productName = cols[idxProductName];
-      const priceStr = cols[idxPrice];
       const merchantName = cols[idxMerchant] || 'Awin Partner';
       const deepLink = cols[idxDeepLink] || '#';
-      const currency = cols[idxCurrency] || 'EUR';
+      const currency = (cols[idxCurrency] || 'USD').toUpperCase();
 
-      if (!productName || !priceStr) continue;
+      // Prova olika pris-kolumner i prio-ordning för att undvika 170-kronorsfel
+      const rawPriceStr = cols[idxDisplayPrice] || cols[idxSearchPrice] || cols[idxStorePrice] || "0";
+      
+      if (!productName || !rawPriceStr) continue;
 
-      let price = parseFloat(priceStr.replace(',', '.'));
+      // Tvätta prissträngen ordentligt (hantera tusentalsavgränsare och punkter/komman)
+      const cleanPriceStr = rawPriceStr.replace(/\s/g, '').replace(',', '.');
+      let price = parseFloat(cleanPriceStr);
+
       if (isNaN(price) || price <= 0) continue;
 
-      // Omräkning till SEK ifall Awin-feeden levererar i EUR eller GBP
-      if (currency === 'EUR') price *= 11.3;
-      else if (currency === 'GBP') price *= 13.5;
+      // Om priset ändå är misstänkt lågt (< 50 enheter) trots att det är en biljett, hoppa över eller logga
+      if (price < 10) continue;
+
+      // Växelkurser till SEK
+      let rate = 9.83; // Standard USD
+      if (currency === 'EUR') rate = 11.28;
+      else if (currency === 'GBP') rate = 13.15;
+      else if (currency === 'SEK') rate = 1.0;
+
+      const priceSEK = Math.round(price * rate);
+
+      foundMerchants.add(merchantName);
 
       rows.push({
         merchantName,
         productName,
-        priceSEK: Math.round(price),
+        priceSEK,
         url: deepLink,
       });
     }
+
+    console.log("Awin Feed inläst. Hittade handlare:", Array.from(foundMerchants));
 
     cachedAwinRows = rows;
     lastFetchTime = now;
@@ -133,24 +151,19 @@ export function findAwinTicketsForMatchSync(
       .replace(/\s+/g, " ")
       .trim();
 
-  // Rensa bort vanliga utfyllnadsord som ofta skapar problem i flöden
   const stripCommonWords = (s: string) =>
     s.replace(/\bfc\b|\bac\b|\bfutboll\b|\bfootball\b|\bvs\b|\bv\b/g, "").trim();
 
   const hClean = stripCommonWords(clean(homeTeam));
   const aClean = stripCommonWords(clean(awayTeam));
 
-  // Dela upp i enskilda ord (t.ex. "real madrid" -> ["real", "madrid"])
   const hWords = hClean.split(" ").filter(w => w.length > 2);
   const aWords = aClean.split(" ").filter(w => w.length > 2);
 
   return rows.filter((row) => {
     const title = clean(row.productName);
 
-    // Kontrollera att ALLA signifikanta ord för hemmalaget finns i titeln
     const matchesHome = hWords.length > 0 && hWords.every(word => title.includes(word));
-    
-    // Kontrollera att ALLA signifikanta ord för bortalaget finns i titeln
     const matchesAway = aWords.length > 0 && aWords.every(word => title.includes(word));
 
     return matchesHome && matchesAway;
