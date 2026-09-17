@@ -113,6 +113,12 @@ async function fetchSingleFeed(url: string): Promise<AwinTicketRow[]> {
       const displayP = parseFloat((cols[idxDisplayPrice] || '').replace(',', '.'));
       const storeP = parseFloat((cols[idxStorePrice] || '').replace(',', '.'));
 
+      // --- LÄGG TILL HÄR FÖR ATT FELSÖKA ---
+      if (merchantName.toLowerCase().includes('gigsberg')) {
+      console.log(`DEBUG GIGSBERG: ${productName} | search_price: ${cols[idxSearchPrice]} | display_price: ${cols[idxDisplayPrice]} | valda priset: ${priceSEK} SEK`);
+}
+// ------------------------------------
+
       let price = 0;
       if (!isNaN(searchP) && searchP > 0) price = searchP;
       else if (!isNaN(displayP) && displayP > 0) price = displayP;
