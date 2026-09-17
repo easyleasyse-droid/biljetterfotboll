@@ -66,10 +66,12 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
 
     const headers = parseCSVLine(lines[0]);
     const idxDeepLink = headers.indexOf('aw_deep_link');
+    const idxMerchantDeep = headers.indexOf('merchant_deep_link');
     const idxProductName = headers.indexOf('product_name');
     const idxSearchPrice = headers.indexOf('search_price');
     const idxDisplayPrice = headers.indexOf('display_price');
     const idxStorePrice = headers.indexOf('store_price');
+    const idxPrice = headers.indexOf('price'); // Lagt till standardpris-kolumnen
     const idxMerchant = headers.indexOf('merchant_name');
     const idxCurrency = headers.indexOf('currency');
 
@@ -83,16 +85,17 @@ export async function getAwinData(): Promise<AwinTicketRow[]> {
 
       const productName = cols[idxProductName];
       const merchantName = cols[idxMerchant] || 'Awin Partner';
-      const deepLink = cols[idxDeepLink] || '#';
+      const deepLink = cols[idxDeepLink] || cols[idxMerchantDeep] || '#';
       const currency = (cols[idxCurrency] || 'USD').toUpperCase();
 
-      const rawPriceStr = cols[idxDisplayPrice] || cols[idxSearchPrice] || cols[idxStorePrice] || "0";
+      // Letar i alla tänkbara priskolumner så ingen partner missas
+      const rawPriceStr = cols[idxDisplayPrice] || cols[idxSearchPrice] || cols[idxStorePrice] || cols[idxPrice] || "0";
       if (!productName || !rawPriceStr) continue;
 
       const cleanPriceStr = rawPriceStr.replace(/\s/g, '').replace(',', '.');
       let price = parseFloat(cleanPriceStr);
 
-      if (isNaN(price) || price <= 10) continue;
+      if (isNaN(price) || price <= 0) continue;
 
       let rate = 9.83; // USD
       if (currency === 'EUR') rate = 11.28;
@@ -121,6 +124,33 @@ export async function fetchAwinOffers() {
   return getAwinData();
 }
 
+// Smartare synonym- och matchningsfunktion
+const getTeamKeywords = (teamName: string): string[] => {
+  const clean = teamName
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const keywords = [clean];
+
+  if (clean.includes("manchester city") || clean.includes("man city")) {
+    keywords.push("man city", "manchester city");
+  } else if (clean.includes("manchester united") || clean.includes("man utd")) {
+    keywords.push("man utd", "manchester united");
+  } else if (clean.includes("tottenham") || clean.includes("spurs")) {
+    keywords.push("tottenham", "spurs");
+  } else if (clean.includes("inter")) {
+    keywords.push("inter", "internazionale");
+  } else if (clean.includes("bayern")) {
+    keywords.push("bayern");
+  }
+
+  return Array.from(new Set(keywords));
+};
+
 export function findAwinTicketsForMatchSync(
   rows: AwinTicketRow[],
   homeTeam: string,
@@ -128,7 +158,7 @@ export function findAwinTicketsForMatchSync(
 ): AwinTicketRow[] {
   if (!rows || rows.length === 0) return [];
 
-  const clean = (str: string) =>
+  const cleanTitle = (str: string) =>
     str
       .toLowerCase()
       .normalize("NFD")
@@ -137,20 +167,15 @@ export function findAwinTicketsForMatchSync(
       .replace(/\s+/g, " ")
       .trim();
 
-  const stripCommonWords = (s: string) =>
-    s.replace(/\bfc\b|\bac\b|\bfutboll\b|\bfootball\b|\bvs\b|\bv\b/g, "").trim();
-
-  const hClean = stripCommonWords(clean(homeTeam));
-  const aClean = stripCommonWords(clean(awayTeam));
-
-  const hWords = hClean.split(" ").filter(w => w.length > 2);
-  const aWords = aClean.split(" ").filter(w => w.length > 2);
+  const homeKeywords = getTeamKeywords(homeTeam);
+  const awayKeywords = getTeamKeywords(awayTeam);
 
   return rows.filter((row) => {
-    const title = clean(row.productName);
+    const title = cleanTitle(row.productName);
 
-    const matchesHome = hWords.length > 0 && hWords.every(word => title.includes(word));
-    const matchesAway = aWords.length > 0 && aWords.every(word => title.includes(word));
+    // Kräver att minst ett nyckelord/variant för hemmalaget OCH bortalaget finns i titeln
+    const matchesHome = homeKeywords.some((kw) => title.includes(kw));
+    const matchesAway = awayKeywords.some((kw) => title.includes(kw));
 
     return matchesHome && matchesAway;
   });
