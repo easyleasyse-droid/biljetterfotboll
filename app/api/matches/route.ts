@@ -39,6 +39,7 @@ const sanitizeTeamName = (name: string) => {
     "paris saint germain": "psg",
     "ac milan": "milan",
     "sporting cp": "sporting",
+    "tottenham hotspur": "tottenham",
   };
 
   for (const [key, alias] of Object.entries(aliasMap)) {
@@ -57,13 +58,15 @@ const getSearchUrl = (
   if (customUrl) return customUrl;
 
   const query = encodeURIComponent(`${homeTeam} ${awayTeam}`);
+  const affiliateId = "3043299"; // Ditt Publicist-ID
 
   const domainMap: Record<string, string> = {
     "StubHub": "https://www.stubhub.se/",
     "Ticombo": `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent('https://www.ticombo.com/en/sports-tickets/football')}`,
     "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${query}`)}`,
     "Sports Events 365": `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`,
-    "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${query}`)}`
+    "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=${affiliateId}&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${query}`)}`,
+    "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=89223&awinaffid=${affiliateId}&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${query}`)}`
   };
 
   return domainMap[merchantName] || `https://www.google.com/search?q=${query}`;
@@ -98,6 +101,9 @@ const getCachedMatchesData = unstable_cache(
 
       const homeName = homeInfo?.name || formatTeamName(m.homeKey);
       const awayName = awayInfo?.name || formatTeamName(m.awayKey);
+
+      const cleanHome = sanitizeTeamName(homeName);
+      const cleanAway = sanitizeTeamName(awayName);
 
       const basePrice = 1100 + (index * 120) % 750;
       const EUR_TO_SEK = 11.3;
@@ -179,24 +185,68 @@ const getCachedMatchesData = unstable_cache(
         });
       }
 
-      const awinTickets = findAwinTicketsForMatchSync(awinRows, homeName, awayName);
+      // Sök i Awin Feed (Gigsberg, TicketNetwork, Football Ticket Net)
+      const awinTickets = findAwinTicketsForMatchSync(awinRows, cleanHome, cleanAway);
+      const matchedAwinMerchants = new Set<string>();
+
       if (Array.isArray(awinTickets)) {
         for (const ticket of awinTickets) {
-          offers.push({
-            id: `o-${matchId}-${ticket.merchantName.toLowerCase().replace(/\s+/g, '-')}`,
-            merchantName: ticket.merchantName,
-            rating: 4.5,
-            reviewsCount: 120,
-            section: "Standard",
-            category: "Biljetter",
-            priceSEK: ticket.priceSEK,
-            availableQuantity: 4,
-            deliveryType: "E-biljett (Direkt)",
-            isVerified: true,
-            url: ticket.url,
-            type: "ticket"
-          });
+          if (ticket.priceSEK && ticket.priceSEK > 50) {
+            const merchantKey = ticket.merchantName.toLowerCase();
+            matchedAwinMerchants.add(merchantKey);
+
+            offers.push({
+              id: `o-${matchId}-${merchantKey.replace(/\s+/g, '-')}`,
+              merchantName: ticket.merchantName,
+              rating: 4.6,
+              reviewsCount: 350,
+              section: "Standard / Verifierad",
+              category: "Biljetter",
+              priceSEK: Math.round(ticket.priceSEK),
+              availableQuantity: 4,
+              deliveryType: "E-biljett (Direkt)",
+              isVerified: true,
+              url: ticket.url,
+              type: "ticket"
+            });
+          }
         }
+      }
+
+      // Reservlänk för Gigsberg om matchen inte hittas live i Awin-feeden
+      if (!matchedAwinMerchants.has("gigsberg")) {
+        offers.push({
+          id: `o-${matchId}-gigsberg`,
+          merchantName: "Gigsberg",
+          rating: 4.6,
+          reviewsCount: 890,
+          section: "Standard / Kortsida",
+          category: "Biljetter",
+          priceSEK: Math.round(basePrice * 1.05),
+          availableQuantity: 5,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: getSearchUrl("Gigsberg", homeName, awayName),
+          type: "ticket"
+        });
+      }
+
+      // Reservlänk för TicketNetwork om matchen inte hittas live i Awin-feeden
+      if (!matchedAwinMerchants.has("ticketnetwork")) {
+        offers.push({
+          id: `o-${matchId}-ticketnetwork`,
+          merchantName: "TicketNetwork",
+          rating: 4.5,
+          reviewsCount: 620,
+          section: "Standard / VIP",
+          category: "Biljetter",
+          priceSEK: Math.round(basePrice * 1.1),
+          availableQuantity: 4,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: getSearchUrl("TicketNetwork", homeName, awayName),
+          type: "ticket"
+        });
       }
 
       const lftTargetUrl = "https://www.livefootballtickets.com/";
@@ -306,7 +356,7 @@ const getCachedMatchesData = unstable_cache(
 
     return matches;
   },
-  ['global-matches-cache-v1'],
+  ['global-matches-cache-v3'],
   { revalidate: 3600 }
 );
 
