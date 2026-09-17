@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { UPCOMING_MATCHES } from "@/data/upcomingMatches";
 import { TEAMS_SEO_DATA } from "@/data/teams";
-import { getP1Data, findP1TicketInRows } from "@/lib/p1Feed";
+import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from "@/lib/ticomboFeed";
 import { getAwinData, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
 
@@ -53,7 +53,7 @@ const getSearchUrl = (
 
 async function getCachedMatchesData() {
   const [p1Rows, ticomboRows, awinRows] = await Promise.all([
-    getP1Data(),
+    fetchP1FeedRows(),
     fetchTicomboParsedRows(),
     getAwinData(),
   ]);
