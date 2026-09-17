@@ -1,212 +1,101 @@
-// lib/awinFeed.ts
+import zlib from 'zlib';
+import { promisify } from 'util';
 
-const TEAM_ALIASES: Record<string, string[]> = {
-  "barcelona": ["barcelona", "barca", "fc barcelona", "fcb"],
-  "real madrid": ["real madrid", "realmadrid", "r. madrid"],
-  "atletico madrid": ["atletico madrid", "atletico", "atm", "atl. madrid", "atlético"],
-  "manchester city": ["manchester city", "man city", "mancity", "man. city"],
-  "manchester united": ["manchester united", "man united", "man utd", "manutd"],
-  "arsenal": ["arsenal"],
-  "chelsea": ["chelsea"],
-  "liverpool": ["liverpool"],
-  "tottenham": ["tottenham", "tottenham hotspur", "spurs"],
-  "bayern munich": ["bayern munich", "bayern munchen", "bayern münchen", "bayern"],
-  "borussia dortmund": ["borussia dortmund", "dortmund", "bvb"],
-  "inter": ["inter milan", "inter", "internazionale"],
-  "milan": ["ac milan", "milan"],
-  "juventus": ["juventus", "juve"],
-  "paris saint germain": ["paris saint germain", "paris sg", "psg", "paris saint-germain"],
-  "marseille": ["marseille", "om"],
-  "roma": ["as roma", "roma"],
-  "lazio": ["sslazio", "lazio"],
-  "napoli": ["napoli"],
-  "benfica": ["benfica", "sl benfica"],
-  "sporting": ["sporting cp", "sporting lisbon", "sporting"],
-  "porto": ["fc porto", "porto"],
-};
+const gunzip = promisify(zlib.gunzip);
 
-const CURRENCY_RATES: Record<string, number> = {
-  EUR: 11.28,
-  GBP: 13.45,
-  USD: 10.30,
-  SEK: 1.0,
-};
-
-function cleanStr(str: string): string {
-  if (!str) return "";
-  return str
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9 ]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+export interface AwinTicketRow {
+  merchantName: string;
+  productName: string;
+  priceSEK: number;
+  url: string;
 }
 
-function matchesTeam(productNameClean: string, teamName: string): boolean {
-  const teamClean = cleanStr(teamName);
-  if (!teamClean) return false;
+let cachedAwinRows: AwinTicketRow[] | null = null;
+let lastFetchTime = 0;
+const CACHE_DURATION_MS = 12 * 60 * 60 * 1000; // Cachar i 12 timmar i minnet
 
-  if (productNameClean.includes(teamClean)) return true;
-
-  for (const [key, aliases] of Object.entries(TEAM_ALIASES)) {
-    if (teamClean.includes(key) || key.includes(teamClean)) {
-      for (const alias of aliases) {
-        if (productNameClean.includes(cleanStr(alias))) return true;
-      }
-    }
+export async function getAwinData(): Promise<AwinTicketRow[]> {
+  const now = Date.now();
+  if (cachedAwinRows && now - lastFetchTime < CACHE_DURATION_MS) {
+    return cachedAwinRows;
   }
 
-  const words = teamClean
-    .split(" ")
-    .filter(w => !["fc", "ac", "afc", "sc", "cf", "real", "club", "cd"].includes(w) && w.length > 2);
-  
-  if (words.length > 0 && words.every(w => productNameClean.includes(w))) {
-    return true;
-  }
-
-  return false;
-}
-
-function parseCSVLine(line: string, delimiter: string): string[] {
-  const result: string[] = [];
-  let current = '';
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    if (char === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (char === delimiter && !inQuotes) {
-      result.push(current.trim());
-      current = '';
-    } else {
-      current += char;
-    }
-  }
-  result.push(current.trim());
-  return result;
-}
-
-function detectDelimiter(firstLine: string): string {
-  if (firstLine.includes('\t')) return '\t';
-  if (firstLine.includes(';') && !firstLine.includes(',')) return ';';
-  if (firstLine.includes('|')) return '|';
-  return ',';
-}
-
-function getColValue(row: Record<string, string>, possibleKeys: string[]): string {
-  const rowKeys = Object.keys(row);
-  for (const pKey of possibleKeys) {
-    const cleanP = cleanStr(pKey);
-    for (const rKey of rowKeys) {
-      if (cleanStr(rKey) === cleanP) {
-        return row[rKey] || "";
-      }
-    }
-  }
-  return "";
-}
-
-export async function getAwinData(): Promise<any[]> {
-  const feedUrl = process.env.AWIN_PRODUCT_FEED_URL || process.env.AWIN_FEED_URL;
-  if (!feedUrl) {
-    console.warn("Ingen Awin feed URL angiven i miljövariabler");
-    return [];
-  }
+  const feedUrl =
+    process.env.AWIN_PRODUCT_FEED_URL ||
+    "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/cid/271,592/fid/107817,113393,117212/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/";
 
   try {
-    const res = await fetch(feedUrl, {
-      next: { revalidate: 3600 },
-      headers: { 'User-Agent': 'Mozilla/5.0 (BiljetterFotboll/1.0)' }
-    });
-
+    console.log("Hämtar Awin-feed...");
+    const res = await fetch(feedUrl, { cache: 'no-store' });
     if (!res.ok) {
-      console.error(`Gick inte att hämta Awin feed. Status: ${res.status}`);
-      return [];
+      console.error("Misslyckades att hämta Awin feed:", res.statusText);
+      return cachedAwinRows || [];
     }
 
-    const text = await res.text();
-    if (!text || text.trim().length === 0) return [];
+    const buffer = Buffer.from(await res.arrayBuffer());
+    console.log("Packar upp Gzip Awin-feed...");
+    const unzipped = await gunzip(buffer);
+    const csvText = unzipped.toString('utf-8');
 
-    const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+    const lines = csvText.split('\n');
     if (lines.length < 2) return [];
 
-    const delimiter = detectDelimiter(lines[0]);
-    const headers = parseCSVLine(lines[0], delimiter).map(h => h.replace(/^"|"$/g, ''));
+    const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
+    const idxDeepLink = headers.indexOf('aw_deep_link');
+    const idxProductName = headers.indexOf('product_name');
+    const idxPrice = headers.indexOf('search_price');
+    const idxMerchant = headers.indexOf('merchant_name');
 
-    const rows: any[] = [];
+    const rows: AwinTicketRow[] = [];
+
     for (let i = 1; i < lines.length; i++) {
-      const cols = parseCSVLine(lines[i], delimiter).map(c => c.replace(/^"|"$/g, ''));
-      const row: Record<string, string> = {};
-      headers.forEach((h, idx) => {
-        row[h] = cols[idx] || "";
-      });
-      rows.push(row);
-    }
+      const line = lines[i].trim();
+      if (!line) continue;
 
-    return rows;
-  } catch (err) {
-    console.error("Fel vid hämtning/parsing av Awin feed:", err);
-    return [];
-  }
-}
+      const cols = line.split(',').map((c) => c.trim().replace(/^"|"$/g, ''));
 
-export function findAwinTicketsForMatchSync(
-  awinRows: any[],
-  homeTeam: string,
-  awayTeam: string
-): Array<{ merchantName: string; merchantId: string; priceSEK: number; url: string }> {
-  if (!Array.isArray(awinRows) || awinRows.length === 0) return [];
+      const productName = cols[idxProductName];
+      const priceStr = cols[idxPrice];
+      const merchantName = cols[idxMerchant] || 'Awin Partner';
+      const deepLink = cols[idxDeepLink] || '#';
 
-  const results: Array<{ merchantName: string; merchantId: string; priceSEK: number; url: string }> = [];
+      if (!productName || !priceStr) continue;
 
-  for (const row of awinRows) {
-    const productName = getColValue(row, [
-      'product_name', 'productname', 'title', 'product_title', 'name', 'deal_title', 'description'
-    ]);
-    const merchantName = getColValue(row, [
-      'merchant_name', 'merchantname', 'advertiser_name', 'advertiser', 'merchant', 'brand_name', 'brand'
-    ]) || "Awin Partner";
-    const merchantId = getColValue(row, [
-      'merchant_id', 'merchantid', 'advertiser_id', 'aw_merchant_id'
-    ]);
-    const rawPrice = getColValue(row, [
-      'search_price', 'searchprice', 'price', 'display_price', 'displayprice', 'store_price', 'storeprice', 'rrp_price'
-    ]);
-    const currency = (getColValue(row, ['currency', 'currency_code']) || "EUR").toUpperCase();
-    const url = getColValue(row, [
-      'aw_deep_link', 'awdeeplink', 'merchant_deep_link', 'deeplink', 'url', 'link', 'product_url'
-    ]);
-
-    const cleanProduct = cleanStr(productName);
-    if (!cleanProduct) continue;
-
-    const hasHome = matchesTeam(cleanProduct, homeTeam);
-    const hasAway = matchesTeam(cleanProduct, awayTeam);
-
-    if (hasHome && hasAway) {
-      const numericPrice = parseFloat(rawPrice.replace(/[^0-9.]/g, ""));
-      if (isNaN(numericPrice) || numericPrice <= 0) continue;
-
-      const rate = CURRENCY_RATES[currency] || 11.28;
-      const priceSEK = Math.round(numericPrice * rate);
-
-      if (url) {
-        results.push({
+      const price = parseFloat(priceStr);
+      if (!isNaN(price) && price > 0) {
+        rows.push({
           merchantName,
-          merchantId,
-          priceSEK,
-          url
+          productName,
+          priceSEK: price,
+          url: deepLink,
         });
       }
     }
-  }
 
-  return results;
+    console.log(`Awin-feed klar! Laddade in ${rows.length} produkter.`);
+    cachedAwinRows = rows;
+    lastFetchTime = now;
+    return rows;
+  } catch (error) {
+    console.error("Fel vid hämtning/uppackning av Awin-feed:", error);
+    return cachedAwinRows || [];
+  }
+}
+
+// Kompatibilitetsfunktion ifall route.ts anropar fetchAwinOffers
+export async function fetchAwinOffers() {
+  return getAwinData();
+}
+
+export function findAwinTicketsForMatchSync(
+  rows: AwinTicketRow[],
+  cleanHome: string,
+  cleanAway: string
+): AwinTicketRow[] {
+  if (!rows || rows.length === 0) return [];
+
+  return rows.filter((row) => {
+    const title = row.productName.toLowerCase();
+    return title.includes(cleanHome) && title.includes(cleanAway);
+  });
 }
