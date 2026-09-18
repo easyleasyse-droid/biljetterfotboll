@@ -40,7 +40,7 @@ const getOlkaUrl = (homeTeam: string, awayTeam: string, matchDate: string): stri
 
   const targetUrl = `https://www.olkaexpress.se/events/soccer/${matchDate}-${homeSlug}-${awaySlug}?eventPackage=ticket`;
 
-  return `https://clk.tradedoubler.com/click?p(334863)&a(3324021)&g(0)&url=${encodeURIComponent(targetUrl)}`;
+  return `https://clk.tradedoubler.com/click?p(355835)a(3495104)g(0)&url=${encodeURIComponent(targetUrl)}`;
 };
 
 const getSearchUrl = (
