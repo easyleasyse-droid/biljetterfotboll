@@ -73,13 +73,14 @@ const getOlkaSlug = (teamName: string): string => {
     .replace(/^-|-$/g, "");
 };
 
-const getOlkaUrl = (homeTeam: string, awayTeam: string, matchDate: string): string => {
-  const homeSlug = getOlkaSlug(homeTeam);
-  const awaySlug = getOlkaSlug(awayTeam);
+const getOlkaUrl = (homeTeam: string, awayTeam: string): string => {
+  // Rensa bort vanliga prefix som FC, AC etc.
+  const cleanHome = homeTeam.toLowerCase().replace(/\bfc\b|\bac\b|\bafc\b/gi, "").trim().replace(/\s+/g, "-");
+  const cleanAway = awayTeam.toLowerCase().replace(/\bfc\b|\bac\b|\bafc\b/gi, "").trim().replace(/\s+/g, "-");
 
-  const targetUrl = `https://www.olkaexpress.se/events/soccer/${matchDate}-${homeSlug}-${awaySlug}`;
+  // OLKA använder formatet /events/soccer/hemmalag-bortalag (utan datum)
+  const targetUrl = `https://www.olkaexpress.se/events/soccer/${cleanHome}-${cleanAway}`;
   
-  // Kör exakt med '=' som i TradeDoubler-panelen istället för parenteser
   return `https://clk.tradedoubler.com/click?p=355835&a=3495104&g=0&url=${encodeURIComponent(targetUrl)}`;
 };
 
