@@ -497,9 +497,14 @@ export function findAwinTicketsForMatchSync(
   const toleranceMs = (options?.dateToleranceDays ?? 3) * 24 * 60 * 60 * 1000;
 
   const withParsedDate = candidates.map((row) => ({
-    row,
-    date: extractDateFromText(`${row.productName} ${row.description}`),
+  row,
+  date: extractDateFromText(`${row.productName} ${row.description}`),
   }));
+
+  console.log('DEBUG datumfiltrering:', withParsedDate.map(x => ({
+    title: x.row.productName,
+    parsedDate: x.date,
+  })));
 
   return withParsedDate
     // Behåll rader vars datum ligger inom toleransen ELLER där vi inte
