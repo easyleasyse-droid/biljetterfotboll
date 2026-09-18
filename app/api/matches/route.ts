@@ -17,6 +17,14 @@ const formatTeamName = (key: string) => {
     .join(" ");
 };
 
+const getOlkaUrl = (homeTeam: string, awayTeam: string): string => {
+  const cleanHome = homeTeam.replace(/\bfc\b|\bac\b|\bafc\b|\bsc\b|\bcf\b/gi, "").trim();
+  const cleanAway = awayTeam.replace(/\bfc\b|\bac\b|\bafc\b|\bsc\b|\bcf\b/gi, "").trim();
+  const targetUrl = `https://www.olkaexpress.se/search?q=${encodeURIComponent(`${cleanHome}${cleanAway}`)}`;
+  
+  return `https://clk.tradedoubler.com/click?p(334863)&a(3324021)&g(0)&url=${encodeURIComponent(targetUrl)}`;
+};
+
 const getSearchUrl = (
   merchantName: string,
   homeTeam: string,
@@ -37,7 +45,9 @@ const getSearchUrl = (
     "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${combinedQuery}`)}`,
     "Football Ticket Net": `https://www.footballticketnet.com/search?q=${combinedQuery}`,
     "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=12028&awinaffid=3043299&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${combinedQuery}`)}`
+    "OLKA Express": getOlkaUrl(homeTeam, awayTeam) 
   };
+
 
   return domainMap[merchantName] || `https://www.google.com/search?q=${combinedQuery}`;
 };
