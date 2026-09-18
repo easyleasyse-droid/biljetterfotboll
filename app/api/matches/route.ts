@@ -17,11 +17,29 @@ const formatTeamName = (key: string) => {
     .join(" ");
 };
 
-const getOlkaUrl = (homeTeam: string, awayTeam: string): string => {
-  const cleanHome = homeTeam.replace(/\bfc\b|\bac\b|\bafc\b|\bsc\b|\bcf\b/gi, "").trim();
-  const cleanAway = awayTeam.replace(/\bfc\b|\bac\b|\bafc\b|\bsc\b|\bcf\b/gi, "").trim();
-  const targetUrl = `https://www.olkaexpress.se/search?q=${encodeURIComponent(`${cleanHome}${cleanAway}`)}`;
-  
+const getOlkaUrl = (homeTeam: string, awayTeam: string, matchDate?: string): string => {
+  // 1. Formatera lagnamnen till OLKA:s URL-slugs (t.ex. "Liverpool FC" -> "liverpool-fc")
+  const formatSlug = (name: string) =>
+    name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Tar bort å, ä, ö accenttecken
+      .replace(/[^a-z0-9 ]/g, "")
+      .trim()
+      .replace(/\s+/g, "-");
+
+  const homeSlug = formatSlug(homeTeam);
+  const awaySlug = formatSlug(awayTeam);
+
+  // 2. Om vi har ett datum, använd den exakta event-URL:en. Annars använd lagkategorin.
+  let targetUrl = `https://www.olkaexpress.se/fotbollsbiljetter/${homeSlug}.se`;
+
+  if (matchDate) {
+    // Skapar t.ex. https://www.olkaexpress.se/events/soccer/2026-10-11-liverpool-fc-manchester-city?eventPackage=ticket
+    targetUrl = `https://www.olkaexpress.se/events/soccer/${matchDate}-${homeSlug}-${awaySlug}?eventPackage=ticket`;
+  }
+
+  // 3. Slå in i TradeDoubler-länken
   return `https://clk.tradedoubler.com/click?p(334863)&a(3324021)&g(0)&url=${encodeURIComponent(targetUrl)}`;
 };
 
