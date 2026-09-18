@@ -501,9 +501,9 @@ export function findAwinTicketsForMatchSync(
   date: extractDateFromText(`${row.productName} ${row.description}`),
   }));
 
-  console.log('DEBUG datumfiltrering:', withParsedDate.map(x => ({
-    title: x.row.productName,
-    parsedDate: x.date,
+  console.log(`DEBUG datumfiltrering [${homeTeam} vs ${awayTeam}]:`, withParsedDate.map(x => ({
+  title: x.row.productName,
+  parsedDate: x.date,
   })));
 
   return withParsedDate
