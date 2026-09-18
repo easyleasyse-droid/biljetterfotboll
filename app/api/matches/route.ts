@@ -73,21 +73,34 @@ const getOlkaSlug = (teamName: string): string => {
     .replace(/^-|-$/g, "");
 };
 
-const getOlkaUrl = (homeTeam: string, awayTeam: string): string => {
+const getOlkaUrl = (homeTeam: string, awayTeam: string, matchDate?: string): string => {
   const formatSlug = (name: string) =>
     name
       .toLowerCase()
-      .replace(/\bfc\b|\bac\b|\bafc\b/gi, "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Tar bort å, ä, ö
+      .replace(/[^a-z0-9 ]/g, "")
       .trim()
       .replace(/\s+/g, "-");
 
-  const homeSlug = formatSlug(homeTeam);
-  const awaySlug = formatSlug(awayTeam);
+  const buildOlkaSlug = (name: string) => {
+    let slug = formatSlug(name);
+    if (!slug.endsWith("-fc") && !slug.endsWith("-cf") && !slug.endsWith("-sc")) {
+      slug += "-fc";
+    }
+    return slug;
+  };
 
-  // OLKA kör utan datum i sökvägen: /events/soccer/liverpool-manchester-city
-  const targetUrl = `https://www.olkaexpress.se/events/soccer/${homeSlug}-${awaySlug}`;
+  const homeSlug = buildOlkaSlug(homeTeam);
+  const awaySlug = buildOlkaSlug(awayTeam);
 
-  return `https://clk.tradedoubler.com/click?p=355835&a=3495104&g=0&url=${encodeURIComponent(targetUrl)}`;
+  // Om datum finns med skapar vi den exakta djuplänken till matchen
+  const targetUrl = matchDate
+    ? `https://olka.se/event/soccer/${matchDate}-${homeSlug}-${awaySlug}?eventPackage=ticket`
+    : `https://olka.se/`;
+
+  // TradeDoubler-spårning med din korrekta url-parameter
+  return `https://clk.tradedoubler.com/click?p(334863)&a(3324021)&g(0)&url=${encodeURIComponent(targetUrl)}`;
 };
 
 const getSearchUrl = (
