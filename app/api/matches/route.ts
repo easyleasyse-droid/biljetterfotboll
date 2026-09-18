@@ -48,6 +48,7 @@ const getSearchUrl = (
   homeTeam: string,
   awayTeam: string,
   customUrl?: string
+  matchDate?: string
 ): string => {
   if (customUrl) return customUrl;
 
@@ -63,7 +64,7 @@ const getSearchUrl = (
     "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${combinedQuery}`)}`,
     "Football Ticket Net": `https://www.footballticketnet.com/search?q=${combinedQuery}`,
     "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=12028&awinaffid=3043299&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${combinedQuery}`)}`,
-    "OLKA Express": getOlkaUrl(homeTeam, awayTeam, m.date)
+    "OLKA Express": matchDate ? getOlkaUrl(homeTeam, awayTeam, matchDate) : `https://www.olkaexpress.se/`,
   };
 
   return domainMap[merchantName] || `https://www.google.com/search?q=${combinedQuery}`;
@@ -270,7 +271,7 @@ async function getMatchesData() {
     }
 
     // Generera deeplink till OLKA för hemmalaget
-      const olkaUrl = getOlkaDeepLink("fotboll");
+      const olkaUrl = getSearchUrl("OLKA Express", homeName, awayName, undefined, m.date);
       const lowestOtherPrice = offers.length > 0 ? Math.min(...offers.map(o => o.priceSEK).filter(p => p > 0)) : 1290;
 
       offers.push({
