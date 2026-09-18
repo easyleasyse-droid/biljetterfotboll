@@ -17,29 +17,29 @@ const formatTeamName = (key: string) => {
     .join(" ");
 };
 
-const getOlkaUrl = (homeTeam: string, awayTeam: string, matchDate?: string): string => {
-  // 1. Formatera lagnamnen till OLKA:s URL-slugs (t.ex. "Liverpool FC" -> "liverpool-fc")
+const getOlkaUrl = (homeTeam: string, awayTeam: string, matchDate: string): string => {
   const formatSlug = (name: string) =>
     name
       .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Tar bort å, ä, ö accenttecken
-      .replace(/[^a-z0-9 ]/g, "")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9 ]/g, " ")
       .trim()
       .replace(/\s+/g, "-");
 
-  const homeSlug = formatSlug(homeTeam);
-  const awaySlug = formatSlug(awayTeam);
+  const buildOlkaSlug = (name: string) => {
+    let slug = formatSlug(name);
+    if (!slug.endsWith("-fc") && !slug.endsWith("-cf") && !slug.endsWith("-sc") && !slug.endsWith("-afc")) {
+      slug += "-fc";
+    }
+    return slug;
+  };
 
-  // 2. Om vi har ett datum, använd den exakta event-URL:en. Annars använd lagkategorin.
-  let targetUrl = `https://www.olkaexpress.se/fotbollsbiljetter/${homeSlug}.se`;
+  const homeSlug = buildOlkaSlug(homeTeam);
+  const awaySlug = buildOlkaSlug(awayTeam);
 
-  if (matchDate) {
-    // Skapar t.ex. https://www.olkaexpress.se/events/soccer/2026-10-11-liverpool-fc-manchester-city?eventPackage=ticket
-    targetUrl = `https://www.olkaexpress.se/events/soccer/${matchDate}-${homeSlug}-${awaySlug}?eventPackage=ticket`;
-  }
+  const targetUrl = `https://www.olkaexpress.se/events/soccer/${matchDate}-${homeSlug}-${awaySlug}?eventPackage=ticket`;
 
-  // 3. Slå in i TradeDoubler-länken
   return `https://clk.tradedoubler.com/click?p(334863)&a(3324021)&g(0)&url=${encodeURIComponent(targetUrl)}`;
 };
 
@@ -63,7 +63,7 @@ const getSearchUrl = (
     "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${combinedQuery}`)}`,
     "Football Ticket Net": `https://www.footballticketnet.com/search?q=${combinedQuery}`,
     "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=12028&awinaffid=3043299&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${combinedQuery}`)}`,
-    "OLKA Express": getOlkaUrl(homeTeam, awayTeam)
+    "OLKA Express": getOlkaUrl(homeTeam, awayTeam, m.date)
   };
 
   return domainMap[merchantName] || `https://www.google.com/search?q=${combinedQuery}`;
