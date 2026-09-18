@@ -74,13 +74,19 @@ const getOlkaSlug = (teamName: string): string => {
 };
 
 const getOlkaUrl = (homeTeam: string, awayTeam: string): string => {
-  // Rensa bort vanliga prefix som FC, AC etc.
-  const cleanHome = homeTeam.toLowerCase().replace(/\bfc\b|\bac\b|\bafc\b/gi, "").trim().replace(/\s+/g, "-");
-  const cleanAway = awayTeam.toLowerCase().replace(/\bfc\b|\bac\b|\bafc\b/gi, "").trim().replace(/\s+/g, "-");
+  const formatSlug = (name: string) =>
+    name
+      .toLowerCase()
+      .replace(/\bfc\b|\bac\b|\bafc\b/gi, "")
+      .trim()
+      .replace(/\s+/g, "-");
 
-  // OLKA använder formatet /events/soccer/hemmalag-bortalag (utan datum)
-  const targetUrl = `https://www.olkaexpress.se/events/soccer/${cleanHome}-${cleanAway}`;
-  
+  const homeSlug = formatSlug(homeTeam);
+  const awaySlug = formatSlug(awayTeam);
+
+  // OLKA kör utan datum i sökvägen: /events/soccer/liverpool-manchester-city
+  const targetUrl = `https://www.olkaexpress.se/events/soccer/${homeSlug}-${awaySlug}`;
+
   return `https://clk.tradedoubler.com/click?p=355835&a=3495104&g=0&url=${encodeURIComponent(targetUrl)}`;
 };
 
