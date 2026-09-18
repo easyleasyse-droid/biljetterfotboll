@@ -354,8 +354,8 @@ const getCachedMatchesData = unstable_cache(
 
     return matches;
   },
-  ['global-matches-cache-v15'],
-  { revalidate: 3600 }
+  ['global-matches-cache-v16'],
+  { revalidate: 10 }
 );
 
 export async function GET() {
