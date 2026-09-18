@@ -33,8 +33,8 @@ const getSearchUrl = (
 ): string => {
   if (customUrl) return customUrl;
 
-  const cleanHome = homeTeam.replace(/\bfc\b|\bac\b|\bafc\b|\bsc\b/gi, "").trim();
-  const cleanAway = awayTeam.replace(/\bfc\b|\bac\b|\bafc\b|\bsc\b/gi, "").trim();
+  const cleanHome = homeTeam.replace(/\bfc\b|\bac\b|\bafc\b|\bsc\b|\bcf\b/gi, "").trim();
+  const cleanAway = awayTeam.replace(/\bfc\b|\bac\b|\bafc\b|\bsc\b|\bcf\b/gi, "").trim();
   const combinedQuery = encodeURIComponent(`${cleanHome} ${cleanAway}`);
 
   const domainMap: Record<string, string> = {
@@ -44,10 +44,9 @@ const getSearchUrl = (
     "Sports Events 365": `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`,
     "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${combinedQuery}`)}`,
     "Football Ticket Net": `https://www.footballticketnet.com/search?q=${combinedQuery}`,
-    "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=12028&awinaffid=3043299&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${combinedQuery}`)}`
-    "OLKA Express": getOlkaUrl(homeTeam, awayTeam) 
+    "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=12028&awinaffid=3043299&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${combinedQuery}`)}`,
+    "OLKA Express": getOlkaUrl(homeTeam, awayTeam)
   };
-
 
   return domainMap[merchantName] || `https://www.google.com/search?q=${combinedQuery}`;
 };
