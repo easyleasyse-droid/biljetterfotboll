@@ -47,7 +47,7 @@ const getSearchUrl = (
   merchantName: string,
   homeTeam: string,
   awayTeam: string,
-  customUrl?: string
+  customUrl?: string,
   matchDate?: string
 ): string => {
   if (customUrl) return customUrl;
@@ -271,7 +271,7 @@ async function getMatchesData() {
     }
 
     // Generera deeplink till OLKA för hemmalaget
-      const olkaUrl = getSearchUrl("OLKA Express", homeName, awayName, undefined, m.date);
+      const olkaUrl = getSearchUrl("OLKA Express", m.homeKey, m.awayKey, undefined, m.date);
       const lowestOtherPrice = offers.length > 0 ? Math.min(...offers.map(o => o.priceSEK).filter(p => p > 0)) : 1290;
 
       offers.push({
