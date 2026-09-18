@@ -100,7 +100,7 @@ const getOlkaUrl = (homeTeam: string, awayTeam: string, matchDate?: string): str
     : `https://olka.se/`;
 
   // TradeDoubler-spårning med din korrekta url-parameter
-  return `https://clk.tradedoubler.com/click?p(334863)&a(3324021)&g(0)&url=${encodeURIComponent(targetUrl)}`;
+ return `https://clk.tradedoubler.com/click?p=355835&a=3495104&g=0&url=${encodeURIComponent(targetUrl)}`;
 };
 
 const getSearchUrl = (
