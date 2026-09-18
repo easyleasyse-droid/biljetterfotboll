@@ -254,7 +254,7 @@ async function getMatchesData() {
         section: "Officiell partner",
         category: "Standard / VIP",
         priceSEK: lowestOtherPrice,
-        availableQuantity: 1,
+        availableQuantity: 5,
         deliveryType: "E-biljett",
         isVerified: true,
         url: olkaUrl,
