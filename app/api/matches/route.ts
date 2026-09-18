@@ -244,6 +244,7 @@ async function getMatchesData() {
 
     // Generera deeplink till OLKA för hemmalaget
       const olkaUrl = getOlkaDeepLink("fotboll");
+      const lowestOtherPrice = offers.length > 0 ? Math.min(...offers.map(o => o.priceSEK).filter(p => p > 0)) : 1290;
 
       offers.push({
         id: `${matchId}-olka`,
@@ -252,7 +253,7 @@ async function getMatchesData() {
         reviewsCount: 850,
         section: "Officiell partner",
         category: "Standard / VIP",
-        priceSEK: null, // Visar att priset kontrolleras på deras sida
+        priceSEK: lowestOtherPrice,
         availableQuantity: 1,
         deliveryType: "E-biljett",
         isVerified: true,
