@@ -1,5 +1,6 @@
 import zlib from 'zlib';
 import { promisify } from 'util';
+import { unstable_cache } from 'next/cache';
 
 const gunzip = promisify(zlib.gunzip);
 
@@ -7,12 +8,16 @@ export interface AwinTicketRow {
   merchantName: string;
   merchantId: string;
   productName: string;
-  description: string;
+  eventDate: string | null; // ISO-datum, om vi lyckades tolka ett ur produktnamn/beskrivning
   priceSEK: number;
   rawPrice: number;
   currency: string;
   url: string;
 }
+
+// Rad innan valutakonvertering skett - används internt för att kunna hämta
+// alla feeds och växelkurser PARALLELLT istället för i sekvens.
+type RawAwinRow = Omit<AwinTicketRow, 'priceSEK'>;
 
 interface FeedConfig {
   label: string;
@@ -35,10 +40,6 @@ const FEED_CONFIGS: FeedConfig[] = [
     url: "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/fid/113393/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/",
   },
 ];
-
-let cachedAwinRows: AwinTicketRow[] | null = null;
-let lastFetchTime = 0;
-const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 timmes cache
 
 // ---------------------------------------------------------------------------
 // CSV-parsning
@@ -194,7 +195,7 @@ const JUNK_PRODUCT_KEYWORDS = [
   'hospitality only',
 ];
 
-async function fetchSingleFeed(feed: FeedConfig, ratesPerSEK: Record<string, number>): Promise<AwinTicketRow[]> {
+async function fetchSingleFeed(feed: FeedConfig): Promise<RawAwinRow[]> {
   try {
     const res = await fetchWithTimeout(feed.url, 20000);
     if (!res.ok) return [];
@@ -218,7 +219,7 @@ async function fetchSingleFeed(feed: FeedConfig, ratesPerSEK: Record<string, num
     const idxMerchantId = headers.indexOf('merchant_id');
     const idxCurrency = headers.indexOf('currency');
 
-    const rows: AwinTicketRow[] = [];
+    const rows: RawAwinRow[] = [];
 
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -259,15 +260,17 @@ async function fetchSingleFeed(feed: FeedConfig, ratesPerSEK: Record<string, num
         currency = feed.defaultCurrency;
       }
 
-      const priceSEK = convertToSEK(price, currency, ratesPerSEK);
-      if (priceSEK === null) continue; // kunde inte räkna om priset säkert - hoppa hellre än att visa fel pris
+      // Tolka datum EN gång här och spara bara resultatet (ISO-sträng eller
+      // null) - vi behöver aldrig spara/cacha den fulla beskrivningstexten,
+      // vilket håller nere cachestorleken rejält.
+      const parsedDate = extractDateFromText(`${productName} ${description}`);
+      const eventDate = parsedDate ? parsedDate.toISOString() : null;
 
       rows.push({
         merchantName,
         merchantId,
         productName,
-        description,
-        priceSEK,
+        eventDate,
         rawPrice: price,
         currency,
         url: deepLink,
@@ -280,18 +283,51 @@ async function fetchSingleFeed(feed: FeedConfig, ratesPerSEK: Record<string, num
   }
 }
 
+// Den faktiska, dyra hämtningen (nätverk + gunzip + parsning + live
+// växelkurs). Detta är vad vi vill cacha i Vercels DELADE Data Cache, så att
+// en kall serverless-instans slipper göra om allt jobb - bara en av alla
+// instanser/regioner behöver betala kostnaden var 15:e minut.
+async function fetchAwinRowsUncached(): Promise<AwinTicketRow[]> {
+  const [ratesPerSEK, feedResults] = await Promise.all([
+    getRatesPerSEK(),
+    Promise.all(FEED_CONFIGS.map((feed) => fetchSingleFeed(feed))),
+  ]);
+
+  const allRawRows = feedResults.flat();
+
+  const rows: AwinTicketRow[] = [];
+  for (const raw of allRawRows) {
+    const priceSEK = convertToSEK(raw.rawPrice, raw.currency, ratesPerSEK);
+    if (priceSEK === null) continue; // kunde inte räkna om priset säkert - hoppa hellre än att visa fel pris
+    rows.push({ ...raw, priceSEK });
+  }
+
+  return rows;
+}
+
+// Delad, beständig cache (överlever kallstarter och delas mellan
+// serverless-instanser) - till skillnad från den enkla in-memory-cachen
+// nedan, som bara hjälper upprepade anrop inom SAMMA varma instans.
+const getAwinRowsFromSharedCache = unstable_cache(
+  fetchAwinRowsUncached,
+  ['awin-feed-rows-v1'],
+  { revalidate: 900 } // 15 min - biljettpriser rör sig, så vi vill inte cacha för länge
+);
+
+let cachedAwinRows: AwinTicketRow[] | null = null;
+let lastFetchTime = 0;
+const CACHE_DURATION_MS = 60 * 1000; // kort in-memory-cache - bara för att undvika dubbelarbete inom samma instans/request-våg
+
 export async function getAwinData(): Promise<AwinTicketRow[]> {
   const now = Date.now();
   if (cachedAwinRows && now - lastFetchTime < CACHE_DURATION_MS) {
     return cachedAwinRows;
   }
 
-  const ratesPerSEK = await getRatesPerSEK();
-  const results = await Promise.all(FEED_CONFIGS.map((feed) => fetchSingleFeed(feed, ratesPerSEK)));
-  const allRows = results.flat();
+  const rows = await getAwinRowsFromSharedCache();
 
-  if (allRows.length > 0) {
-    cachedAwinRows = allRows;
+  if (rows.length > 0) {
+    cachedAwinRows = rows;
     lastFetchTime = now;
   }
 
@@ -497,8 +533,8 @@ export function findAwinTicketsForMatchSync(
   const toleranceMs = (options?.dateToleranceDays ?? 3) * 24 * 60 * 60 * 1000;
 
   const withParsedDate = candidates.map((row) => ({
-  row,
-  date: extractDateFromText(`${row.productName} ${row.description}`),
+    row,
+    date: row.eventDate ? new Date(row.eventDate) : null,
   }));
 
   return withParsedDate
