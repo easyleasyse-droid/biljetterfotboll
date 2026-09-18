@@ -243,7 +243,7 @@ async function getMatchesData() {
     }
 
     // Generera deeplink till OLKA för hemmalaget
-      const olkaUrl = getOlkaDeepLink(n.homeTeam || n.home || "fotboll");
+      const olkaUrl = getOlkaDeepLink("fotboll");
 
       offers.push({
         id: `${matchId}-olka`,
