@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
 import { fetchAwinOffers, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
+import { getOlkaDeepLink } from "@/lib/olkaLinks";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
@@ -240,6 +241,25 @@ async function getMatchesData() {
         }
       }
     }
+
+    // Generera deeplink till OLKA för hemmalaget
+      const olkaUrl = getOlkaDeepLink(n.homeTeam || n.home || "fotboll");
+
+      offers.push({
+        id: `${matchId}-olka`,
+        merchantName: "OLKA Express",
+        rating: 4.8,
+        reviewsCount: 850,
+        section: "Officiell partner",
+        category: "Standard / VIP",
+        priceSEK: null, // Visar att priset kontrolleras på deras sida
+        availableQuantity: 1,
+        deliveryType: "E-biljett",
+        isVerified: true,
+        url: olkaUrl,
+        type: "ticket",
+      });
+
 
     // 4. Övriga partners utan livefeed (Sök-fallback)
     const lftTargetUrl = "https://www.livefootballtickets.com/";
