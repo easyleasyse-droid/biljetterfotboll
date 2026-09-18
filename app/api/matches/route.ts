@@ -17,29 +17,68 @@ const formatTeamName = (key: string) => {
     .join(" ");
 };
 
+// 1. Mapping-tabell för OLKA Express exakta lag-slugs
+const OLKA_TEAM_SLUGS: Record<string, string> = {
+  // Premier League
+  "Liverpool": "liverpool-fc",
+  "Manchester City": "manchester-city",
+  "Arsenal": "arsenal-fc",
+  "Chelsea": "chelsea-fc",
+  "Manchester United": "manchester-united",
+  "Tottenham": "tottenham-hotspur",
+  "Tottenham Hotspur": "tottenham-hotspur",
+  "Newcastle": "newcastle-united",
+  "Newcastle United": "newcastle-united",
+  "Aston Villa": "aston-villa",
+  "West Ham": "west-ham-united",
+  "West Ham United": "west-ham-united",
+
+  // Serie A
+  "AC Milan": "ac-milan",
+  "Milan": "ac-milan",
+  "Inter": "inter",
+  "Inter Milan": "inter",
+  "Juventus": "juventus",
+  "AS Roma": "as-roma",
+  "Roma": "as-roma",
+  "SS Lazio": "ss-lazio",
+  "Lazio": "ss-lazio",
+  "SSC Napoli": "ssc-napoli",
+  "Napoli": "ssc-napoli",
+
+  // La Liga
+  "Real Madrid": "real-madrid",
+  "FC Barcelona": "fc-barcelona",
+  "Barcelona": "fc-barcelona",
+  "Atletico Madrid": "atletico-madrid",
+  "Atlético Madrid": "atletico-madrid",
+  "Real Betis": "real-betis",
+  "Sevilla": "sevilla-fc",
+  "Real Sociedad": "real-sociedad"
+};
+
+const getOlkaSlug = (teamName: string): string => {
+  if (!teamName) return "";
+  const cleanName = teamName.trim();
+  
+  if (OLKA_TEAM_SLUGS[cleanName]) {
+    return OLKA_TEAM_SLUGS[cleanName];
+  }
+  
+  return cleanName
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+};
+
 const getOlkaUrl = (homeTeam: string, awayTeam: string, matchDate: string): string => {
-  const formatSlug = (name: string) =>
-    name
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9 ]/g, " ")
-      .trim()
-      .replace(/\s+/g, "-");
-
-  const buildOlkaSlug = (name: string) => {
-    let slug = formatSlug(name);
-    if (!slug.endsWith("-fc") && !slug.endsWith("-cf") && !slug.endsWith("-sc") && !slug.endsWith("-afc")) {
-      slug += "-fc";
-    }
-    return slug;
-  };
-
-  const homeSlug = buildOlkaSlug(homeTeam);
-  const awaySlug = buildOlkaSlug(awayTeam);
+  const homeSlug = getOlkaSlug(homeTeam);
+  const awaySlug = getOlkaSlug(awayTeam);
 
   const targetUrl = `https://www.olkaexpress.se/events/soccer/${matchDate}-${homeSlug}-${awaySlug}?eventPackage=ticket`;
-
+  
   return `https://clk.tradedoubler.com/click?p(355835)a(3495104)g(0)&url=${encodeURIComponent(targetUrl)}`;
 };
 
