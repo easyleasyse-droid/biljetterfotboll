@@ -196,7 +196,12 @@ const getCachedMatchesData = unstable_cache(
       
       const awinTickets = findAwinTicketsForMatchSync(homeName, awayName);
       for (const ticket of awinTickets) {
-        if (ticket.priceSEK && ticket.priceSEK > 50) {
+      // Hoppa över TicketNetwork helt
+      if (ticket.merchantName.toLowerCase().includes('ticketnetwork')) {
+        continue;
+      }
+
+      if (ticket.priceSEK && ticket.priceSEK > 50) {
           offers.push({
             id: `o-${matchId}-${ticket.merchantName.toLowerCase().replace(/\s+/g, '-')}`,
             merchantName: ticket.merchantName,
