@@ -7,6 +7,18 @@ export const SE365_AFFILIATE_ID = '5jutr9xaq8h3j';
 
 const BASE_URL = 'https://api-v2.sandbox365.com';
 
+// De mest populära fotbollsturneringarna från SportsEvents365
+const POPULAR_TOURNAMENTS = [
+  { id: 9, name: 'Premier League' },
+  { id: 24, name: 'La Liga' },
+  { id: 36, name: 'Serie A' },
+  { id: 42, name: 'UEFA Champions League' },
+  { id: 46, name: 'UEFA Europa League' },
+  { id: 12, name: 'Bundesliga' },
+  { id: 13, name: 'Ligue 1' },
+  { id: 15, name: 'Eredivisie' }
+];
+
 export function buildSportsEvents365Url(targetUrl: string, isEnglish: boolean = false): string {
   let url = targetUrl;
   if (isEnglish && url.includes('sportsevents365.com')) {
@@ -19,18 +31,17 @@ export function buildSportsEvents365Url(targetUrl: string, isEnglish: boolean = 
 export async function fetchSportsEvents365Matches() {
   const authHeader = 'Basic ' + Buffer.from(`${API_USERNAME}:${API_PASSWORD}`).toString('base64');
 
-  // Endpoints att testa under Search API
+  // Vi testar strukturer för att hämta matcher för Premier League (id 9)
+  const tournamentId = 9; 
   const endpointsToTest = [
-    `/events/search?eventTypeId=1000&apiKey=${API_KEY}`,
-    `/tickets?eventTypeId=1000&apiKey=${API_KEY}`,
-    `/events/top?eventTypeId=1000&apiKey=${API_KEY}`,
-    `/events/upcoming?eventTypeId=1000&apiKey=${API_KEY}`
+    `${BASE_URL}/events/tournament/${tournamentId}?apiKey=${API_KEY}`,
+    `${BASE_URL}/events?tournamentId=${tournamentId}&apiKey=${API_KEY}`,
+    `${BASE_URL}/tickets?tournamentId=${tournamentId}&apiKey=${API_KEY}`
   ];
 
   let lastResult = null;
 
-  for (const path of endpointsToTest) {
-    const url = `${BASE_URL}${path}`;
+  for (const url of endpointsToTest) {
     try {
       const response = await fetch(url, {
         method: 'GET',
@@ -46,20 +57,21 @@ export async function fetchSportsEvents365Matches() {
       if (response.ok) {
         return {
           success: true,
-          workingEndpoint: path,
+          workingEndpoint: url,
+          tournamentsIncluded: POPULAR_TOURNAMENTS,
           data: data,
         };
       }
 
-      lastResult = { path, status: response.status, data };
+      lastResult = { url, status: response.status, data };
     } catch (err: any) {
-      lastResult = { path, error: err.message };
+      lastResult = { url, error: err.message };
     }
   }
 
   return {
     success: false,
-    message: 'Ingen av sök-endpointarna gav 200 OK',
+    message: 'Kunde inte hämta matcher per turnering',
     lastTried: lastResult,
   };
 }
