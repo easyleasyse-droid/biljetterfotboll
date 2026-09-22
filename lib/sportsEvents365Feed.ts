@@ -7,7 +7,6 @@ export const SE365_AFFILIATE_ID = '5jutr9xaq8h3j';
 
 const BASE_URL = 'https://api-v2.sandbox365.com';
 
-// Bygg utgående affiliate-länk för SportsEvents365
 export function buildSportsEvents365Url(targetUrl: string, isEnglish: boolean = false): string {
   let url = targetUrl;
   if (isEnglish && url.includes('sportsevents365.com')) {
@@ -17,55 +16,50 @@ export function buildSportsEvents365Url(targetUrl: string, isEnglish: boolean = 
   return `${url}${separator}a_aid=${SE365_AFFILIATE_ID}`;
 }
 
-// Hämta kommande fotbollsmatcher från SportsEvents365
 export async function fetchSportsEvents365Matches() {
   const authHeader = 'Basic ' + Buffer.from(`${API_USERNAME}:${API_PASSWORD}`).toString('base64');
 
-  // Vi söker efter biljetter för fotboll (eventTypeId 1000)
-  const endpointUrl = `${BASE_URL}/events?eventTypeId=1000&apiKey=${API_KEY}`;
+  // Endpoints att testa under Search API
+  const endpointsToTest = [
+    `/events/search?eventTypeId=1000&apiKey=${API_KEY}`,
+    `/tickets?eventTypeId=1000&apiKey=${API_KEY}`,
+    `/events/top?eventTypeId=1000&apiKey=${API_KEY}`,
+    `/events/upcoming?eventTypeId=1000&apiKey=${API_KEY}`
+  ];
 
-  try {
-    const response = await fetch(endpointUrl, {
-      method: 'GET',
-      headers: {
-        'Authorization': authHeader,
-        'Accept': 'application/json',
-      },
-      next: { revalidate: 3600 }, // Cacha i 1 timme
-    });
+  let lastResult = null;
 
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+  for (const path of endpointsToTest) {
+    const url = `${BASE_URL}${path}`;
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': authHeader,
+          'Accept': 'application/json',
+        },
+        cache: 'no-store',
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (response.ok) {
+        return {
+          success: true,
+          workingEndpoint: path,
+          data: data,
+        };
+      }
+
+      lastResult = { path, status: response.status, data };
+    } catch (err: any) {
+      lastResult = { path, error: err.message };
     }
-
-    const json = await response.json();
-    const rawEvents = json.data || [];
-
-    // Mappa om svaret till ett strukturerat format för er sajt
-    const mappedMatches = rawEvents.map((event: any) => {
-      const originalUrl = event.url || 'https://www.sportsevents365.com';
-      return {
-        id: `se365-${event.id}`,
-        merchant: 'SportsEvents365',
-        homeTeam: event.homeTeam || event.name?.split(' vs ')[0] || event.name,
-        awayTeam: event.awayTeam || event.name?.split(' vs ')[1] || '',
-        tournament: event.tournament?.name || '',
-        venue: event.venue?.name || '',
-        city: event.city?.name || '',
-        country: event.country?.name || '',
-        date: event.date || event.startDate,
-        minPrice: event.minPrice || event.price || 0,
-        currency: event.currency || 'EUR',
-        url: buildSportsEvents365Url(originalUrl),
-      };
-    });
-
-    return {
-      success: true,
-      count: mappedMatches.length,
-      matches: mappedMatches,
-    };
-  } catch (err: any) {
-    return { success: false, error: err.message };
   }
+
+  return {
+    success: false,
+    message: 'Ingen av sök-endpointarna gav 200 OK',
+    lastTried: lastResult,
+  };
 }
