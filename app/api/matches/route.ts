@@ -161,7 +161,7 @@ async function getMatchesData() {
   fetchSportsEvents365Matches().catch(() => null),
  ])) as [any[], any[], any[], any];
 
- const se365Matches = se365Result?.success && Array.isArray(se365Result.data) ? se365Result.data : [];
+ const se365Matches = se365Result?.success && Array.isArray(se365Result.matches) ? se365Result.matches : [];
 
   const EUR_TO_SEK = 11.25;
 
@@ -239,26 +239,24 @@ async function getMatchesData() {
       });
     }
 
-    // Sports Events 365 Feed
-    const se365Match = se365Matches.find((se: any) => {
-    const seHome = (se.homeTeam || "").toLowerCase().trim();
-    const seAway = (se.awayTeam || "").toLowerCase().trim();
-    const hName = (homeName || "").toLowerCase().trim();
-    const aName = (awayName || "").toLowerCase().trim();
+    // Matcha mot Sports Events 365
+    const se365Match = Array.isArray(se365Matches) ? se365Matches.find((se: any) => {
+      const seHome = (se.homeTeam || '').toLowerCase().trim();
+      const seAway = (se.awayTeam || '').toLowerCase().trim();
+      const hName = (homeName || '').toLowerCase().trim();
+      const aName = (awayName || '').toLowerCase().trim();
 
-    const homeMatch = seHome && hName && (seHome.includes(hName) || hName.includes(seHome));
-    const awayMatch = seAway && aName && (seAway.includes(aName) || aName.includes(seAway));
+      return (seHome.includes(hName) || hName.includes(seHome)) && 
+             (seAway.includes(aName) || aName.includes(seAway));
+    }) : null;
 
-    return homeMatch && awayMatch;
-  });
-
-  if (se365Match) {
-    const priceEUR = se365Match?.minTicketPrice?.price || se365Match?.minPrice || se365Match?.price || 0;
+    if (se365Match) {
+      const priceEUR = se365Match.minPrice || se365Match.priceEUR || 0;
+      if (priceEUR > 0) {
         const priceSEK = Math.round(priceEUR * EUR_TO_SEK);
 
-      if (priceSEK > 0) {
         offers.push({
-          id: `o-${matchId}-se365`,
+          id: se365Match.id || `o-${matchId}-se365`,
           merchantName: "Sports Events 365",
           rating: 4.6,
           reviewsCount: 1240,
@@ -268,8 +266,8 @@ async function getMatchesData() {
           availableQuantity: 4,
           deliveryType: "E-biljett (Direkt)",
           isVerified: true,
-          url: se365Match.url || getSearchUrl("Sports Events 365", homeName, awayName),
-          type: "ticket",
+          url: se365Match.url,
+          type: "ticket"
         });
       }
     }
