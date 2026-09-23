@@ -50,19 +50,31 @@ export async function fetchSportsEvents365Matches() {
       const rawEvents = json.data || [];
 
       return rawEvents.map((event: any) => {
+        // Hjälpfunktion för att ta ut namnet om laget är ett objekt eller en sträng
+        const getTeamName = (teamField: any) => {
+          if (!teamField) return '';
+          if (typeof teamField === 'string') return teamField;
+          if (typeof teamField === 'object' && teamField.name) return teamField.name;
+          return '';
+        };
+
+        const homeName = getTeamName(event.homeTeam) || event.name?.split(' vs ')[0] || event.name || '';
+        const awayName = getTeamName(event.awayTeam) || event.name?.split(' vs ')[1] || '';
+        
         const rawUrl = event.url || event.link || 'https://www.sportsevents365.com';
+
         return {
           id: `se365-${event.id}`,
           merchant: 'SportsEvents365',
-          homeTeam: event.homeTeam || event.name?.split(' vs ')[0] || event.name,
-          awayTeam: event.awayTeam || event.name?.split(' vs ')[1] || '',
+          homeTeam: homeName,
+          awayTeam: awayName,
           tournament: tournament.name,
           tournamentId: tournament.id,
-          venue: event.venue?.name || '',
-          city: event.city?.name || '',
-          country: event.country?.name || '',
-          date: event.date || event.startDate,
-          minPrice: event.minPrice || event.price || 0,
+          venue: typeof event.venue === 'object' ? event.venue?.name : (event.venue || ''),
+          city: typeof event.city === 'object' ? event.city?.name : (event.city || ''),
+          country: typeof event.country === 'object' ? event.country?.name : (event.country || ''),
+          date: event.date || event.startDate || event.eventDate || '',
+          minPrice: event.minPrice || event.startingPrice || event.price || 0,
           currency: event.currency || 'EUR',
           url: buildSportsEvents365Url(rawUrl),
         };
