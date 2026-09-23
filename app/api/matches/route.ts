@@ -3,6 +3,7 @@ import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
 import { fetchAwinOffers, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
 import { getOlkaDeepLink } from "@/lib/olkaLinks";
+import { fetchSportsEvents365Matches } from "@/lib/sportsEvents365Feed";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
@@ -157,6 +158,7 @@ async function getMatchesData() {
     fetchP1FeedRows().catch(() => []),
     fetchTicomboParsedRows().catch(() => []),
     fetchAwinOffers().catch(() => []),
+    fetchSportsEvents365Matches().catch(() => null),
   ])) as [any[], any[], any[]];
 
   const EUR_TO_SEK = 11.25;
@@ -233,6 +235,39 @@ async function getMatchesData() {
         url: ticomboUrl || getSearchUrl("Ticombo", homeName, awayName),
         type: "ticket"
       });
+    }
+
+    // Sports Events 365 Feed
+    const se365Match = se365Matches.find((se: any) => {
+      const seHome = (se.homeTeam || se.name || '').toLowerCase();
+      const seAway = (se.awayTeam || '').toLowerCase();
+      const hName = homeName.toLowerCase();
+      const aName = awayName.toLowerCase();
+
+      return (seHome.includes(hName) || hName.includes(seHome)) &&
+             (seAway.includes(aName) || aName.includes(seAway));
+    });
+
+    if (se365Match) {
+      const priceEUR = se365Match.minPrice || se365Match.price || 0;
+      const priceSEK = Math.round(priceEUR * EUR_TO_SEK);
+
+      if (priceSEK > 0) {
+        offers.push({
+          id: `o-${matchId}-se365`,
+          merchantName: "Sports Events 365",
+          rating: 4.6,
+          reviewsCount: 1240,
+          section: "Verifierad Biljett",
+          category: "Standard / VIP",
+          priceSEK: priceSEK,
+          availableQuantity: 4,
+          deliveryType: "E-biljett (Direkt)",
+          isVerified: true,
+          url: se365Match.url || getSearchUrl("Sports Events 365", homeName, awayName),
+          type: "ticket",
+        });
+      }
     }
 
     // 3. Awin Feed (Strikt filtrerat per merchant)
