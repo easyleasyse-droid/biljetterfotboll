@@ -5,10 +5,9 @@ const API_PASSWORD = process.env.SE365_PASSWORD || '6cvxxdbM5F0x';
 const API_KEY = process.env.SE365_API_KEY || 'ef0704884bb49a77a39e981ba7be5fb0';
 export const SE365_AFFILIATE_ID = '5jutr9xaq8h3j';
 
-// Skarp produktions-URL för SportsEvents365 v2 API
+// Skarp produktions-URL
 const BASE_URL = 'https://api-v2.sportsevents365.com';
 
-// Populära fotbollsturneringar och deras ID i SportsEvents365
 export const POPULAR_TOURNAMENTS = [
   { id: 9, name: 'Premier League' },
   { id: 24, name: 'La Liga' },
@@ -20,11 +19,8 @@ export const POPULAR_TOURNAMENTS = [
   { id: 15, name: 'Eredivisie' }
 ];
 
-/**
- * Hjälpfunktion för att bygga utgående affiliate-länkar till SportsEvents365
- */
 export function buildSportsEvents365Url(targetUrl: string, isEnglish: boolean = false): string {
-  let url = targetUrl;
+  let url = targetUrl || 'https://www.sportsevents365.com';
   if (isEnglish && url.includes('sportsevents365.com')) {
     url = url.replace(/www\.sportsevents365\.com/, 'ticket.sportsevents365.com');
   }
@@ -32,52 +28,58 @@ export function buildSportsEvents365Url(targetUrl: string, isEnglish: boolean = 
   return `${url}${separator}a_aid=${SE365_AFFILIATE_ID}`;
 }
 
-/**
- * Hämtar matcher och biljetter från SportsEvents365 produktions-API
- */
 export async function fetchSportsEvents365Matches() {
   const authHeader = 'Basic ' + Buffer.from(`${API_USERNAME}:${API_PASSWORD}`).toString('base64');
+  const allMatches: any[] = [];
 
-  const endpointsToTest = [
-    `${BASE_URL}/tickets?apiKey=${API_KEY}`,
-    `${BASE_URL}/events?apiKey=${API_KEY}`,
-    `${BASE_URL}/events/search?apiKey=${API_KEY}`
-  ];
-
-  let lastError = null;
-
-  for (const url of endpointsToTest) {
+  const tournamentRequests = POPULAR_TOURNAMENTS.map(async (tournament) => {
+    const url = `${BASE_URL}/events/tournament/${tournament.id}?apiKey=${API_KEY}`;
     try {
       const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Authorization': authHeader,
-          'x-api-key': API_KEY,
           'Accept': 'application/json',
         },
         cache: 'no-store',
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        return {
-          success: true,
-          endpoint: url,
-          tournaments: POPULAR_TOURNAMENTS,
-          data: data,
-        };
-      }
+      if (!response.ok) return [];
 
-      const errData = await response.json().catch(() => null);
-      lastError = { url, status: response.status, data: errData };
-    } catch (err: any) {
-      lastError = { url, error: err.message };
+      const json = await response.json();
+      const rawEvents = json.data || [];
+
+      return rawEvents.map((event: any) => {
+        const rawUrl = event.url || event.link || 'https://www.sportsevents365.com';
+        return {
+          id: `se365-${event.id}`,
+          merchant: 'SportsEvents365',
+          homeTeam: event.homeTeam || event.name?.split(' vs ')[0] || event.name,
+          awayTeam: event.awayTeam || event.name?.split(' vs ')[1] || '',
+          tournament: tournament.name,
+          tournamentId: tournament.id,
+          venue: event.venue?.name || '',
+          city: event.city?.name || '',
+          country: event.country?.name || '',
+          date: event.date || event.startDate,
+          minPrice: event.minPrice || event.price || 0,
+          currency: event.currency || 'EUR',
+          url: buildSportsEvents365Url(rawUrl),
+        };
+      });
+    } catch (err) {
+      console.error(`Fel vid hämtning av turnering ${tournament.name}:`, err);
+      return [];
     }
-  }
+  });
+
+  const results = await Promise.all(tournamentRequests);
+  results.forEach(matches => allMatches.push(...matches));
 
   return {
-    success: false,
-    message: 'Kunde inte hämta data från SportsEvents365 produktions-API.',
-    lastTried: lastError,
+    success: true,
+    totalMatches: allMatches.length,
+    tournamentsCount: POPULAR_TOURNAMENTS.length,
+    matches: allMatches,
   };
 }
