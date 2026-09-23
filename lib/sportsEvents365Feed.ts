@@ -8,7 +8,7 @@ const API_KEY = process.env.SE365_API_KEY || 'ef0704884bb49a77a39e981ba7be5fb0';
 export async function GET() {
   const authHeader = 'Basic ' + Buffer.from(`${API_USERNAME}:${API_PASSWORD}`).toString('base64');
   
-  // Vi hämtar rådata för Premier League (ID 9)
+  // Hämtar rådata direkt för Premier League (ID 9)
   const url = `https://api-v2.sportsevents365.com/events/tournament/9?apiKey=${API_KEY}`;
 
   try {
@@ -24,7 +24,7 @@ export async function GET() {
     const rawMatch = json.data?.[0] || json[0] || json;
 
     return NextResponse.json({
-      message: "Här är den oredigerade rådatan för första matchen:",
+      message: "Rådata för första matchen:",
       rawMatchSample: rawMatch
     });
   } catch (err: any) {
