@@ -154,12 +154,14 @@ async function getMatchesData() {
     return !isDutch;
   });
 
-  const [p1Rows, ticomboRows, awinRows] = (await Promise.all([
-    fetchP1FeedRows().catch(() => []),
-    fetchTicomboParsedRows().catch(() => []),
-    fetchAwinOffers().catch(() => []),
-    fetchSportsEvents365Matches().catch(() => null),
-  ])) as [any[], any[], any[]];
+  const [p1Rows, ticomboRows, awinRows, se365Result] = (await Promise.all([
+  fetchP1FeedRows().catch(() => []),
+  fetchTicomboParsedRows().catch(() => []),
+  fetchAwinOffers().catch(() => []),
+  fetchSportsEvents365Matches().catch(() => null),
+ ])) as [any[], any[], any[], any];
+
+ const se365Matches = se365Result?.success && Array.isArray(se365Result.data) ? se365Result.data : [];
 
   const EUR_TO_SEK = 11.25;
 
