@@ -250,26 +250,25 @@ async function getMatchesData() {
              (seAway.includes(aName) || aName.includes(seAway));
     }) : null;
 
-    if (se365Match) {
-      const priceEUR = se365Match.minPrice || se365Match.priceEUR || 0;
-      if (priceEUR > 0) {
-        const priceSEK = Math.round(priceEUR * EUR_TO_SEK);
+    if (se365Match && se365Match.minPrice > 0) {
+      const priceSEK = se365Match.currency === 'EUR' 
+        ? Math.round(se365Match.minPrice * EUR_TO_SEK) 
+        : Math.round(se365Match.minPrice);
 
-        offers.push({
-          id: se365Match.id || `o-${matchId}-se365`,
-          merchantName: "Sports Events 365",
-          rating: 4.6,
-          reviewsCount: 1240,
-          section: "Verifierad Biljett",
-          category: "Standard / VIP",
-          priceSEK: priceSEK,
-          availableQuantity: 4,
-          deliveryType: "E-biljett (Direkt)",
-          isVerified: true,
-          url: se365Match.url,
-          type: "ticket"
-        });
-      }
+      offers.push({
+        id: se365Match.id || `o-${matchId}-se365`,
+        merchantName: "Sports Events 365",
+        rating: 4.6,
+        reviewsCount: 1240,
+        section: "Verifierad Biljett",
+        category: "Standard / VIP",
+        priceSEK: priceSEK,
+        availableQuantity: 4,
+        deliveryType: "E-biljett (Direkt)",
+        isVerified: true,
+        url: se365Match.url,
+        type: "ticket"
+      });
     }
 
     // 3. Awin Feed (Strikt filtrerat per merchant)
