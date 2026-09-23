@@ -241,18 +241,20 @@ async function getMatchesData() {
 
     // Sports Events 365 Feed
     const se365Match = se365Matches.find((se: any) => {
-      const seHome = (se.homeTeam || se.name || '').toLowerCase();
-      const seAway = (se.awayTeam || '').toLowerCase();
-      const hName = homeName.toLowerCase();
-      const aName = awayName.toLowerCase();
+    const seHome = (se.homeTeam || "").toLowerCase().trim();
+    const seAway = (se.awayTeam || "").toLowerCase().trim();
+    const hName = (homeName || "").toLowerCase().trim();
+    const aName = (awayName || "").toLowerCase().trim();
 
-      return (seHome.includes(hName) || hName.includes(seHome)) &&
-             (seAway.includes(aName) || aName.includes(seAway));
-    });
+    const homeMatch = seHome && hName && (seHome.includes(hName) || hName.includes(seHome));
+    const awayMatch = seAway && aName && (seAway.includes(aName) || aName.includes(seAway));
 
-    if (se365Match) {
-      const priceEUR = se365Match.minPrice || se365Match.price || 0;
-      const priceSEK = Math.round(priceEUR * EUR_TO_SEK);
+    return homeMatch && awayMatch;
+  });
+
+  if (se365Match) {
+    const priceEUR = se365Match?.minTicketPrice?.price || se365Match?.minPrice || se365Match?.price || 0;
+        const priceSEK = Math.round(priceEUR * EUR_TO_SEK);
 
       if (priceSEK > 0) {
         offers.push({

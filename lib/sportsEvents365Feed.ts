@@ -21,7 +21,6 @@ export const POPULAR_TOURNAMENTS = [
 export function buildSportsEvents365Url(targetUrl: string, homeTeam?: string, awayTeam?: string): string {
   let url = targetUrl;
 
-  // Om API:et saknar direktlänk eller skickar startsidan, bygg en direkt sök/event-URL till matchen
   if (!url || url === 'https://www.sportsevents365.com' || url === 'https://www.sportsevents365.com/') {
     if (homeTeam && awayTeam) {
       const query = encodeURIComponent(`${homeTeam} vs ${awayTeam}`);
@@ -71,11 +70,9 @@ export async function fetchSportsEvents365Matches() {
         
         const matchDate = event.date || event.date_time || event.dateTime || event.startDate || event.start_date || '';
 
-        // Läs ut pris från flera möjliga fält
         const rawPrice = event.minPrice ?? event.min_price ?? event.startingPrice ?? event.starting_price ?? event.price ?? event.lowestPrice ?? 0;
         const parsedPrice = typeof rawPrice === 'number' ? rawPrice : parseFloat(rawPrice) || 0;
 
-        // Läs ut direktlänk från eventet om den finns
         const rawUrl = event.url || event.link || event.event_url || event.buy_url || event.deep_link || '';
 
         return {
