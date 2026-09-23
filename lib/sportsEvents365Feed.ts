@@ -40,6 +40,11 @@ export async function fetchSportsEvents365Matches() {
 
   const tournamentRequests = POPULAR_TOURNAMENTS.map(async (tournament) => {
     const url = `${BASE_URL}/events/tournament/${tournament.id}?apiKey=${API_KEY}`;
+    
+    // Hard timeout på 2 sekunder
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+
     try {
       const response = await fetch(url, {
         method: 'GET',
@@ -47,8 +52,12 @@ export async function fetchSportsEvents365Matches() {
           'Authorization': authHeader,
           'Accept': 'application/json',
         },
-        cache: 'no-store',
+        // Cache på fetch-nivå (1 timme)
+        next: { revalidate: 3600 },
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) return [];
 
@@ -92,7 +101,7 @@ export async function fetchSportsEvents365Matches() {
         };
       });
     } catch (err) {
-      console.error(`Fel vid hämtning av turnering ${tournament.name}:`, err);
+      clearTimeout(timeoutId);
       return [];
     }
   });
