@@ -7,6 +7,7 @@ export interface P1Ticket {
   directUrl: string;
 }
 
+// Förbättrad namntvätt som INTE raderar lagnamn som Atletico eller Real
 function cleanTeamName(name: string): string {
   if (!name) return "";
   
@@ -15,18 +16,29 @@ function cleanTeamName(name: string): string {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 
-  // Specialhantering för Inter
-  if (cleaned.includes("inter") && !cleaned.includes("miami") && !cleaned.includes("turku")) {
-    return "inter";
+  const synonyms: Record<string, string> = {
+    'psg': 'paris saint germain',
+    'paris sg': 'paris saint germain',
+    'bayern munchen': 'bayern munich',
+    'bayern': 'bayern munich',
+    'inter milan': 'inter',
+    'internazionale': 'inter',
+    'ath bilbao': 'athletic bilbao',
+    'atletico de madrid': 'atletico madrid',
+    'atletico madrid': 'atletico madrid',
+  };
+
+  if (synonyms[cleaned.trim()]) {
+    cleaned = synonyms[cleaned.trim()];
   }
 
   return cleaned
-    .replace(/\b(18\d\d|19\d\d|20\d\d)\b/g, "")
-    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd|real|atletico|atletico de)\b/g, "")
+    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd)\b/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
 
+// Bättre CSV-splitter som hanterar fnuttar och komman i fält
 function parseCsvLine(text: string): string[] {
   const result: string[] = [];
   let cur = '';
@@ -45,6 +57,20 @@ function parseCsvLine(text: string): string[] {
   }
   result.push(cur.trim().replace(/^"|"$/g, ''));
   return result;
+}
+
+// Robust datumomvandlare
+function parseDateToIso(dateStr: string): string {
+  if (!dateStr) return '';
+  const clean = dateStr.trim().split(' ')[0].split('T')[0];
+  if (clean.includes('/')) {
+    const parts = clean.split('/');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+      return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+    }
+  }
+  return clean;
 }
 
 export const fetchP1FeedRows = unstable_cache(
@@ -72,7 +98,6 @@ export const fetchP1FeedRows = unstable_cache(
           row[header] = values[idx] || '';
         });
 
-        // Filtrera bort motorsport
         const categories = (row['categories'] || row['subcategories'] || '').toLowerCase();
         if (categories.includes('motorsports') || categories.includes('formula')) continue;
 
@@ -84,7 +109,7 @@ export const fetchP1FeedRows = unstable_cache(
       return [];
     }
   },
-  ['p1-feed-parsed-rows-v5'],
+  ['p1-feed-parsed-rows-v6'],
   { revalidate: 3600 }
 );
 
@@ -99,23 +124,27 @@ export function findP1TicketInRows(
   const cleanHome = cleanTeamName(homeTeam);
   const cleanAway = cleanTeamName(awayTeam);
 
-  let targetDate = '';
-  if (matchDate) {
-    const d = new Date(matchDate);
-    if (!isNaN(d.getTime())) {
-      targetDate = d.toISOString().split('T')[0];
-    }
-  }
+  const targetIso = matchDate ? parseDateToIso(matchDate) : '';
 
-  // Sök ut ALLA giltiga rader för matchen
   const matchingRows = rows.filter((row) => {
-    const p1Home = cleanTeamName(row['home_team_name'] || '');
-    const p1Away = cleanTeamName(row['away_team_name'] || '');
-    const p1Date = (row['date_start'] || '').split(' ')[0].split('T')[0];
+    // Sök bland alla tänkbara kolumnnamn för hemmalag/bortalag i P1:s CSV
+    const p1HomeRaw = row['home_team_name'] || row['home_team'] || row['hometeam'] || '';
+    const p1AwayRaw = row['away_team_name'] || row['away_team'] || row['awayteam'] || '';
+    
+    const p1Home = cleanTeamName(p1HomeRaw);
+    const p1Away = cleanTeamName(p1AwayRaw);
 
-    if (targetDate && p1Date) {
-      const diffDays = Math.abs((new Date(targetDate).getTime() - new Date(p1Date).getTime()) / (1000 * 3600 * 24));
-      if (diffDays > 3) return false;
+    const p1DateRaw = row['date_start'] || row['event_date'] || row['date'] || '';
+    const p1Iso = parseDateToIso(p1DateRaw);
+
+    // Om båda har giltiga datum, tillåt upp till 5 dagars diff (spelscheman flyttas ofta)
+    if (targetIso && p1Iso) {
+      const tTime = new Date(targetIso).getTime();
+      const pTime = new Date(p1Iso).getTime();
+      if (!isNaN(tTime) && !isNaN(pTime)) {
+        const diffDays = Math.abs((tTime - pTime) / (1000 * 3600 * 24));
+        if (diffDays > 5) return false;
+      }
     }
 
     if (p1Home && p1Away) {
@@ -129,20 +158,19 @@ export function findP1TicketInRows(
 
   if (matchingRows.length === 0) return null;
 
-  // Sortera så att vi alltid väljer den BILLIGASTE biljetten
   matchingRows.sort((a, b) => {
-    const priceA = parseFloat(a['price'] || '99999');
-    const priceB = parseFloat(b['price'] || '99999');
+    const priceA = parseFloat(a['price'] || a['min_price'] || '99999');
+    const priceB = parseFloat(b['price'] || b['min_price'] || '99999');
     return priceA - priceB;
   });
 
   const cheapestRow = matchingRows[0];
-  const priceNum = parseFloat(cheapestRow['price'] || '0');
-  const directUrl = cheapestRow['producturl'] || cheapestRow['product_url'] || '';
+  const priceNum = parseFloat(cheapestRow['price'] || cheapestRow['min_price'] || '0');
+  const directUrl = cheapestRow['producturl'] || cheapestRow['product_url'] || cheapestRow['url'] || '';
 
   if (priceNum > 0 && directUrl) {
     return {
-      title: cheapestRow['name'] || `${homeTeam} vs ${awayTeam}`,
+      title: cheapestRow['name'] || cheapestRow['title'] || `${homeTeam} vs ${awayTeam}`,
       price: priceNum,
       currency: 'EUR',
       directUrl: directUrl

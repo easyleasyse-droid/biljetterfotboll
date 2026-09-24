@@ -9,11 +9,29 @@ export interface TicomboTicket {
 
 function cleanTeamName(name: string): string {
   if (!name) return "";
-  return name
+  
+  let cleaned = name
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/\./g, "")
+    .toLowerCase();
+
+  const synonyms: Record<string, string> = {
+    'psg': 'paris saint germain',
+    'paris sg': 'paris saint germain',
+    'bayern munchen': 'bayern munich',
+    'bayern': 'bayern munich',
+    'inter milan': 'inter',
+    'internazionale': 'inter',
+    'ath bilbao': 'athletic bilbao',
+    'atletico de madrid': 'atletico madrid',
+    'atletico madrid': 'atletico madrid',
+  };
+
+  if (synonyms[cleaned.trim()]) {
+    cleaned = synonyms[cleaned.trim()];
+  }
+
+  return cleaned
     .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd|de)\b/g, "")
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
@@ -45,7 +63,19 @@ function parseCsvLineStrict(text: string): string[] {
   return result;
 }
 
-// 1. Parsa hela CSV-filen EN GÅNG och spara de färdiga objekten i minnescachen
+function parseDateToIso(dateStr: string): string {
+  if (!dateStr) return '';
+  const clean = dateStr.trim().split(' ')[0].split('T')[0];
+  if (clean.includes('/')) {
+    const parts = clean.split('/');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+      return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+    }
+  }
+  return clean;
+}
+
 export const fetchTicomboParsedRows = unstable_cache(
   async (): Promise<any[]> => {
     const feedUrl =
@@ -80,9 +110,8 @@ export const fetchTicomboParsedRows = unstable_cache(
 
         const cols = parseCsvLineStrict(line);
 
-        // Skala bort allt som inte är sport/fotboll direkt i cachen
         const category = categoryIdx !== -1 && categoryIdx < cols.length ? cols[categoryIdx].toLowerCase() : "";
-        if (category && category.includes("music")) continue;
+        if (category && (category.includes("music") || category.includes("concert"))) continue;
 
         const eventName = nameIdx !== -1 && nameIdx < cols.length ? cols[nameIdx] : "";
         const eventFullName = fullNameIdx !== -1 && fullNameIdx < cols.length ? cols[fullNameIdx] : "";
@@ -91,9 +120,11 @@ export const fetchTicomboParsedRows = unstable_cache(
 
         if (!rawUrl || !priceRaw) continue;
 
+        const fullTitleStr = `${eventName} ${eventFullName}`;
+
         rows.push({
-          title: `${eventName} ${eventFullName}`,
-          cleanTitle: cleanTeamName(`${eventName} ${eventFullName}`),
+          title: fullTitleStr,
+          cleanTitle: cleanTeamName(fullTitleStr),
           date: dateIdx !== -1 && dateIdx < cols.length ? cols[dateIdx] : "",
           price: parseFloat(priceRaw),
           currency: (currencyIdx !== -1 && currencyIdx < cols.length && cols[currencyIdx]) ? cols[currencyIdx] : "EUR",
@@ -107,11 +138,10 @@ export const fetchTicomboParsedRows = unstable_cache(
       return [];
     }
   },
-  ['ticombo-parsed-rows-v1'],
+  ['ticombo-parsed-rows-v2'],
   { revalidate: 3600 }
 );
 
-// 2. Sökningen mot färdiga objekt går på under 1 millisekund per match
 export function findTicomboTicketInRows(
   rows: any[],
   homeTeam: string, 
@@ -124,18 +154,29 @@ export function findTicomboTicketInRows(
   const cleanAway = cleanTeamName(awayTeam);
   if (!cleanHome || !cleanAway) return null;
 
-  const targetDateStr = matchDate ? matchDate.split('T')[0] : null;
+  const targetIso = matchDate ? parseDateToIso(matchDate) : '';
 
   const matches = rows.filter(row => {
-    // Kräver båda lagen i titeln
-    if (!row.cleanTitle.includes(cleanHome) || !row.cleanTitle.includes(cleanAway)) {
+    // 1. Titel-koll: Båda lagen måste finnas i titeln
+    const title = row.cleanTitle;
+    const hasHome = title.includes(cleanHome) || cleanHome.includes(title);
+    const hasAway = title.includes(cleanAway) || cleanAway.includes(title);
+
+    if (!hasHome || !hasAway) {
       return false;
     }
 
-    // Datumkontroll om datum skickats med
-    if (targetDateStr && row.date) {
-      const rowDateStr = row.date.split('T')[0];
-      if (rowDateStr !== targetDateStr) return false;
+    // 2. Datum-koll: Tillåt upp till 5 dagars skillnad om båda har giltigt ISO-datum
+    if (targetIso && row.date) {
+      const rowIso = parseDateToIso(row.date);
+      if (rowIso) {
+        const tTime = new Date(targetIso).getTime();
+        const rTime = new Date(rowIso).getTime();
+        if (!isNaN(tTime) && !isNaN(rTime)) {
+          const diffDays = Math.abs((tTime - rTime) / (1000 * 3600 * 24));
+          if (diffDays > 5) return false;
+        }
+      }
     }
 
     return !isNaN(row.price) && row.price > 0 && row.url.startsWith("http");
