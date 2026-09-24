@@ -18,6 +18,49 @@ const formatTeamName = (key: string) => {
     .join(" ");
 };
 
+// Allmän rengöring för P1 och andra källor
+const cleanTeamStr = (str: string) => {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/-/g, ' ')
+    .trim();
+};
+
+// Egen rengöring BARA för Sports Events 365
+const cleanTeamStrForSE365 = (str: string) => {
+  if (!str) return '';
+  let cleaned = str.toLowerCase();
+
+  const synonyms: Record<string, string> = {
+    'psg': 'paris saint germain',
+    'paris sg': 'paris saint germain',
+    'bayern': 'bayern munich',
+    'bayern munchen': 'bayern munich',
+    'munchen': 'munich',
+    'inter': 'inter milan',
+    'atletico': 'atletico madrid',
+    'ath bilbao': 'athletic bilbao',
+  };
+
+  if (synonyms[cleaned]) {
+    cleaned = synonyms[cleaned];
+  } else {
+    Object.keys(synonyms).forEach(key => {
+      cleaned = cleaned.replace(new RegExp(`\\b${key}\\b`, 'g'), synonyms[key]);
+    });
+  }
+
+  return cleaned
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/-/g, ' ')
+    .replace(/\b(fc|cf|afc|sc|sv|vfb|rb|real|club|hotspur|town)\b/g, '')
+    .trim();
+};
+
 // 1. Mapping-tabell för OLKA Express exakta lag-slugs
 const OLKA_TEAM_SLUGS: Record<string, string> = {
   // Premier League
@@ -240,7 +283,7 @@ async function getMatchesData() {
     }
 
 // Hjälpfunktion för att städa och normalisera lagnamn samt hantera förkortningar/synonymer
-const cleanTeamStr = (str: string) => {
+const cleanTeamStrForSE365 = (str: string) => {
   if (!str) return '';
   let cleaned = str.toLowerCase();
 
@@ -277,13 +320,13 @@ const cleanTeamStr = (str: string) => {
 
 // Matcha mot Sports Events 365
 const se365Match = Array.isArray(se365Matches) ? se365Matches.find((se: any) => {
-  const seHome = cleanTeamStr(se.homeTeam || '');
-  const seAway = cleanTeamStr(se.awayTeam || '');
+    const seHome = cleanTeamStrForSE365(se.homeTeam || '');
+    const seAway = cleanTeamStrForSE365(se.awayTeam || '');
 
-  const hKey = cleanTeamStr(m.homeKey || '');
-  const aKey = cleanTeamStr(m.awayKey || '');
-  const hName = cleanTeamStr(homeName || '');
-  const aName = cleanTeamStr(awayName || '');
+    const hKey = cleanTeamStrForSE365(m.homeKey || '');
+    const aKey = cleanTeamStrForSE365(m.awayKey || '');
+    const hName = cleanTeamStrForSE365(homeName || '');
+    const aName = cleanTeamStrForSE365(awayName || '');
 
   const homeMatches = seHome.includes(hKey) || hKey.includes(seHome) || seHome.includes(hName) || hName.includes(seHome);
   const awayMatches = seAway.includes(aKey) || aKey.includes(seAway) || seAway.includes(aName) || aName.includes(seAway);
