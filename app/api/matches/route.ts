@@ -179,9 +179,6 @@ const cleanTeamStrForSE365 = (str: string) => {
     .trim();
 };
 
-// Gör så att SE365 använder exakt samma funktion
-const cleanTeamStrForSE365 = cleanTeamStr;
-
 async function getMatchesData() {
   const today = new Date().toISOString().split("T")[0];
 
