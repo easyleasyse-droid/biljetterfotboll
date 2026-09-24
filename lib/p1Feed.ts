@@ -1,138 +1,30 @@
-import { unstable_cache } from 'next/cache';
-
-export interface P1Ticket {
-  title: string;
-  price: number;
-  currency: string;
-  directUrl: string;
-}
-
-function cleanTeamName(name: string): string {
-  if (!name) return "";
-  return name
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "")
-    .trim();
-}
-
-function parseCsvLineStrict(text: string): string[] {
-  const result: string[] = [];
-  let cur = '';
-  let inQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (c === '"') {
-      if (inQuotes && text[i + 1] === '"') {
-        cur += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (c === ',' && !inQuotes) {
-      result.push(cur.trim());
-      cur = '';
-    } else {
-      cur += c;
-    }
-  }
-  result.push(cur.trim());
-  return result;
-}
-
-export const fetchP1FeedRows = unstable_cache(
-  async (): Promise<any[]> => {
-    const feedUrl =
-      process.env.P1_FEED_URL ||
-      "https://feeds.performancehorizon.com/biljetterfotboll/1011l6401/a1f3f49c2e6d13ca6d33d24088acc238";
-
-    try {
-      const response = await fetch(feedUrl, { next: { revalidate: 3600 } });
-      if (!response.ok) return [];
-
-      const rawCsv = await response.text();
-      const lines = rawCsv.split(/\r?\n/);
-      if (lines.length < 2) return [];
-
-      const headers = parseCsvLineStrict(lines[0]).map(h => h.toLowerCase().trim());
-
-      const nameIdx = headers.indexOf('event_name');
-      const fullNameIdx = headers.indexOf('event_full_name');
-      const homeIdx = headers.indexOf('home_team');
-      const awayIdx = headers.indexOf('away_team');
-      const linkIdx = headers.indexOf('deep_link');
-      const priceIdx = headers.indexOf('min_final_sell_price') !== -1 
-        ? headers.indexOf('min_final_sell_price') 
-        : headers.indexOf('min_sell_price');
-      const currencyIdx = headers.indexOf('currency');
-      const dateIdx = headers.indexOf('event_start_date');
-
-      const rows: any[] = [];
-
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i];
-        if (!line || line.trim().length === 0) continue;
-
-        const cols = parseCsvLineStrict(line);
-
-        const eventName = nameIdx !== -1 && nameIdx < cols.length ? cols[nameIdx] : "";
-        const eventFullName = fullNameIdx !== -1 && fullNameIdx < cols.length ? cols[fullNameIdx] : "";
-        const homeTeamCol = homeIdx !== -1 && homeIdx < cols.length ? cols[homeIdx] : "";
-        const awayTeamCol = awayIdx !== -1 && awayIdx < cols.length ? cols[awayIdx] : "";
-        
-        const rawUrl = linkIdx < cols.length ? cols[linkIdx] : "";
-        const priceRaw = priceIdx < cols.length ? cols[priceIdx] : "";
-
-        if (!rawUrl || !priceRaw) continue;
-
-        // Bygg en ren söksträng av alla fält + URL
-        const combinedText = cleanTeamName(`${eventName} ${eventFullName} ${homeTeamCol} ${awayTeamCol} ${rawUrl}`);
-
-        rows.push({
-          cleanHome: cleanTeamName(homeTeamCol || eventName),
-          cleanAway: cleanTeamName(awayTeamCol || eventName),
-          cleanCombined: combinedText,
-          date: dateIdx !== -1 && dateIdx < cols.length ? cols[dateIdx] : "",
-          price: parseFloat(priceRaw),
-          currency: (currencyIdx !== -1 && currencyIdx < cols.length && cols[currencyIdx]) ? cols[currencyIdx] : "EUR",
-          url: rawUrl.replace(/^"|"$/g, '')
-        });
-      }
-
-      return rows;
-    } catch (error) {
-      console.error("Fel vid laddning av P1 Travel:", error);
-      return [];
-    }
-  },
-  ['p1-parsed-rows-v5'],
-  { revalidate: 3600 }
-);
-
 export function findP1TicketInRows(
   rows: any[],
-  homeTeam: string, 
-  awayTeam: string, 
+  homeTeam: string,
+  awayTeam: string,
   matchDate?: string
 ): P1Ticket | null {
   if (!rows || rows.length === 0) return null;
 
-  const cleanHome = cleanTeamName(homeTeam);
-  const cleanAway = cleanTeamName(awayTeam);
-  if (!cleanHome || !cleanAway) return null;
+  const targetHome = cleanTeamName(homeTeam);
+  const targetAway = cleanTeamName(awayTeam);
 
   const targetDateStr = matchDate ? matchDate.split('T')[0] : null;
 
-  const matches = rows.filter(row => {
-    // Sök på hela lagnamnen (utan bortfiltrering av korta ord)
-    const homeFound = row.cleanCombined.includes(cleanHome) || row.cleanHome.includes(cleanHome);
-    const awayFound = row.cleanCombined.includes(cleanAway) || row.cleanAway.includes(cleanAway);
+  const matchedRow = rows.find(row => {
+    // Bygg en enda stor sträng av hela raden (alla kolumner + eventnamn + URL)
+    const fullRowText = `${row.home || ''} ${row.away || ''} ${row.eventName || ''} ${row.eventFullName || ''} ${row.url || ''}`.toLowerCase();
 
-    if (!homeFound || !awayFound) return false;
+    // Extra rensning av sökorden för att få bort vanliga suffix som 'fc', 'cf', 'united' osv. om de ställer till det
+    const cleanH = targetHome.replace(/(fc|cf|united|city|the)/g, '').trim();
+    const cleanA = targetAway.replace(/(fc|cf|united|city|the)/g, '').trim();
 
-    // Datumkontroll
+    const homeMatch = fullRowText.includes(targetHome) || (cleanH.length > 2 && fullRowText.includes(cleanH)) || (targetHome === 'psg' && fullRowText.includes('paris'));
+    const awayMatch = fullRowText.includes(targetAway) || (cleanA.length > 2 && fullRowText.includes(cleanA)) || (targetAway === 'psg' && fullRowText.includes('paris'));
+
+    if (!homeMatch || !awayMatch) return false;
+
+    // Datumkontroll (med tillåtelse för ±1 dag för tidszoner)
     if (targetDateStr && row.date) {
       const rowDateStr = row.date.split('T')[0];
       if (rowDateStr && rowDateStr !== targetDateStr) {
@@ -140,7 +32,7 @@ export function findP1TicketInRows(
         const rTime = new Date(rowDateStr).getTime();
         if (!isNaN(tTime) && !isNaN(rTime)) {
           const diffDays = Math.abs((tTime - rTime) / (1000 * 3600 * 24));
-          if (diffDays > 2) return false;
+          if (diffDays > 1) return false;
         }
       }
     }
@@ -148,15 +40,12 @@ export function findP1TicketInRows(
     return !isNaN(row.price) && row.price > 0 && row.url.startsWith("http");
   });
 
-  if (matches.length === 0) return null;
-
-  matches.sort((a, b) => a.price - b.price);
-  const best = matches[0];
+  if (!matchedRow) return null;
 
   return {
     title: `${homeTeam} vs ${awayTeam}`,
-    price: best.price,
-    currency: best.currency,
-    directUrl: best.url
+    price: matchedRow.price,
+    currency: matchedRow.currency,
+    directUrl: matchedRow.url
   };
 }
