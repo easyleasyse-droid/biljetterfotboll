@@ -244,6 +244,8 @@ const cleanTeamStr = (str: string) => {
   if (!str) return '';
   return str
     .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // gör ü->u, ö->o
+    .replace(/\b(munchen|münchen)\b/g, 'munich')     // översätter munchen till munich för Bayern
     .replace(/-/g, ' ')
     .replace(/\b(fc|cf|afc|sc|sv|vfb|rb|inter|real|club|hotspur|town|united|city)\b/g, '')
     .trim();
@@ -251,18 +253,15 @@ const cleanTeamStr = (str: string) => {
 
 // Matcha mot Sports Events 365
 const se365Match = Array.isArray(se365Matches) ? se365Matches.find((se: any) => {
-  // Gör om alla lagnamn till gemener och ta bort bindestreck/specialtecken
-  const seHome = (se.homeTeam || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const seAway = (se.awayTeam || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  
-  const hKey = (m.homeKey || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const aKey = (m.awayKey || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const hName = (homeName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const aName = (awayName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const seHome = cleanTeamStr(se.homeTeam || '');
+  const seAway = cleanTeamStr(se.awayTeam || '');
 
-  // Kolla om hemmalaget matchar
+  const hKey = cleanTeamStr(m.homeKey || '');
+  const aKey = cleanTeamStr(m.awayKey || '');
+  const hName = cleanTeamStr(homeName || '');
+  const aName = cleanTeamStr(awayName || '');
+
   const homeMatches = seHome.includes(hKey) || hKey.includes(seHome) || seHome.includes(hName) || hName.includes(seHome);
-  // Kolla om bortalaget matchar
   const awayMatches = seAway.includes(aKey) || aKey.includes(seAway) || seAway.includes(aName) || aName.includes(seAway);
 
   return homeMatches && awayMatches;
