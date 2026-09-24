@@ -87,12 +87,10 @@ export const fetchP1FeedRows = unstable_cache(
 
         if (!rawUrl || !priceRaw) continue;
 
-        const combinedTitle = `${eventName} ${eventFullName} ${homeTeamCol} ${awayTeamCol} ${rawUrl}`;
+        const combinedText = `${eventName} ${eventFullName} ${homeTeamCol} ${awayTeamCol} ${rawUrl}`;
 
         rows.push({
-          cleanCombined: cleanTeamName(combinedTitle),
-          cleanHome: cleanTeamName(homeTeamCol || eventName),
-          cleanAway: cleanTeamName(awayTeamCol || eventFullName),
+          cleanCombined: cleanTeamName(combinedText),
           date: dateIdx !== -1 && dateIdx < cols.length ? cols[dateIdx] : "",
           price: parseFloat(priceRaw),
           currency: (currencyIdx !== -1 && currencyIdx < cols.length && cols[currencyIdx]) ? cols[currencyIdx] : "EUR",
@@ -106,7 +104,7 @@ export const fetchP1FeedRows = unstable_cache(
       return [];
     }
   },
-  ['p1-parsed-rows-v3'],
+  ['p1-parsed-rows-v4'],
   { revalidate: 3600 }
 );
 
@@ -122,18 +120,23 @@ export function findP1TicketInRows(
   const cleanAway = cleanTeamName(awayTeam);
   if (!cleanHome || !cleanAway) return null;
 
+  // Extrahera sökord (t.ex. "liverpool" och "manchester" eller "city")
+  const homeKeywords = cleanHome.split(' ').filter(w => w.length > 2);
+  const awayKeywords = cleanAway.split(' ').filter(w => w.length > 2);
+
   const targetDateStr = matchDate ? matchDate.split('T')[0] : null;
 
   const matches = rows.filter(row => {
-    // 1. Kolla om både hemmalag och bortalag finns nånstans i raden (inklusive URL:en)
-    const matchesTeams = row.cleanCombined.includes(cleanHome) && row.cleanCombined.includes(cleanAway);
-    if (!matchesTeams) return false;
+    // Säkerställ att minst ett viktigt ord från hemmalaget och bortalaget finns i raden/länken
+    const homeFound = homeKeywords.some(w => row.cleanCombined.includes(w));
+    const awayFound = awayKeywords.some(w => row.cleanCombined.includes(w));
 
-    // 2. Datumkontroll (om datum finns)
+    if (!homeFound || !awayFound) return false;
+
+    // Datumkontroll
     if (targetDateStr && row.date) {
       const rowDateStr = row.date.split('T')[0];
       if (rowDateStr && rowDateStr !== targetDateStr) {
-        // Tillåt 1-2 dagars marginal för flyttade matcher
         const tTime = new Date(targetDateStr).getTime();
         const rTime = new Date(rowDateStr).getTime();
         if (!isNaN(tTime) && !isNaN(rTime)) {
@@ -149,7 +152,7 @@ export function findP1TicketInRows(
   if (matches.length === 0) return null;
 
   matches.sort((a, b) => a.price - b.price);
-  const best = matches[0];
+  const best = matches[0]; // Nu med hakparentes!
 
   return {
     title: `${homeTeam} vs ${awayTeam}`,
