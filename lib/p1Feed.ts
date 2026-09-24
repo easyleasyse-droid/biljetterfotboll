@@ -149,7 +149,7 @@ export function findP1TicketInRows(
   if (matches.length === 0) return null;
 
   matches.sort((a, b) => a.price - b.price);
-  const best = matches.0;
+  const best = matches[0];
 
   return {
     title: `${homeTeam} vs ${awayTeam}`,
