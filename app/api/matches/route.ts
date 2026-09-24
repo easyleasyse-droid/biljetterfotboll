@@ -410,20 +410,7 @@ if (se365Match && se365Match.minPrice > 0) {
     const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
 
     offers.push(
-      {
-        id: `o-${matchId}-se365`,
-        merchantName: "Sports Events 365",
-        rating: 4.8,
-        reviewsCount: 512,
-        section: "Kortsida Standard",
-        category: "Kortsida",
-        priceSEK: basePrice,
-        availableQuantity: 4,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true,
-        url: getSearchUrl("Sports Events 365", homeName, awayName, (m as any).se365Url),
-        type: "ticket"
-      },
+    
       {
         id: `o-${matchId}-lft`,
         merchantName: "LiveFootballTickets",

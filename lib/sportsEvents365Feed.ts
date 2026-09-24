@@ -16,18 +16,8 @@ const TOURNAMENT_IDS = [
   15   // Eredivisie
 ];
 
-function buildSportsEvents365Url(targetUrl: string, homeTeam?: string): string {
-  let url = targetUrl?.trim();
-
-  // Om API:et saknade en specifik match-URL, gör en sökning på ENBART hemmalaget
-  if (!url || url === 'https://www.sportsevents365.com' || url === 'https://www.sportsevents365.com/') {
-    if (homeTeam) {
-      url = `https://www.sportsevents365.com/search?q=${encodeURIComponent(homeTeam)}`;
-    } else {
-      url = 'https://www.sportsevents365.com';
-    }
-  }
-
+function buildSportsEvents365Url(targetUrl: string): string {
+  let url = targetUrl?.trim() || 'https://www.sportsevents365.com';
   const separator = url.includes('?') ? '&' : '?';
   return `${url}${separator}a_aid=${SE365_AFFILIATE_ID}`;
 }
@@ -49,10 +39,11 @@ export async function fetchSportsEvents365Matches() {
   const allMatches: any[] = [];
 
   const tournamentRequests = TOURNAMENT_IDS.map(async (tournamentId) => {
-    const url = `${BASE_URL}/events/tournament/${tournamentId}?apiKey=${API_KEY}&currency=EUR&limit=200`;
+    // limit=500 säkerställer att vi får med alla matcher per turnering
+    const url = `${BASE_URL}/events/tournament/${tournamentId}?apiKey=${API_KEY}&currency=EUR&limit=500`;
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
 
     try {
       const response = await fetch(url, {
@@ -61,17 +52,16 @@ export async function fetchSportsEvents365Matches() {
           'Authorization': authHeader,
           'Accept': 'application/json',
         },
-        cache: 'no-store', // Detta gör att cachen rensas direkt!
+        // Cachea i 1 timme (3600s) för blixtsnabb laddtid på sajten
+        next: { revalidate: 3600 },
         signal: controller.signal,
       });
-    
-    
 
       clearTimeout(timeoutId);
       if (!response.ok) return [];
 
       const json = await response.json();
-      const rawEvents = json.data || json.events || json || [];
+      const rawEvents = json.data || json.events || (Array.isArray(json) ? json : []);
       if (!Array.isArray(rawEvents)) return [];
 
       return rawEvents.map((event: any) => {
@@ -83,7 +73,6 @@ export async function fetchSportsEvents365Matches() {
         const currency = event.minTicketPrice?.currency || event.currency || 'EUR';
         const parsedPrice = typeof rawPrice === 'number' ? rawPrice : parseFloat(rawPrice) || 0;
 
-        // Använd eventUrl från API-objektet
         const rawUrl = event.eventUrl || event.url || '';
 
         return {
@@ -97,7 +86,7 @@ export async function fetchSportsEvents365Matches() {
           date: formattedDate,
           minPrice: parsedPrice,
           currency: currency,
-          url: buildSportsEvents365Url(rawUrl, homeName),
+          url: buildSportsEvents365Url(rawUrl),
         };
       });
     } catch (err) {
