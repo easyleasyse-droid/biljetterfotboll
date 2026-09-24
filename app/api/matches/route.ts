@@ -136,8 +136,19 @@ const getChampionsTravelUrl = (homeTeam: string): string => {
   return `https://www.championstravel.co.uk/search?q=${encodeURIComponent(cleanHome)}`;
 };
 
-// En gemensam rensning med alla synonymer för P1, Ticombo och SE365
+// 1. ORIGINAL-RENSNING FÖR P1 OCH TICOMBO (Rör inte 'united', 'city', 'inter' osv.)
 const cleanTeamStr = (str: string) => {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/-/g, ' ')
+    .trim();
+};
+
+// 2. ISOLERAD RENSNING ENBART FÖR SPORTS EVENTS 365
+const cleanTeamStrForSE365 = (str: string) => {
   if (!str) return '';
   let cleaned = str.toLowerCase();
 
