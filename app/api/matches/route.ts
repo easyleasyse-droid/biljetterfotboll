@@ -179,6 +179,41 @@ const getChampionsTravelUrl = (homeTeam: string): string => {
   return `https://www.championstravel.co.uk/search?q=${encodeURIComponent(cleanHome)}`;
 };
 
+// En gemensam rensning med alla synonymer för P1, Ticombo och SE365
+const cleanTeamStr = (str: string) => {
+  if (!str) return '';
+  let cleaned = str.toLowerCase();
+
+  const synonyms: Record<string, string> = {
+    'psg': 'paris saint germain',
+    'paris sg': 'paris saint germain',
+    'bayern': 'bayern munich',
+    'bayern munchen': 'bayern munich',
+    'munchen': 'munich',
+    'inter': 'inter milan',
+    'atletico': 'atletico madrid',
+    'ath bilbao': 'athletic bilbao',
+  };
+
+  if (synonyms[cleaned]) {
+    cleaned = synonyms[cleaned];
+  } else {
+    Object.keys(synonyms).forEach(key => {
+      cleaned = cleaned.replace(new RegExp(`\\b${key}\\b`, 'g'), synonyms[key]);
+    });
+  }
+
+  return cleaned
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/-/g, ' ')
+    .replace(/\b(fc|cf|afc|sc|sv|vfb|rb|real|club|hotspur|town|united|city)\b/g, '')
+    .trim();
+};
+
+// Gör så att SE365 använder exakt samma funktion
+const cleanTeamStrForSE365 = cleanTeamStr;
+
 async function getMatchesData() {
   const today = new Date().toISOString().split("T")[0];
 
@@ -281,42 +316,6 @@ async function getMatchesData() {
         type: "ticket"
       });
     }
-
-// Hjälpfunktion för att städa och normalisera lagnamn samt hantera förkortningar/synonymer
-const cleanTeamStrForSE365 = (str: string) => {
-  if (!str) return '';
-  let cleaned = str.toLowerCase();
-
-  // Översätt vanliga förkortningar och varianter till ett enhetligt namn
-  const synonyms: Record<string, string> = {
-    'psg': 'paris saint germain',
-    'paris sg': 'paris saint germain',
-    'bayern': 'bayern munich',
-    'bayern munchen': 'bayern munich',
-    'munchen': 'munich',
-    'inter': 'inter milan',
-    'atletico': 'atletico madrid',
-    'ath bilbao': 'athletic bilbao',
-    'ac milan': 'milan',
-  };
-
-  // Om söksträngen exakt matchar en nyckel i synonymtabellen
-  if (synonyms[cleaned]) {
-    cleaned = synonyms[cleaned];
-  } else {
-    // Annars ersätt kända ord/förkortningar i strängen
-    Object.keys(synonyms).forEach(key => {
-      cleaned = cleaned.replace(new RegExp(`\\b${key}\\b`, 'g'), synonyms[key]);
-    });
-  }
-
-  return cleaned
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // ta bort diakriter/accenter (t.ex. ü->u, é->e)
-    .replace(/-/g, ' ')
-    .replace(/\b(fc|cf|afc|sc|sv|vfb|rb|real|club|hotspur|town|united|city)\b/g, '')
-    .trim();
-};
 
 // Matcha mot Sports Events 365
 const se365Match = Array.isArray(se365Matches) ? se365Matches.find((se: any) => {
