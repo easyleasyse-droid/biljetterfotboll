@@ -1,3 +1,39 @@
+const API_USERNAME = process.env.SE365_USERNAME || 'biljetterfotboll';
+const API_PASSWORD = process.env.SE365_PASSWORD || '6cvxxdbM5F0x';
+const API_KEY = process.env.SE365_API_KEY || 'ef0704884bb49a77a39e981ba7be5fb0';
+export const SE365_AFFILIATE_ID = '5jutr9xaq8h3j';
+
+const BASE_URL = 'https://api-v2.sportsevents365.com';
+
+const TOURNAMENT_IDS = [
+  9,   // Premier League
+  24,  // La Liga
+  36,  // Serie A
+  42,  // UEFA Champions League
+  46,  // UEFA Europa League
+  12,  // Bundesliga
+  13,  // Ligue 1
+  15   // Eredivisie
+];
+
+function buildSportsEvents365Url(targetUrl: string): string {
+  let url = targetUrl?.trim() || 'https://www.sportsevents365.com';
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}a_aid=${SE365_AFFILIATE_ID}`;
+}
+
+function parseSe365Date(dateStr: string): string {
+  if (!dateStr) return '';
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      const [day, month, year] = parts;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+  }
+  return dateStr.split('T')[0];
+}
+
 export async function fetchSportsEvents365Matches() {
   const authHeader = 'Basic ' + Buffer.from(`${API_USERNAME}:${API_PASSWORD}`).toString('base64');
   const allMatches: any[] = [];
@@ -7,8 +43,7 @@ export async function fetchSportsEvents365Matches() {
     let hasMorePages = true;
     const tournamentMatches: any[] = [];
 
-    // Loopa igenom alla sidor för turneringen tills inga fler matcher finns
-    while (hasMorePages && page <= 10) { // Säkerhetsspärr på max 10 sidor per liga
+    while (hasMorePages && page <= 10) {
       const url = `${BASE_URL}/events/tournament/${tournamentId}?apiKey=${API_KEY}&currency=EUR&page=${page}`;
       
       const controller = new AbortController();
@@ -21,7 +56,7 @@ export async function fetchSportsEvents365Matches() {
             'Authorization': authHeader,
             'Accept': 'application/json',
           },
-          next: { revalidate: 3600 }, // Snabb cache (1 timme)
+          next: { revalidate: 3600 },
           signal: controller.signal,
         });
 
@@ -67,7 +102,6 @@ export async function fetchSportsEvents365Matches() {
 
         tournamentMatches.push(...mapped);
 
-        // Om sidan returnerade färre än 10 matcher finns det inga fler sidor att hämta
         if (rawEvents.length < 10) {
           hasMorePages = false;
         } else {
