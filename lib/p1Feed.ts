@@ -7,39 +7,17 @@ export interface P1Ticket {
   directUrl: string;
 }
 
-// Förbättrad namntvätt som INTE raderar lagnamn som Atletico eller Real
 function cleanTeamName(name: string): string {
   if (!name) return "";
-  
-  let cleaned = name
+  return name
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-
-  const synonyms: Record<string, string> = {
-    'psg': 'paris saint germain',
-    'paris sg': 'paris saint germain',
-    'bayern munchen': 'bayern munich',
-    'bayern': 'bayern munich',
-    'inter milan': 'inter',
-    'internazionale': 'inter',
-    'ath bilbao': 'athletic bilbao',
-    'atletico de madrid': 'atletico madrid',
-    'atletico madrid': 'atletico madrid',
-  };
-
-  if (synonyms[cleaned.trim()]) {
-    cleaned = synonyms[cleaned.trim()];
-  }
-
-  return cleaned
-    .replace(/\b(fc|cf|afc|sc|club|cd|as|ac|ss|rc|sd|ud|us|cfc|calcio|rcd)\b/g, "")
-    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
     .trim();
 }
 
-// Bättre CSV-splitter som hanterar fnuttar och komman i fält
-function parseCsvLine(text: string): string[] {
+function parseCsvLineStrict(text: string): string[] {
   const result: string[] = [];
   let cur = '';
   let inQuotes = false;
@@ -47,74 +25,93 @@ function parseCsvLine(text: string): string[] {
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
     if (c === '"') {
-      inQuotes = !inQuotes;
+      if (inQuotes && text[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
     } else if (c === ',' && !inQuotes) {
-      result.push(cur.trim().replace(/^"|"$/g, ''));
+      result.push(cur.trim());
       cur = '';
     } else {
       cur += c;
     }
   }
-  result.push(cur.trim().replace(/^"|"$/g, ''));
+  result.push(cur.trim());
   return result;
-}
-
-// Robust datumomvandlare
-function parseDateToIso(dateStr: string): string {
-  if (!dateStr) return '';
-  const clean = dateStr.trim().split(' ')[0].split('T')[0];
-  if (clean.includes('/')) {
-    const parts = clean.split('/');
-    if (parts.length === 3) {
-      if (parts[0].length === 4) return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
-      return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-    }
-  }
-  return clean;
 }
 
 export const fetchP1FeedRows = unstable_cache(
   async (): Promise<any[]> => {
-    const feedUrl = process.env.P1_TRAVEL_FEED_URL;
-    if (!feedUrl) return [];
+    const feedUrl =
+      process.env.P1_FEED_URL ||
+      "https://feeds.performancehorizon.com/biljetterfotboll/1011l6401/a1f3f49c2e6d13ca6d33d24088acc238";
 
     try {
-      const response = await fetch(feedUrl, { cache: 'no-store' });
+      const response = await fetch(feedUrl, { next: { revalidate: 3600 } });
       if (!response.ok) return [];
 
-      const csvText = await response.text();
-      const lines = csvText.split(/\r?\n/).filter(line => line.trim().length > 0);
+      const rawCsv = await response.text();
+      const lines = rawCsv.split(/\r?\n/);
       if (lines.length < 2) return [];
 
-      const headers = parseCsvLine(lines[0]).map(h => h.toLowerCase());
+      const headers = parseCsvLineStrict(lines[0]).map(h => h.toLowerCase().trim());
+
+      const nameIdx = headers.indexOf('event_name');
+      const fullNameIdx = headers.indexOf('event_full_name');
+      const homeIdx = headers.indexOf('home_team');
+      const awayIdx = headers.indexOf('away_team');
+      const linkIdx = headers.indexOf('deep_link');
+      const priceIdx = headers.indexOf('min_final_sell_price') !== -1 
+        ? headers.indexOf('min_final_sell_price') 
+        : headers.indexOf('min_sell_price');
+      const currencyIdx = headers.indexOf('currency');
+      const dateIdx = headers.indexOf('event_start_date');
 
       const rows: any[] = [];
+
       for (let i = 1; i < lines.length; i++) {
-        const values = parseCsvLine(lines[i]);
-        if (values.length < headers.length) continue;
+        const line = lines[i];
+        if (!line || line.trim().length === 0) continue;
 
-        const row: Record<string, string> = {};
-        headers.forEach((header, idx) => {
-          row[header] = values[idx] || '';
+        const cols = parseCsvLineStrict(line);
+
+        const eventName = nameIdx !== -1 && nameIdx < cols.length ? cols[nameIdx] : "";
+        const eventFullName = fullNameIdx !== -1 && fullNameIdx < cols.length ? cols[fullNameIdx] : "";
+        const homeTeamCol = homeIdx !== -1 && homeIdx < cols.length ? cols[homeIdx] : "";
+        const awayTeamCol = awayIdx !== -1 && awayIdx < cols.length ? cols[awayIdx] : "";
+        
+        const rawUrl = linkIdx < cols.length ? cols[linkIdx] : "";
+        const priceRaw = priceIdx < cols.length ? cols[priceIdx] : "";
+
+        if (!rawUrl || !priceRaw) continue;
+
+        const combinedTitle = `${eventName} ${eventFullName} ${homeTeamCol} ${awayTeamCol} ${rawUrl}`;
+
+        rows.push({
+          cleanCombined: cleanTeamName(combinedTitle),
+          cleanHome: cleanTeamName(homeTeamCol || eventName),
+          cleanAway: cleanTeamName(awayTeamCol || eventFullName),
+          date: dateIdx !== -1 && dateIdx < cols.length ? cols[dateIdx] : "",
+          price: parseFloat(priceRaw),
+          currency: (currencyIdx !== -1 && currencyIdx < cols.length && cols[currencyIdx]) ? cols[currencyIdx] : "EUR",
+          url: rawUrl.replace(/^"|"$/g, '')
         });
-
-        const categories = (row['categories'] || row['subcategories'] || '').toLowerCase();
-        if (categories.includes('motorsports') || categories.includes('formula')) continue;
-
-        rows.push(row);
       }
+
       return rows;
     } catch (error) {
-      console.error("Fel vid hämtning av P1 Feed:", error);
+      console.error("Fel vid laddning av P1 Travel:", error);
       return [];
     }
   },
-  ['p1-feed-parsed-rows-v6'],
+  ['p1-parsed-rows-v3'],
   { revalidate: 3600 }
 );
 
 export function findP1TicketInRows(
-  rows: any[], 
+  rows: any[],
   homeTeam: string, 
   awayTeam: string, 
   matchDate?: string
@@ -123,59 +120,41 @@ export function findP1TicketInRows(
 
   const cleanHome = cleanTeamName(homeTeam);
   const cleanAway = cleanTeamName(awayTeam);
+  if (!cleanHome || !cleanAway) return null;
 
-  const targetIso = matchDate ? parseDateToIso(matchDate) : '';
+  const targetDateStr = matchDate ? matchDate.split('T')[0] : null;
 
-  const matchingRows = rows.filter((row) => {
-    // Sök bland alla tänkbara kolumnnamn för hemmalag/bortalag i P1:s CSV
-    const p1HomeRaw = row['home_team_name'] || row['home_team'] || row['hometeam'] || '';
-    const p1AwayRaw = row['away_team_name'] || row['away_team'] || row['awayteam'] || '';
-    
-    const p1Home = cleanTeamName(p1HomeRaw);
-    const p1Away = cleanTeamName(p1AwayRaw);
+  const matches = rows.filter(row => {
+    // 1. Kolla om både hemmalag och bortalag finns nånstans i raden (inklusive URL:en)
+    const matchesTeams = row.cleanCombined.includes(cleanHome) && row.cleanCombined.includes(cleanAway);
+    if (!matchesTeams) return false;
 
-    const p1DateRaw = row['date_start'] || row['event_date'] || row['date'] || '';
-    const p1Iso = parseDateToIso(p1DateRaw);
-
-    // Om båda har giltiga datum, tillåt upp till 5 dagars diff (spelscheman flyttas ofta)
-    if (targetIso && p1Iso) {
-      const tTime = new Date(targetIso).getTime();
-      const pTime = new Date(p1Iso).getTime();
-      if (!isNaN(tTime) && !isNaN(pTime)) {
-        const diffDays = Math.abs((tTime - pTime) / (1000 * 3600 * 24));
-        if (diffDays > 5) return false;
+    // 2. Datumkontroll (om datum finns)
+    if (targetDateStr && row.date) {
+      const rowDateStr = row.date.split('T')[0];
+      if (rowDateStr && rowDateStr !== targetDateStr) {
+        // Tillåt 1-2 dagars marginal för flyttade matcher
+        const tTime = new Date(targetDateStr).getTime();
+        const rTime = new Date(rowDateStr).getTime();
+        if (!isNaN(tTime) && !isNaN(rTime)) {
+          const diffDays = Math.abs((tTime - rTime) / (1000 * 3600 * 24));
+          if (diffDays > 2) return false;
+        }
       }
     }
 
-    if (p1Home && p1Away) {
-      const isHomeMatch = p1Home === cleanHome || p1Home.includes(cleanHome) || cleanHome.includes(p1Home);
-      const isAwayMatch = p1Away === cleanAway || p1Away.includes(cleanAway) || cleanAway.includes(p1Away);
-      return isHomeMatch && isAwayMatch;
-    }
-
-    return false;
+    return !isNaN(row.price) && row.price > 0 && row.url.startsWith("http");
   });
 
-  if (matchingRows.length === 0) return null;
+  if (matches.length === 0) return null;
 
-  matchingRows.sort((a, b) => {
-    const priceA = parseFloat(a['price'] || a['min_price'] || '99999');
-    const priceB = parseFloat(b['price'] || b['min_price'] || '99999');
-    return priceA - priceB;
-  });
+  matches.sort((a, b) => a.price - b.price);
+  const best = matches.0;
 
-  const cheapestRow = matchingRows[0];
-  const priceNum = parseFloat(cheapestRow['price'] || cheapestRow['min_price'] || '0');
-  const directUrl = cheapestRow['producturl'] || cheapestRow['product_url'] || cheapestRow['url'] || '';
-
-  if (priceNum > 0 && directUrl) {
-    return {
-      title: cheapestRow['name'] || cheapestRow['title'] || `${homeTeam} vs ${awayTeam}`,
-      price: priceNum,
-      currency: 'EUR',
-      directUrl: directUrl
-    };
-  }
-
-  return null;
+  return {
+    title: `${homeTeam} vs ${awayTeam}`,
+    price: best.price,
+    currency: best.currency,
+    directUrl: best.url
+  };
 }
