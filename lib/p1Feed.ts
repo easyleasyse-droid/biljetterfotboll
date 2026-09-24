@@ -87,10 +87,13 @@ export const fetchP1FeedRows = unstable_cache(
 
         if (!rawUrl || !priceRaw) continue;
 
-        const combinedText = `${eventName} ${eventFullName} ${homeTeamCol} ${awayTeamCol} ${rawUrl}`;
+        // Bygg en ren söksträng av alla fält + URL
+        const combinedText = cleanTeamName(`${eventName} ${eventFullName} ${homeTeamCol} ${awayTeamCol} ${rawUrl}`);
 
         rows.push({
-          cleanCombined: cleanTeamName(combinedText),
+          cleanHome: cleanTeamName(homeTeamCol || eventName),
+          cleanAway: cleanTeamName(awayTeamCol || eventName),
+          cleanCombined: combinedText,
           date: dateIdx !== -1 && dateIdx < cols.length ? cols[dateIdx] : "",
           price: parseFloat(priceRaw),
           currency: (currencyIdx !== -1 && currencyIdx < cols.length && cols[currencyIdx]) ? cols[currencyIdx] : "EUR",
@@ -104,7 +107,7 @@ export const fetchP1FeedRows = unstable_cache(
       return [];
     }
   },
-  ['p1-parsed-rows-v4'],
+  ['p1-parsed-rows-v5'],
   { revalidate: 3600 }
 );
 
@@ -120,16 +123,12 @@ export function findP1TicketInRows(
   const cleanAway = cleanTeamName(awayTeam);
   if (!cleanHome || !cleanAway) return null;
 
-  // Extrahera sökord (t.ex. "liverpool" och "manchester" eller "city")
-  const homeKeywords = cleanHome.split(' ').filter(w => w.length > 2);
-  const awayKeywords = cleanAway.split(' ').filter(w => w.length > 2);
-
   const targetDateStr = matchDate ? matchDate.split('T')[0] : null;
 
   const matches = rows.filter(row => {
-    // Säkerställ att minst ett viktigt ord från hemmalaget och bortalaget finns i raden/länken
-    const homeFound = homeKeywords.some(w => row.cleanCombined.includes(w));
-    const awayFound = awayKeywords.some(w => row.cleanCombined.includes(w));
+    // Sök på hela lagnamnen (utan bortfiltrering av korta ord)
+    const homeFound = row.cleanCombined.includes(cleanHome) || row.cleanHome.includes(cleanHome);
+    const awayFound = row.cleanCombined.includes(cleanAway) || row.cleanAway.includes(cleanAway);
 
     if (!homeFound || !awayFound) return false;
 
@@ -152,7 +151,7 @@ export function findP1TicketInRows(
   if (matches.length === 0) return null;
 
   matches.sort((a, b) => a.price - b.price);
-  const best = matches[0]; // Nu med hakparentes!
+  const best = matches[0];
 
   return {
     title: `${homeTeam} vs ${awayTeam}`,
