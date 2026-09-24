@@ -136,14 +136,16 @@ const getChampionsTravelUrl = (homeTeam: string): string => {
   return `https://www.championstravel.co.uk/search?q=${encodeURIComponent(cleanHome)}`;
 };
 
-// 1. ORIGINAL-RENSNING FÖR P1 OCH TICOMBO (Rör inte 'united', 'city', 'inter' osv.)
+// RENSNING FÖR P1 OCH TICOMBO
 const cleanTeamStr = (str: string) => {
   if (!str) return '';
   return str
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/-/g, ' ')
+    .replace(/[\u0300-\u036f]/g, "") // Tar bort å, ä, ö, é osv.
+    .replace(/-/g, ' ')              // Gör "bayern-munchen" till "bayern munchen"
+    .replace(/\b(fc|cf|afc|ac|sc|sv|vfb|rb|club)\b/g, '') // Tar bort förkortningar som FC/CF
+    .replace(/\s+/g, ' ')            // Tar bort dubbla mellanslag
     .trim();
 };
 
@@ -222,7 +224,7 @@ async function getMatchesData() {
     const offers: any[] = [];
 
     // 1. P1 Travel Feed (Visas bara om träff finns)
-    const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date);
+    const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date) || findP1TicketInRows(p1Rows, m.homeKey, m.awayKey, m.date);
     if (p1Data && p1Data.price > 0) {
       const p1PriceSEK = Math.round(p1Data.price * EUR_TO_SEK);
       let p1Url = p1Data.directUrl || getSearchUrl("P1 Travel", homeName, awayName);
@@ -255,7 +257,7 @@ async function getMatchesData() {
     }
 
     // 2. Ticombo Feed (Visas bara om träff finns)
-    const ticomboData = findTicomboTicketInRows(ticomboRows, homeName, awayName, m.date);
+    const ticomboData = findTicomboTicketInRows(ticomboRows, homeName, awayName, m.date) || findTicomboTicketInRows(ticomboRows, m.homeKey, m.awayKey, m.date);
     if (ticomboData && ticomboData.price > 0) {
       const ticomboPriceSEK = ticomboData.currency === 'EUR'
         ? Math.round(ticomboData.price * EUR_TO_SEK)
