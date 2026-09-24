@@ -239,15 +239,39 @@ async function getMatchesData() {
       });
     }
 
-    // Hjälpfunktion för att städa lagnamn
+// Hjälpfunktion för att städa och normalisera lagnamn samt hantera förkortningar/synonymer
 const cleanTeamStr = (str: string) => {
   if (!str) return '';
-  return str
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // gör ü->u, ö->o
-    .replace(/\b(munchen|münchen)\b/g, 'munich')     // översätter munchen till munich för Bayern
+  let cleaned = str.toLowerCase();
+
+  // Översätt vanliga förkortningar och varianter till ett enhetligt namn
+  const synonyms: Record<string, string> = {
+    'psg': 'paris saint germain',
+    'paris sg': 'paris saint germain',
+    'bayern': 'bayern munich',
+    'bayern munchen': 'bayern munich',
+    'munchen': 'munich',
+    'inter': 'inter milan',
+    'atletico': 'atletico madrid',
+    'ath bilbao': 'athletic bilbao',
+    'ac milan': 'milan',
+  };
+
+  // Om söksträngen exakt matchar en nyckel i synonymtabellen
+  if (synonyms[cleaned]) {
+    cleaned = synonyms[cleaned];
+  } else {
+    // Annars ersätt kända ord/förkortningar i strängen
+    Object.keys(synonyms).forEach(key => {
+      cleaned = cleaned.replace(new RegExp(`\\b${key}\\b`, 'g'), synonyms[key]);
+    });
+  }
+
+  return cleaned
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // ta bort diakriter/accenter (t.ex. ü->u, é->e)
     .replace(/-/g, ' ')
-    .replace(/\b(fc|cf|afc|sc|sv|vfb|rb|inter|real|club|hotspur|town|united|city)\b/g, '')
+    .replace(/\b(fc|cf|afc|sc|sv|vfb|rb|real|club|hotspur|town|united|city)\b/g, '')
     .trim();
 };
 
