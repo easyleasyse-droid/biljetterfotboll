@@ -51,7 +51,6 @@ export async function fetchSportsEvents365Matches() {
   const tournamentRequests = TOURNAMENT_IDS.map(async (tournamentId) => {
     const url = `${BASE_URL}/events/tournament/${tournamentId}?apiKey=${API_KEY}&currency=EUR&limit=200`;
     
-    // Höj timeout från 2.5s till 8s så inte turneringar klipps bort
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
@@ -62,9 +61,11 @@ export async function fetchSportsEvents365Matches() {
           'Authorization': authHeader,
           'Accept': 'application/json',
         },
-        next: { revalidate: 3600 },
+        cache: 'no-store', // Detta gör att cachen rensas direkt!
         signal: controller.signal,
       });
+    
+    
 
       clearTimeout(timeoutId);
       if (!response.ok) return [];

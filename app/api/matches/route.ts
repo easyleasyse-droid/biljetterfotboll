@@ -249,15 +249,23 @@ const cleanTeamStr = (str: string) => {
     .trim();
 };
 
-// Matcha mot Sports Events 365 i app/api/matches/route.ts
+// Matcha mot Sports Events 365
 const se365Match = Array.isArray(se365Matches) ? se365Matches.find((se: any) => {
-  const seHome = (se.homeTeam || '').toLowerCase().replace(/[-_]/g, ' ');
-  const seAway = (se.awayTeam || '').toLowerCase().replace(/[-_]/g, ' ');
+  // Gör om alla lagnamn till gemener och ta bort bindestreck/specialtecken
+  const seHome = (se.homeTeam || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const seAway = (se.awayTeam || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   
-  const hKey = (m.homeKey || '').toLowerCase().replace(/[-_]/g, ' ');
-  const aKey = (m.awayKey || '').toLowerCase().replace(/[-_]/g, ' ');
+  const hKey = (m.homeKey || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const aKey = (m.awayKey || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const hName = (homeName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const aName = (awayName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-  return seHome.includes(hKey) && seAway.includes(aKey);
+  // Kolla om hemmalaget matchar
+  const homeMatches = seHome.includes(hKey) || hKey.includes(seHome) || seHome.includes(hName) || hName.includes(seHome);
+  // Kolla om bortalaget matchar
+  const awayMatches = seAway.includes(aKey) || aKey.includes(seAway) || seAway.includes(aName) || aName.includes(seAway);
+
+  return homeMatches && awayMatches;
 }) : null;
 
 if (se365Match && se365Match.minPrice > 0) {
@@ -276,8 +284,8 @@ if (se365Match && se365Match.minPrice > 0) {
     availableQuantity: 4,
     deliveryType: "E-biljett (Direkt)",
     isVerified: true,
-    // Använd KUNNA direktlänken från API:et, annars fall tillbaka på startsidan med affiliate-ID
-    url: se365Match.url || `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`,
+    // Använd KUNNA direktlänken från API:et
+    url: se365Match.url,
     type: "ticket"
   });
 }
