@@ -1,5 +1,3 @@
-// lib/sportsEvents365Feed.ts
-
 const API_USERNAME = process.env.SE365_USERNAME || 'biljetterfotboll';
 const API_PASSWORD = process.env.SE365_PASSWORD || '6cvxxdbM5F0x';
 const API_KEY = process.env.SE365_API_KEY || 'ef0704884bb49a77a39e981ba7be5fb0';
@@ -18,28 +16,35 @@ const TOURNAMENT_IDS = [
   15   // Eredivisie
 ];
 
+// Helper för att bygga en fungerande djuplänk till SE365 med ditt Affiliate-ID
 function buildSportsEvents365Url(targetUrl: string, homeTeam?: string, awayTeam?: string): string {
-  let url = targetUrl;
+  let url = targetUrl?.trim();
+
+  // Om API:et saknade specifik match-URL, skapa en sök-URL med korrekt mellanrum
   if (!url || url === 'https://www.sportsevents365.com' || url === 'https://www.sportsevents365.com/') {
     if (homeTeam && awayTeam) {
-      url = `https://www.sportsevents365.com/search?q=${encodeURIComponent(`${homeTeam} vs${awayTeam}`)}`;
+      url = `https://www.sportsevents365.com/search?q=${encodeURIComponent(`${homeTeam}${awayTeam}`)}`;
     } else {
       url = 'https://www.sportsevents365.com';
     }
   }
+
+  // Lägg till affiliate-spårningen på URL:en
   const separator = url.includes('?') ? '&' : '?';
   return `${url}${separator}a_aid=${SE365_AFFILIATE_ID}`;
 }
 
+// Konvertera SE365-datum (DD/MM/YYYY) till ISO (YYYY-MM-DD)
 function parseSe365Date(dateStr: string): string {
   if (!dateStr) return '';
-  if (dateStr.includes('-')) return dateStr.split('T')[0]; // Redan ISO (YYYY-MM-DD)
-  const parts = dateStr.split('/');
-  if (parts.length === 3) {
-    const [month, day, year] = parts;
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      const [day, month, year] = parts;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
   }
-  return dateStr;
+  return dateStr.split('T')[0];
 }
 
 export async function fetchSportsEvents365Matches() {
@@ -47,9 +52,9 @@ export async function fetchSportsEvents365Matches() {
   const allMatches: any[] = [];
 
   const tournamentRequests = TOURNAMENT_IDS.map(async (tournamentId) => {
-    const url = `${BASE_URL}/events/tournament/${tournamentId}?apiKey=${API_KEY}`;
+    // Vi lägger till &currency=EUR så priset alltid kommer i EUR
+    const url = `${BASE_URL}/events/tournament/${tournamentId}?apiKey=${API_KEY}&currency=EUR`;
     
-    // Hård timeout på 2.5 sekunder för att förhindra seghet på sajten
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2500);
 
@@ -60,7 +65,7 @@ export async function fetchSportsEvents365Matches() {
           'Authorization': authHeader,
           'Accept': 'application/json',
         },
-        next: { revalidate: 3600 }, // Cache i 1 timme
+        next: { revalidate: 3600 },
         signal: controller.signal,
       });
 
@@ -80,11 +85,12 @@ export async function fetchSportsEvents365Matches() {
         const currency = event.minTicketPrice?.currency || event.currency || 'EUR';
         const parsedPrice = typeof rawPrice === 'number' ? rawPrice : parseFloat(rawPrice) || 0;
 
+        // SE365 skickar direktlänken i fältet eventUrl
         const rawUrl = event.eventUrl || event.url || '';
 
         return {
           id: `se365-${event.id}`,
-          merchant: 'SportsEvents365',
+          merchant: 'Sports Events 365',
           homeTeam: homeName,
           awayTeam: awayName,
           tournament: event.tournament?.name || '',
@@ -98,7 +104,7 @@ export async function fetchSportsEvents365Matches() {
       });
     } catch (err) {
       clearTimeout(timeoutId);
-      return []; // Vid timeout eller fel returneras tom lista snyggt utan krasch
+      return [];
     }
   });
 

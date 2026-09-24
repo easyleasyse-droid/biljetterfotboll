@@ -118,15 +118,15 @@ const getSearchUrl = (
   const combinedQuery = encodeURIComponent(`${cleanHome} ${cleanAway}`);
 
   const domainMap: Record<string, string> = {
-    "StubHub": "https://www.stubhub.se/",
-    "Ticombo": `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent('https://www.ticombo.com/en/sports-tickets/football')}`,
-    "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(cleanHome)}`)}`,
-    "Sports Events 365": `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`,
-    "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${combinedQuery}`)}`,
-    "Football Ticket Net": `https://www.footballticketnet.com/search?q=${combinedQuery}`,
-    "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=12028&awinaffid=3043299&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${combinedQuery}`)}`,
-    "OLKA Express": matchDate ? getOlkaUrl(homeTeam, awayTeam, matchDate) : `https://www.olkaexpress.se/`,
-  };
+  "StubHub": "https://www.stubhub.se/",
+  "Ticombo": `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent('https://www.ticombo.com/en/sports-tickets/football')}`,
+  "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(cleanHome)}`)}`,
+  "Sports Events 365": `https://www.sportsevents365.com/search?q=${encodeURIComponent(`${cleanHome}${cleanAway}`)}&a_aid=5jutr9xaq8h3j`,
+  "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${combinedQuery}`)}`,
+  "Football Ticket Net": `https://www.footballticketnet.com/search?q=${combinedQuery}`,
+  "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=12028&awinaffid=3043299&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${combinedQuery}`)}`,
+  "OLKA Express": matchDate ? getOlkaUrl(homeTeam, awayTeam, matchDate) : `https://www.olkaexpress.se/`,
+};
 
   return domainMap[merchantName] || `https://www.google.com/search?q=${combinedQuery}`;
 };
@@ -239,37 +239,60 @@ async function getMatchesData() {
       });
     }
 
-    // Matcha mot Sports Events 365
-    const se365Match = Array.isArray(se365Matches) ? se365Matches.find((se: any) => {
-      const seHome = (se.homeTeam || '').toLowerCase().trim();
-      const seAway = (se.awayTeam || '').toLowerCase().trim();
-      const hName = (homeName || '').toLowerCase().trim();
-      const aName = (awayName || '').toLowerCase().trim();
+    // 2. Matcha mot Sports Events 365
+const normalizeTeamName = (name: string) => {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .replace(/-/g, ' ')
+    .replace(/\b(fc|cf|afc|sc|sv|vfb|rb|inter|real|club)\b/g, '')
+    .trim();
+};
 
-      return (seHome.includes(hName) || hName.includes(seHome)) && 
-             (seAway.includes(aName) || aName.includes(seAway));
-    }) : null;
+const se365Match = Array.isArray(se365Matches) ? se365Matches.find((se: any) => {
+  const seHome = normalizeTeamName(se.homeTeam);
+  const seAway = normalizeTeamName(se.awayTeam);
 
-    if (se365Match && se365Match.minPrice > 0) {
-      const priceSEK = se365Match.currency === 'EUR' 
-        ? Math.round(se365Match.minPrice * EUR_TO_SEK) 
-        : Math.round(se365Match.minPrice);
+  const hName = normalizeTeamName(homeName);
+  const aName = normalizeTeamName(awayName);
+  const hKey = normalizeTeamName(m.homeKey);
+  const aKey = normalizeTeamName(m.awayKey);
 
-      offers.push({
-        id: se365Match.id || `o-${matchId}-se365`,
-        merchantName: "Sports Events 365",
-        rating: 4.6,
-        reviewsCount: 1240,
-        section: "Verifierad Biljett",
-        category: "Standard / VIP",
-        priceSEK: priceSEK,
-        availableQuantity: 4,
-        deliveryType: "E-biljett (Direkt)",
-        isVerified: true,
-        url: se365Match.url,
-        type: "ticket"
-      });
-    }
+  // Jämför mot både formaterat namn och homeKey/awayKey
+  const isHomeMatch = 
+    (seHome && hName && (seHome.includes(hName) || hName.includes(seHome))) ||
+    (seHome && hKey && (seHome.includes(hKey) || hKey.includes(seHome)));
+
+  const isAwayMatch = 
+    (seAway && aName && (seAway.includes(aName) || aName.includes(seAway))) ||
+    (seAway && aKey && (seAway.includes(aKey) || aKey.includes(seAway)));
+
+  // Verifiera datum om det finns angivet
+  const isSameDate = !m.date || !se.date || m.date === se.date;
+
+  return isHomeMatch && isAwayMatch && isSameDate;
+}) : null;
+
+if (se365Match && se365Match.minPrice > 0) {
+  const priceSEK = se365Match.currency === 'EUR'
+    ? Math.round(se365Match.minPrice * EUR_TO_SEK)
+    : Math.round(se365Match.minPrice);
+
+  offers.push({
+    id: se365Match.id || `o-${matchId}-se365`,
+    merchantName: "Sports Events 365",
+    rating: 4.6,
+    reviewsCount: 1240,
+    section: "Verifierad Biljett",
+    category: "Standard / VIP",
+    priceSEK: priceSEK,
+    availableQuantity: 4,
+    deliveryType: "E-biljett (Direkt)",
+    isVerified: true,
+    url: se365Match.url || getSearchUrl("Sports Events 365", homeName, awayName, "", m.date),
+    type: "ticket"
+  });
+}
 
     // 3. Awin Feed (Strikt filtrerat per merchant)
     const awinTickets = findAwinTicketsForMatchSync(awinRows, homeName, awayName, {
