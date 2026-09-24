@@ -49,7 +49,7 @@ export async function fetchSportsEvents365Matches() {
   const allMatches: any[] = [];
 
   const tournamentRequests = TOURNAMENT_IDS.map(async (tournamentId) => {
-    const url = `${BASE_URL}/events/tournament/${tournamentId}?apiKey=${API_KEY}&currency=EUR`;
+    const url = `${BASE_URL}/events/tournament/${tournamentId}?apiKey=${API_KEY}&currency=EUR&limit=200`;
     
     // Höj timeout från 2.5s till 8s så inte turneringar klipps bort
     const controller = new AbortController();

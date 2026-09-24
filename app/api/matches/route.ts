@@ -121,7 +121,7 @@ const getSearchUrl = (
   "StubHub": "https://www.stubhub.se/",
   "Ticombo": `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent('https://www.ticombo.com/en/sports-tickets/football')}`,
   "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(cleanHome)}`)}`,
-  "Sports Events 365": `https://www.sportsevents365.com/search?q=${encodeURIComponent(cleanHome)}&a_aid=5jutr9xaq8h3j`,
+  "Sports Events 365": `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`,
   "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${combinedQuery}`)}`,
   "Football Ticket Net": `https://www.footballticketnet.com/search?q=${combinedQuery}`,
   "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=12028&awinaffid=3043299&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${combinedQuery}`)}`,
@@ -239,41 +239,27 @@ async function getMatchesData() {
       });
     }
 
-    // 2. Matcha mot Sports Events 365
-const normalizeTeamName = (name: string) => {
-  if (!name) return '';
-  return name
+    // Hjälpfunktion för att städa lagnamn
+const cleanTeamStr = (str: string) => {
+  if (!str) return '';
+  return str
     .toLowerCase()
     .replace(/-/g, ' ')
-    .replace(/\b(fc|cf|afc|sc|sv|vfb|rb|inter|real|club)\b/g, '')
+    .replace(/\b(fc|cf|afc|sc|sv|vfb|rb|inter|real|club|hotspur|town|united|city)\b/g, '')
     .trim();
 };
 
+// Matcha mot Sports Events 365 i app/api/matches/route.ts
 const se365Match = Array.isArray(se365Matches) ? se365Matches.find((se: any) => {
-  const seHome = normalizeTeamName(se.homeTeam);
-  const seAway = normalizeTeamName(se.awayTeam);
+  const seHome = (se.homeTeam || '').toLowerCase().replace(/[-_]/g, ' ');
+  const seAway = (se.awayTeam || '').toLowerCase().replace(/[-_]/g, ' ');
+  
+  const hKey = (m.homeKey || '').toLowerCase().replace(/[-_]/g, ' ');
+  const aKey = (m.awayKey || '').toLowerCase().replace(/[-_]/g, ' ');
 
-  const hName = normalizeTeamName(homeName);
-  const aName = normalizeTeamName(awayName);
-  const hKey = normalizeTeamName(m.homeKey);
-  const aKey = normalizeTeamName(m.awayKey);
-
-  // Jämför mot både formaterat namn och homeKey/awayKey
-  const isHomeMatch = 
-    (seHome && hName && (seHome.includes(hName) || hName.includes(seHome))) ||
-    (seHome && hKey && (seHome.includes(hKey) || hKey.includes(seHome)));
-
-  const isAwayMatch = 
-    (seAway && aName && (seAway.includes(aName) || aName.includes(seAway))) ||
-    (seAway && aKey && (seAway.includes(aKey) || aKey.includes(seAway)));
-
-  // Verifiera datum om det finns angivet
-  const isSameDate = !m.date || !se.date || m.date === se.date;
-
-  return isHomeMatch && isAwayMatch && isSameDate;
+  return seHome.includes(hKey) && seAway.includes(aKey);
 }) : null;
 
-// Visa ENDAST erbjudandet om SE365 returnerar ett faktiskt pris (> 0)
 if (se365Match && se365Match.minPrice > 0) {
   const priceSEK = se365Match.currency === 'EUR'
     ? Math.round(se365Match.minPrice * EUR_TO_SEK)
@@ -290,10 +276,12 @@ if (se365Match && se365Match.minPrice > 0) {
     availableQuantity: 4,
     deliveryType: "E-biljett (Direkt)",
     isVerified: true,
-    url: se365Match.url || getSearchUrl("Sports Events 365", homeName, awayName, "", m.date),
+    // Använd KUNNA direktlänken från API:et, annars fall tillbaka på startsidan med affiliate-ID
+    url: se365Match.url || `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`,
     type: "ticket"
   });
 }
+
     // 3. Awin Feed (Strikt filtrerat per merchant)
     const awinTickets = findAwinTicketsForMatchSync(awinRows, homeName, awayName, {
       targetDate: new Date(m.date),
