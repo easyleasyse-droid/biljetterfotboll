@@ -121,7 +121,7 @@ const getSearchUrl = (
   "StubHub": "https://www.stubhub.se/",
   "Ticombo": `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent('https://www.ticombo.com/en/sports-tickets/football')}`,
   "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(cleanHome)}`)}`,
-  "Sports Events 365": `https://www.sportsevents365.com/search?q=${encodeURIComponent(`${cleanHome}${cleanAway}`)}&a_aid=5jutr9xaq8h3j`,
+  "Sports Events 365": `https://www.sportsevents365.com/search?q=${encodeURIComponent(cleanHome)}&a_aid=5jutr9xaq8h3j`,
   "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${combinedQuery}`)}`,
   "Football Ticket Net": `https://www.footballticketnet.com/search?q=${combinedQuery}`,
   "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=12028&awinaffid=3043299&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${combinedQuery}`)}`,
@@ -273,6 +273,7 @@ const se365Match = Array.isArray(se365Matches) ? se365Matches.find((se: any) => 
   return isHomeMatch && isAwayMatch && isSameDate;
 }) : null;
 
+// Visa ENDAST erbjudandet om SE365 returnerar ett faktiskt pris (> 0)
 if (se365Match && se365Match.minPrice > 0) {
   const priceSEK = se365Match.currency === 'EUR'
     ? Math.round(se365Match.minPrice * EUR_TO_SEK)
@@ -293,7 +294,6 @@ if (se365Match && se365Match.minPrice > 0) {
     type: "ticket"
   });
 }
-
     // 3. Awin Feed (Strikt filtrerat per merchant)
     const awinTickets = findAwinTicketsForMatchSync(awinRows, homeName, awayName, {
       targetDate: new Date(m.date),
