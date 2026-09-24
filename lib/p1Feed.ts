@@ -92,6 +92,7 @@ export function findP1TicketInRows(
 
     return !isNaN(row.price) && row.price > 0 && row.url.startsWith("http");
   });
+  
 
   if (!matchedRow) return null;
 
