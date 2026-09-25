@@ -34,7 +34,7 @@ const FEED_CONFIGS: FeedConfig[] = [
   {
     label: 'FootballTicketNet',
     defaultCurrency: 'GBP',
-    url: "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/fid/113393/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/",
+    url: "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/fid/109002/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/",
     merchantId: '109002'
   },
 ];
@@ -442,13 +442,13 @@ export function findAwinTicketsForMatchSync(
 ): AwinTicketRow[] {
   if (!rows || rows.length === 0) return [];
 
-  const homeKeywords = getTeamKeywords(cleanTeamName(homeTeam));
-  const awayKeywords = getTeamKeywords(cleanTeamName(awayTeam));
+  const homeKeywords = getTeamKeywords(homeTeam);
+  const awayKeywords = getTeamKeywords(awayTeam);
 
   if (homeKeywords.length === 0 || awayKeywords.length === 0) return [];
 
   const candidates = rows.filter((row) => {
-    const title = cleanTeamName(row.productName);
+    const title = normalizeTeamString(row.productName);
 
     const homeMatch = findKeywordMatch(title, homeKeywords);
     const awayMatch = findKeywordMatch(title, awayKeywords);
@@ -483,14 +483,4 @@ export function findAwinTicketsForMatchSync(
       return 0;
     })
     .map(({ row }) => row);
-}
-
-function cleanTeamName(str: string): string {
-  if (!str) return '';
-  return str
-    .toLowerCase()
-    .replace(/\bfc\b/g, '')       // Tar bort "fc"
-    .replace(/\bafc\b/g, '')      // Tar bort "afc"
-    .replace(/[^a-z0-9]/g, '')    // Tar bort alla tecken utom bokstäver och siffror
-    .trim();
 }
