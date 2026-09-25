@@ -69,10 +69,13 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
 
   // Exakt filtrering som separerar lag som Slavia och Sparta
   const filteredMatches = matches.filter((match: any) => {
-    const homeName = removeAccents(match.homeTeam?.name || "").toLowerCase();
-    const awayName = removeAccents(match.awayTeam?.name || "").toLowerCase();
-    const homeKey = removeAccents(match.homeKey || "").toLowerCase();
-    const awayKey = removeAccents(match.awayKey || "").toLowerCase();
+    const removeAccentsAndO = (str: string) => 
+      str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ø/g, "o").toLowerCase() : "";
+
+    const homeName = removeAccentsAndO(match.homeTeam?.name || "");
+    const awayName = removeAccentsAndO(match.awayTeam?.name || "");
+    const homeKey = removeAccentsAndO(match.homeKey || "");
+    const awayKey = removeAccentsAndO(match.awayKey || "");
     
     const cleanSlug = targetKey.replace(/-/g, " ");
 
@@ -85,12 +88,22 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
       return homeName.includes("inter") || awayName.includes("inter");
     }
 
+    // Specialhantering för Union SG
+    if (targetKey === "union-sg" || cleanSlug === "union sg") {
+      return homeName.includes("union") || awayName.includes("union") ||
+             homeKey.includes("union") || awayKey.includes("union");
+    }
+
+    const realName = removeAccentsAndO(seoData?.name || "");
+
     const terms = [cleanSlug];
+    if (realName) terms.push(realName);
     if (cleanSlug.includes("prag")) terms.push("prague");
     if (cleanSlug.includes("prague")) terms.push("prag");
 
     const matchesTeam = (name: string, key: string) => {
       return terms.some(term => {
+        if (!term) return false;
         if (term.includes("prag") || term.includes("prague")) {
           const mainPart = term.replace(/prag|prague/g, "").trim(); 
           if (mainPart && !name.includes(mainPart) && !key.includes(mainPart)) return false;

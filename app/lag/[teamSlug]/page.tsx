@@ -133,22 +133,41 @@ export default async function Page({ params }: Props) {
       const matches = await res.json();
       
       const teamMatches = matches.filter((match: any) => {
-        const homeName = (match.homeTeam?.name || "").toLowerCase();
-        const awayName = (match.awayTeam?.name || "").toLowerCase();
-        const slug = teamSlug.toLowerCase().trim();
+  const homeName = (match.homeTeam?.name || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ø/g, "o");
+  const awayName = (match.awayTeam?.name || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ø/g, "o");
+  const slug = teamSlug.toLowerCase().trim();
 
-        if (slug === "milan" || slug === "ac-milan") {
-          if (homeName.includes("inter") || awayName.includes("inter")) return false;
-          return homeName.includes("milan") || awayName.includes("milan");
-        }
+  if (slug === "milan" || slug === "ac-milan") {
+    if (homeName.includes("inter") || awayName.includes("inter")) return false;
+    return homeName.includes("milan") || awayName.includes("milan");
+  }
 
-        if (slug === "inter" || slug === "inter-milan") {
-          return homeName.includes("inter") || awayName.includes("inter");
-        }
+  if (slug === "inter" || slug === "inter-milan") {
+    return homeName.includes("inter") || awayName.includes("inter");
+  }
 
-        const targetName = slug.replace(/-/g, " ");
-        return homeName.includes(targetName) || awayName.includes(targetName);
-      });
+  if (slug === "union-sg") {
+    return homeName.includes("union") || awayName.includes("union");
+  }
+
+  const realName = (team.name || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ø/g, "o");
+  const targetName = slug.replace(/-/g, " ");
+
+  return homeName.includes(realName) || awayName.includes(realName) || 
+         homeName.includes(targetName) || awayName.includes(targetName);
+});
 
       teamMatches.forEach((match: any) => {
         graphItems.push({
