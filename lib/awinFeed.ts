@@ -221,7 +221,7 @@ async function fetchSingleFeed(feed: FeedConfig): Promise<RawAwinRow[]> {
 
     if (!Number.isFinite(price) || price <= 0) continue;
 
-    rawRows.push({
+    rows.push({
       merchantName,
       merchantId: '',
       productName,
