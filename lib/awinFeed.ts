@@ -28,14 +28,14 @@ const FEED_CONFIGS: FeedConfig[] = [
   {
     label: 'Gigsberg',
     defaultCurrency: 'EUR',
-    url: "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/cid/592/fid/117212/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/",
+    url: process.env.GIGSBERG_FEED_URL || '',
     merchantId: '117212',
   },
   {
     label: 'FootballTicketNet',
     defaultCurrency: 'GBP',
-    url: "https://productdata.awin.com/datafeed/download/apikey/396ea86764d24ee68e956ee4e37658a4/language/en/fid/109002/rid/0,1/hasEnhancedFeeds/0/columns/aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,search_price,merchant_name,merchant_id,category_name,category_id,aw_image_url,currency,store_price,delivery_cost,merchant_deep_link,language,last_updated,display_price,data_feed_id/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/",
-    merchantId: '109002'
+    url: process.env.FOOTBALLTICKETNET_FEED_URL || '',
+    merchantId: '109002',
   },
 ];
 
@@ -202,45 +202,35 @@ async function fetchSingleFeed(feed: FeedConfig): Promise<RawAwinRow[]> {
       const cols = parseCSVLine(line);
 
       const productName = cols[idxProductName] || '';
-      if (!productName) continue;
+    if (!productName) continue;
 
-      const lowerName = productName.toLowerCase();
-      if (JUNK_PRODUCT_KEYWORDS.some((kw) => lowerName.includes(kw))) continue;
+    const lowerName = productName.toLowerCase();
+    if (JUNK_PRODUCT_KEYWORDS.some((kw) => lowerName.includes(kw))) continue;
 
-      const merchantName = cols[idxMerchant] || feed.label;
-      const merchantId = cols[idxMerchantId] || feed.merchantId || '';
-      const deepLink = cols[idxDeepLink] || cols[idxMerchantDeep] || '#';
-      const description = cols[idxDescription] || '';
+    // HÄR SÄTTER DU NAMNET OCH VALUTAN FRÅN DIN FEED-CONFIG:
+    const merchantName = feed.label;
+    const currency = feed.defaultCurrency;
 
-      const searchP = parsePrice(cols[idxSearchPrice]);
-      const displayP = parsePrice(cols[idxDisplayPrice]);
-      const storeP = parsePrice(cols[idxStorePrice]);
+    const deepLink = cols[idxDeepLink] || cols[idxMerchantDeep] || '#';
+    const searchP = parsePrice(cols[idxSearchPrice]);
+    const displayP = parsePrice(cols[idxDisplayPrice]);
 
-      let price = NaN;
-      if (Number.isFinite(searchP) && searchP > 0) price = searchP;
-      else if (Number.isFinite(displayP) && displayP > 0) price = displayP;
-      else if (Number.isFinite(storeP) && storeP > 0) price = storeP;
+    let price = NaN;
+    if (Number.isFinite(searchP) && searchP > 0) price = searchP;
+    else if (Number.isFinite(displayP) && displayP > 0) price = displayP;
 
-      if (!Number.isFinite(price) || price <= 0) continue;
+    if (!Number.isFinite(price) || price <= 0) continue;
 
-      let currency = (cols[idxCurrency] || '').trim().toUpperCase();
-      if (!KNOWN_CURRENCIES.has(currency)) {
-        currency = feed.defaultCurrency;
-      }
-
-      const parsedDate = extractDateFromText(`${productName} ${description}`);
-      const eventDate = parsedDate ? parsedDate.toISOString() : null;
-
-      rows.push({
-        merchantName,
-        merchantId,
-        productName,
-        eventDate,
-        rawPrice: price,
-        currency,
-        url: deepLink,
-      });
-    }
+    rawRows.push({
+      merchantName,
+      merchantId: '',
+      productName,
+      eventDate: null,
+      rawPrice: price,
+      currency,
+      url: deepLink,
+    });
+}
 
     return rows;
   } catch (err) {
