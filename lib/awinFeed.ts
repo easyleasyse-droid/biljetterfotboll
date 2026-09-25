@@ -442,13 +442,13 @@ export function findAwinTicketsForMatchSync(
 ): AwinTicketRow[] {
   if (!rows || rows.length === 0) return [];
 
-  const homeKeywords = getTeamKeywords(homeTeam);
-  const awayKeywords = getTeamKeywords(awayTeam);
+  const homeKeywords = getTeamKeywords(cleanTeamName(homeTeam));
+  const awayKeywords = getTeamKeywords(cleanTeamName(awayTeam));
 
   if (homeKeywords.length === 0 || awayKeywords.length === 0) return [];
 
   const candidates = rows.filter((row) => {
-    const title = normalizeTeamString(row.productName);
+    const title = cleanTeamName(row.productName);
 
     const homeMatch = findKeywordMatch(title, homeKeywords);
     const awayMatch = findKeywordMatch(title, awayKeywords);
@@ -483,4 +483,14 @@ export function findAwinTicketsForMatchSync(
       return 0;
     })
     .map(({ row }) => row);
+}
+
+function cleanTeamName(str: string): string {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .replace(/\bfc\b/g, '')       // Tar bort "fc"
+    .replace(/\bafc\b/g, '')      // Tar bort "afc"
+    .replace(/[^a-z0-9]/g, '')    // Tar bort alla tecken utom bokstäver och siffror
+    .trim();
 }
