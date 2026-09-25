@@ -79,37 +79,44 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
     
     const cleanSlug = targetKey.replace(/-/g, " ");
 
+    // 1. Milan vs Inter
     if (cleanSlug === "milan" || cleanSlug === "ac milan") {
       if (homeName.includes("inter") || awayName.includes("inter")) return false;
       return homeName.includes("milan") || awayName.includes("milan");
     }
-
     if (cleanSlug === "inter" || cleanSlug === "inter milan") {
       return homeName.includes("inter") || awayName.includes("inter");
     }
 
-    // Specialhantering för Union SG
-    if (targetKey === "union-sg" || cleanSlug === "union sg") {
-      return homeName.includes("union") || awayName.includes("union") ||
-             homeKey.includes("union") || awayKey.includes("union");
+    // 2. Prag-lagen (Slavia vs Sparta)
+    if (cleanSlug.includes("slavia")) {
+      if (homeName.includes("sparta") || awayName.includes("sparta")) return false;
+      return homeName.includes("slavia") || awayName.includes("slavia");
+    }
+    if (cleanSlug.includes("sparta")) {
+      if (homeName.includes("slavia") || awayName.includes("slavia")) return false;
+      return homeName.includes("sparta") || awayName.includes("sparta");
     }
 
-    const realName = removeAccentsAndO(seoData?.name || "");
+    // 3. Union-lagen (Union Berlin vs Union SG)
+    if (targetKey === "union-sg" || cleanSlug === "union sg" || cleanSlug.includes("gilloise")) {
+      if (homeName.includes("berlin") || awayName.includes("berlin")) return false;
+      return homeName.includes("gilloise") || awayName.includes("gilloise") || 
+             homeName.includes("union sg") || awayName.includes("union sg") ||
+             homeKey.includes("union-sg") || awayKey.includes("union-sg");
+    }
+    if (cleanSlug.includes("berlin")) {
+      if (homeName.includes("gilloise") || awayName.includes("gilloise")) return false;
+      return homeName.includes("berlin") || awayName.includes("berlin");
+    }
 
+    // 4. Standard sökning för alla andra lag (inkl. Lillestrøm)
+    const realName = removeAccentsAndO(seoData?.name || "");
     const terms = [cleanSlug];
     if (realName) terms.push(realName);
-    if (cleanSlug.includes("prag")) terms.push("prague");
-    if (cleanSlug.includes("prague")) terms.push("prag");
 
     const matchesTeam = (name: string, key: string) => {
-      return terms.some(term => {
-        if (!term) return false;
-        if (term.includes("prag") || term.includes("prague")) {
-          const mainPart = term.replace(/prag|prague/g, "").trim(); 
-          if (mainPart && !name.includes(mainPart) && !key.includes(mainPart)) return false;
-        }
-        return name.includes(term) || key.includes(term);
-      });
+      return terms.some(term => term && (name.includes(term) || key.includes(term)));
     };
 
     return matchesTeam(homeName, homeKey) || matchesTeam(awayName, awayKey);
