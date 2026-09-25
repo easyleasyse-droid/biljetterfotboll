@@ -88,14 +88,20 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
       return homeName.includes("inter") || awayName.includes("inter");
     }
 
-    // 2. Prag-lagen (Slavia vs Sparta)
+    // 2. Prag-lagen vs Rotterdam (Slavia Prag, Sparta Prag, Sparta Rotterdam)
     if (cleanSlug.includes("slavia")) {
       if (homeName.includes("sparta") || awayName.includes("sparta")) return false;
       return homeName.includes("slavia") || awayName.includes("slavia");
     }
-    if (cleanSlug.includes("sparta")) {
+    if (cleanSlug.includes("sparta") && (cleanSlug.includes("prag") || cleanSlug.includes("prague"))) {
+      if (homeName.includes("rotterdam") || awayName.includes("rotterdam")) return false;
       if (homeName.includes("slavia") || awayName.includes("slavia")) return false;
-      return homeName.includes("sparta") || awayName.includes("sparta");
+      return (homeName.includes("sparta") || awayName.includes("sparta")) && 
+             (homeName.includes("prag") || awayName.includes("prag") || homeName.includes("prague") || awayName.includes("prague") || homeName.includes("praha") || awayName.includes("praha") || homeKey.includes("sparta-prag") || awayKey.includes("sparta-prag"));
+    }
+    if (cleanSlug.includes("rotterdam")) {
+      if (homeName.includes("prag") || awayName.includes("prag") || homeName.includes("prague") || awayName.includes("prague")) return false;
+      return homeName.includes("rotterdam") || awayName.includes("rotterdam");
     }
 
     // 3. Union-lagen (Union Berlin vs Union SG)
@@ -110,7 +116,7 @@ export default function TeamClient({ teamSlug }: { teamSlug: string }) {
       return homeName.includes("berlin") || awayName.includes("berlin");
     }
 
-    // 4. Standard sökning för alla andra lag (inkl. Lillestrøm)
+    // 4. Standard sökning för alla andra lag
     const realName = removeAccentsAndO(seoData?.name || "");
     const terms = [cleanSlug];
     if (realName) terms.push(realName);
