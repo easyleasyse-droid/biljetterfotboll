@@ -160,9 +160,9 @@ const JUNK_PRODUCT_KEYWORDS = [
   'tour',
   'membership',
   'hospitality only',
-  'woman'
-  'women'
-  'dam'
+  'woman',
+  'women',
+  'dam',
 ];
 
 async function fetchSingleFeed(feed: FeedConfig): Promise<RawAwinRow[]> {
