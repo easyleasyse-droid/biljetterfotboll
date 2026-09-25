@@ -258,7 +258,17 @@ async function fetchAwinRowsUncached(): Promise<AwinTicketRow[]> {
   for (const raw of allRawRows) {
     const priceSEK = convertToSEK(raw.rawPrice, raw.currency, ratesPerSEK);
     if (priceSEK === null) continue;
-    rows.push({ ...raw, priceSEK });
+
+    rows.push({
+      merchantName: raw.merchantName.trim(),
+      merchantId: raw.merchantId,
+      productName: raw.productName.slice(0, 120), // Korta ner titeln för att spara minne
+      eventDate: raw.eventDate,
+      rawPrice: raw.rawPrice,
+      currency: raw.currency,
+      url: raw.url,
+      priceSEK,
+    });
   }
 
   return rows;

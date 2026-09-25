@@ -362,7 +362,9 @@ if (se365Match && se365Match.minPrice > 0) {
         (t) =>
           t.merchantName.toLowerCase().includes("football") ||
           t.merchantName.toLowerCase().includes("ftn") ||
-          t.merchantId === "113393"
+          t.merchantName.toLowerCase().includes("ticket net") ||
+          t.merchantId === "113393" ||
+          t.merchantId === "107817"
       );
       if (ftnMatches.length > 0) {
         const bestFTN = ftnMatches.reduce((prev, curr) =>
