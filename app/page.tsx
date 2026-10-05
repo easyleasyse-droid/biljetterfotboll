@@ -87,9 +87,15 @@ export default function HomePage() {
   const teamSlugs = TEAMS_SEO_DATA ? Object.keys(TEAMS_SEO_DATA) : [];
 
   const filteredMatches = matchesData.filter((match) => {
-    if (selectedLeague && match.league !== selectedLeague) {
-      return false;
-    }
+    if (selectedLeague) {
+  const matchLeagueLower = (match.league || "").toLowerCase();
+  const selectedLeagueLower = selectedLeague.toLowerCase();
+  
+  // Kontrollera om matchens liga innehåller det valda liganamnet (eller tvärtom)
+  if (!matchLeagueLower.includes(selectedLeagueLower) && !selectedLeagueLower.includes(matchLeagueLower)) {
+    return false;
+  }
+}
 
     if (searchText) {
       const q = searchText.toLowerCase();

@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Match } from "../types";
 import TeamBadge from "./TeamBadge";
 import { Calendar, MapPin, ChevronRight } from "lucide-react";
@@ -10,6 +11,16 @@ interface MatchCardProps {
 }
 
 export default function MatchCard({ match, onSelect }: MatchCardProps) {
+  // Helper to generate the match slug using existing match properties
+  const createMatchSlug = (m: Match) => {
+    const home = typeof m.homeTeam === "string" ? m.homeTeam : m.homeTeam?.name || "home";
+    const away = typeof m.awayTeam === "string" ? m.awayTeam : m.awayTeam?.name || "away";
+    return `${home}-vs-${away}-${m.date}`
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  };
+
   // Helper to format date into Swedish
   const getSwedishDate = (dateStr: string) => {
     try {
@@ -58,10 +69,14 @@ export default function MatchCard({ match, onSelect }: MatchCardProps) {
     }
   };
 
+  const matchSlug = createMatchSlug(match);
+  const homeName = typeof match.homeTeam === "string" ? match.homeTeam : match.homeTeam?.name;
+  const awayName = typeof match.awayTeam === "string" ? match.awayTeam : match.awayTeam?.name;
+
   return (
-    <div
-      onClick={() => onSelect(match)}
-      className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-blue-900/5 hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
+    <Link
+      href={`/match/${matchSlug}`}
+      className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-blue-900/5 hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group cursor-pointer block"
       id={`match-card-${match.id}`}
     >
       {/* Card Header (Enbart Liga kvar nu) */}
@@ -97,7 +112,7 @@ export default function MatchCard({ match, onSelect }: MatchCardProps) {
 
         {/* Text Matchup Header */}
         <h4 className="text-lg font-black text-blue-900 mb-2.5 tracking-tight text-center truncate">
-          {match.homeTeam.name} <span className="text-slate-350">vs</span> {match.awayTeam.name}
+          {homeName} <span className="text-slate-350">vs</span> {awayName}
         </h4>
 
         {/* Stadium & City details */}
@@ -124,16 +139,16 @@ export default function MatchCard({ match, onSelect }: MatchCardProps) {
 
         <button
           onClick={(e) => {
-            e.stopPropagation(); // Förhindrar dubbelklick om man trycker direkt på knappen
+            e.preventDefault();
             onSelect(match);
           }}
           className="flex-1 max-w-[140px] bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black text-xs uppercase tracking-widest py-3 px-3 rounded-xl transition-all duration-150 cursor-pointer shadow-md shadow-blue-600/15 flex items-center justify-center gap-1 group-hover:translate-x-0.5"
           id={`btn-buy-${match.id}`}
         >
-          <span>Köp</span>
+          <span>Jämför</span>
           <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
         </button>
       </div>
-    </div>
+    </Link>
   );
 }
