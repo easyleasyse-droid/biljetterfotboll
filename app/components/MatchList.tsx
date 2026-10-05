@@ -73,14 +73,15 @@ export default function MatchList({
           </div>
         </div>
 
-        {/* LISTVY ISTÄLLET FÖR GRID */}
+        {/* LISTVY */}
         {sortedMatches.length > 0 ? (
           <>
             <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm divide-y divide-slate-100">
               {sortedMatches.map((match) => (
                 <div 
-                  key={match.id || `${match.homeTeam?.name}-${match.awayTeam?.name}-${match.date}`} 
-                  className="p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/80 transition-colors"
+                  key={match.id || `${match.homeTeam?.name}-${match.awayTeam?.name}-${match.date}`}
+                  onClick={() => onSelectMatch(match)}
+                  className="p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/80 transition-colors cursor-pointer group"
                 >
                   {/* DATUM & ARENA */}
                   <div className="flex items-center gap-3 min-w-[150px]">
@@ -153,8 +154,11 @@ export default function MatchList({
                     </div>
                     
                     <button 
-                      onClick={() => onSelectMatch(match)}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm active:scale-95"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Förhindrar dubbelklick om man trycker direkt på knappen
+                        onSelectMatch(match);
+                      }}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm active:scale-95 cursor-pointer"
                     >
                       Jämför
                     </button>
@@ -163,7 +167,7 @@ export default function MatchList({
               ))}
             </div>
 
-            {/* KNAPPEN LIGGER NU HÄR – OVANFÖR KÖPGARANTIN */}
+            {/* KNAPPEN FÖR ATT VISA FLER */}
             {onShowMore && remainingCount > 0 && (
               <div className="text-center mt-8">
                 <button

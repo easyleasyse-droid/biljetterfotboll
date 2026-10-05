@@ -60,7 +60,8 @@ export default function MatchCard({ match, onSelect }: MatchCardProps) {
 
   return (
     <div
-      className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-blue-900/5 hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group"
+      onClick={() => onSelect(match)}
+      className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-blue-900/5 hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
       id={`match-card-${match.id}`}
     >
       {/* Card Header (Enbart Liga kvar nu) */}
@@ -122,7 +123,10 @@ export default function MatchCard({ match, onSelect }: MatchCardProps) {
         </div>
 
         <button
-          onClick={() => onSelect(match)}
+          onClick={(e) => {
+            e.stopPropagation(); // Förhindrar dubbelklick om man trycker direkt på knappen
+            onSelect(match);
+          }}
           className="flex-1 max-w-[140px] bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black text-xs uppercase tracking-widest py-3 px-3 rounded-xl transition-all duration-150 cursor-pointer shadow-md shadow-blue-600/15 flex items-center justify-center gap-1 group-hover:translate-x-0.5"
           id={`btn-buy-${match.id}`}
         >
