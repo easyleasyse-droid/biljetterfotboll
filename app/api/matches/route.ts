@@ -537,7 +537,7 @@ if (se365Match && se365Match.minPrice > 0) {
 
     const manualOffersForThisMatch = getManualOffersForMatch(m.homeKey, m.awayKey, m.date);
     
-    // Lista på leverantörer vi vill blockera helt (skräppriser)
+    // 1. Leverantörer vi vill blockera helt (skräppriser)
     const blockedProviders = [
       "viagogo", 
       "champions travel", 
@@ -548,15 +548,23 @@ if (se365Match && se365Match.minPrice > 0) {
     let filteredOffers = offers.filter(o => {
       const name = (o.merchantName || o.providerName || "").toLowerCase();
       
-      // Blockerar om namnet finns med på svarta listan
+      // Blockera skräppriser från svarta listan
       if (blockedProviders.some(blocked => name.includes(blocked))) {
         return false;
+      }
+      
+      // Om namnet är olka, kontrollera om vi har manuella priser
+      if (name.includes("olka")) {
+        if (manualOffersForThisMatch && manualOffersForThisMatch.length > 0) {
+          // Släpp bara igenom om det matchar det manuella (annars rensas det automatiska bort)
+          return manualOffersForThisMatch.some(mo => mo.bookingUrl === o.url || mo.bookingUrl === o.bookingUrl);
+        }
       }
       
       return true;
     });
 
-    // Sortera efter lägsta pris först
+    // 2. Sortera efter lägsta pris först
     filteredOffers.sort((a, b) => (a.priceSEK || 0) - (b.priceSEK || 0));
 
     return {
