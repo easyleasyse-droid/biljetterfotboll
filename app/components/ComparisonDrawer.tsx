@@ -31,7 +31,7 @@ export default function ComparisonDrawer({ match, onClose, onBookOffer }: Compar
 
   // Determine cheapest price for each category to feed into the stadium map
   const getCheapestForCategory = (cat: "VIP" | "Långsida" | "Kortsida" | "Borta") => {
-    const filtered = match.offers.filter((o) => o.category === cat);
+    const filtered = (match.offers || []).filter((o) => o.category === cat);
     if (filtered.length === 0) return 0;
     return Math.min(...filtered.map((o) => o.priceSEK));
   };
@@ -44,7 +44,7 @@ export default function ComparisonDrawer({ match, onClose, onBookOffer }: Compar
   };
 
   // Filter offers based on both active filters (Seating Category & Package Type)
-  const filteredOffers = match.offers.filter((offer) => {
+  const filteredOffers = (match.offers || []).filter((offer) => {
     // 1. Check Seating Category match
     if (selectedCategory !== "Alla" && offer.category !== selectedCategory) {
       return false;

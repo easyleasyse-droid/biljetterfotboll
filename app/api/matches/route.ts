@@ -4,6 +4,7 @@ import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFe
 import { fetchAwinOffers, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
 import { getOlkaDeepLink } from "@/lib/olkaLinks";
 import { fetchSportsEvents365Matches } from "@/lib/sportsEvents365Feed";
+import { getManualOffersForMatch } from "@/lib/manualOffers";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
@@ -222,6 +223,34 @@ async function getMatchesData() {
     const basePrice = 1100 + (index * 120) % 750;
 
     const offers: any[] = [];
+
+    // --- Manual Offers ---
+    const manualOffers = getManualOffersForMatch(m.homeKey, m.awayKey, m.date);
+  manualOffers.forEach((manual) => {
+    let mappedType = 'ticket';
+    if (manual.productType === 'hotell') mappedType = 'hotel';
+    if (manual.productType === 'flyg') mappedType = 'flight';
+
+    offers.push({
+      id: `o-${m.matchId}-olka-${Math.random()}`,
+      merchantName: manual.providerName,
+      name: manual.providerName,
+      rating: 4.8, // Om du vill ha med betygstjärnan
+      reviewsCount: 120, // Valfritt antal omdömen
+      section: "Officiell Partner", // Eller vad som passar
+      category: "Standard / VIP",
+      priceSEK: manual.priceSEK,
+      availableQuantity: 4,
+      deliveryType: "E-biljett (Direkt)", // Ger den snygga e-biljett-ikonen
+      isVerified: true,                   // Ger den gröna 100% garanterad-symbolen
+      ticketType: manual.ticketType,
+      productType: mappedType,
+      type: mappedType,
+      url: manual.bookingUrl,
+      bookingUrl: manual.bookingUrl,
+    });
+  });
+    // ---------------------------
 
     // 1. P1 Travel Feed (Visas bara om träff finns)
     const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date) || findP1TicketInRows(p1Rows, m.homeKey, m.awayKey, m.date);
@@ -506,6 +535,30 @@ if (se365Match && se365Match.minPrice > 0) {
     const validPrices = offers.map((o) => o.priceSEK).filter((p) => p > 0);
     const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : basePrice;
 
+    const manualOffersForThisMatch = getManualOffersForMatch(m.homeKey, m.awayKey, m.date);
+    
+    // Lista på leverantörer vi vill blockera helt (skräppriser)
+    const blockedProviders = [
+      "viagogo", 
+      "champions travel", 
+      "livefootballtickets", 
+      "stubhub"
+    ];
+
+    let filteredOffers = offers.filter(o => {
+      const name = (o.merchantName || o.providerName || "").toLowerCase();
+      
+      // Blockerar om namnet finns med på svarta listan
+      if (blockedProviders.some(blocked => name.includes(blocked))) {
+        return false;
+      }
+      
+      return true;
+    });
+
+    // Sortera efter lägsta pris först
+    filteredOffers.sort((a, b) => (a.priceSEK || 0) - (b.priceSEK || 0));
+
     return {
       id: matchId,
       homeTeam: {
@@ -529,9 +582,9 @@ if (se365Match && se365Match.minPrice > 0) {
       time: m.time,
       stadium: homeInfo?.stadiumName || "Stadion",
       city: homeInfo?.location || "Europa",
-      priceFrom: minPrice,
+      priceFrom: filteredOffers.length > 0 ? filteredOffers[0].priceSEK : minPrice,
       totalTicketsCount: 45,
-      offers: offers
+      offers: filteredOffers
     };
   });
 
