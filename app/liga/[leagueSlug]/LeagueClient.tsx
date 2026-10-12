@@ -154,7 +154,7 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
               return (
                 <Link
                   key={slug}
-                  href={`/lag/${slug}`}
+                  href={`/lag/${slug}-biljetter`}
                   title={`Biljetter till ${teamData.name || slug}`}
                   aria-label={`Biljetter till ${teamData.name || slug}`}
                   className="group bg-white p-5 rounded-xl border border-slate-200 hover:border-indigo-200 hover:shadow-md transition-all text-center flex flex-col items-center"

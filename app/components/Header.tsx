@@ -68,31 +68,31 @@ export default function Header() {
           <Link href="/" className="hover:text-indigo-600 transition-colors">
             Alla Matcher
           </Link>
-          <Link href="/liga/premier-league" className="hover:text-indigo-600 transition-colors">
+          <Link href="/liga/premier-league-biljetter" className="hover:text-indigo-600 transition-colors">
             Premier League
           </Link>
-          <Link href="/liga/la-liga" className="hover:text-indigo-600 transition-colors">
+          <Link href="/liga/la-liga-biljetter" className="hover:text-indigo-600 transition-colors">
             La Liga
           </Link>
-          <Link href="/liga/serie-a" className="hover:text-indigo-600 transition-colors">
+          <Link href="/liga/serie-a-biljetter" className="hover:text-indigo-600 transition-colors">
             Serie A
           </Link>
-          <Link href="/liga/champions-league" className="hover:text-indigo-600 transition-colors flex items-center gap-1">
+          <Link href="/liga/champions-league-biljetter" className="hover:text-indigo-600 transition-colors flex items-center gap-1">
             🔥 Champions League
           </Link>
-          <Link href="/liga/europa-league" className="hover:text-indigo-600 transition-colors flex items-center gap-1">
+          <Link href="/liga/europa-league-biljetter" className="hover:text-indigo-600 transition-colors flex items-center gap-1">
             Europa League
           </Link>
-          <Link href="/liga/ligue-1" className="hover:text-indigo-600 transition-colors">
+          <Link href="/liga/ligue-1-biljetter" className="hover:text-indigo-600 transition-colors">
             Ligue 1
           </Link>  
-          <Link href="/liga/bundesliga" className="hover:text-indigo-600 transition-colors">
+          <Link href="/liga/bundesliga-biljetter" className="hover:text-indigo-600 transition-colors">
             Bundesliga
           </Link>
-          <Link href="/liga/eredivisie" className="hover:text-indigo-600 transition-colors">
+          <Link href="/liga/eredivisie-biljetter" className="hover:text-indigo-600 transition-colors">
             Eredivisie
           </Link>
-          <Link href="/liga/allsvenskan" className="hover:text-indigo-600 transition-colors">
+          <Link href="/liga/allsvenskan-biljetter" className="hover:text-indigo-600 transition-colors">
             Allsvenskan
           </Link>
         </div>

@@ -9,12 +9,21 @@ interface Props {
   params: Promise<{ teamSlug: string }>;
 }
 
+// Helper för att tvätta "-biljetter" till den interna nyckeln ("arsenal")
+function getCleanSlug(slug: string): string {
+  return slug.replace(/-biljetter$/, "");
+}
+
 // ==========================================
-// 1. DYNAMISK SEO (Metadata) - Optimerad för sökordsorder
+// 1. DYNAMISK SEO (Metadata)
 // ==========================================
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
-  const team = TEAMS_SEO_DATA[resolvedParams.teamSlug];
+  const rawSlug = resolvedParams.teamSlug;
+  const cleanSlug = getCleanSlug(rawSlug);
+  
+  // Hämta team från teams.ts med den rena nyckeln
+  const team = TEAMS_SEO_DATA[cleanSlug] || TEAMS_SEO_DATA[rawSlug];
   
   if (!team) {
     return { title: "Laget hittades inte" };
@@ -22,7 +31,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.biljetterfotboll.se";
   
-  // Sätter sökordet "Biljetter [Lagnamn] [År]" först i titeln
   const title = `Biljetter ${team.name} 2026/27 – Jämför Priser & Matcher`;
   const description = team.aboutTickets 
     ? `Jämför priser på matchbiljetter till ${team.name}. Se spelschema, läktarinfo och köp biljetter till ${team.stadiumName} från verifierade återförsäljare.`
@@ -32,33 +40,37 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     alternates: {
-      canonical: `${baseUrl}/lag/${resolvedParams.teamSlug}`,
+      canonical: `${baseUrl}/lag/${cleanSlug}-biljetter`,
     },
     openGraph: {
       title: `Biljetter & Matchpaket till ${team.name}`,
       description,
-      url: `${baseUrl}/lag/${resolvedParams.teamSlug}`,
+      url: `${baseUrl}/lag/${cleanSlug}-biljetter`,
       images: [{ url: team.heroImage || "" }],
     },
   };
 }
 
 // ==========================================
-// 2. BUILD OPTIMERING (Generera alla sidor)
+// 2. BUILD OPTIMERING
 // ==========================================
 export async function generateStaticParams() {
   return Object.keys(TEAMS_SEO_DATA).map((slug) => ({
-    teamSlug: slug,
+    teamSlug: `${slug}-biljetter`,
   }));
 }
 
 // ==========================================
-// 3. SERVERKOMPONENTEN (Page + Combined Schema)
+// 3. SERVERKOMPONENTEN
 // ==========================================
 export default async function Page({ params }: Props) {
   const resolvedParams = await params;
-  const teamSlug = resolvedParams.teamSlug;
-  const team = TEAMS_SEO_DATA[teamSlug];
+  const rawSlug = resolvedParams.teamSlug;
+  const cleanSlug = getCleanSlug(rawSlug);
+  const canonicalSlug = `${cleanSlug}-biljetter`;
+
+  // Hämta laget med den rena nyckeln ("arsenal")
+  const team = TEAMS_SEO_DATA[cleanSlug] || TEAMS_SEO_DATA[rawSlug];
 
   if (!team) {
     notFound();
@@ -67,7 +79,7 @@ export default async function Page({ params }: Props) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.biljetterfotboll.se";
   const graphItems: any[] = [];
 
-  // 0) BreadcrumbList Schema (Brödsmulor)
+  // 0) BreadcrumbList Schema
   graphItems.push({
     "@type": "BreadcrumbList",
     "itemListElement": [
@@ -81,23 +93,23 @@ export default async function Page({ params }: Props) {
         "@type": "ListItem",
         "position": 2,
         "name": team.league,
-        "item": `${baseUrl}/liga/${team.league.toLowerCase().replace(/\s+/g, '-')}`
+        "item": `${baseUrl}/liga/${team.league.toLowerCase().replace(/\s+/g, '-')}-biljetter`
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": team.name,
-        "item": `${baseUrl}/lag/${teamSlug}`
+        "item": `${baseUrl}/lag/${canonicalSlug}`
       }
     ]
   });
 
-  // 0) SportsTeam Schema (Laget självt)
+  // 0) SportsTeam Schema
   graphItems.push({
     "@type": "SportsTeam",
     "name": team.name,
     "sport": "Soccer",
-    "url": `${baseUrl}/lag/${teamSlug}`,
+    "url": `${baseUrl}/lag/${canonicalSlug}`,
     "logo": team.logo ? `${baseUrl}${team.logo}` : undefined,
     "memberOf": {
       "@type": "SportsOrganization",
@@ -110,7 +122,7 @@ export default async function Page({ params }: Props) {
     }
   });
 
-  // A) FAQ Schema (om FAQ finns för laget)
+  // A) FAQ Schema
   if (team.faqs && team.faqs.length > 0) {
     graphItems.push({
       "@type": "FAQPage",
@@ -125,7 +137,7 @@ export default async function Page({ params }: Props) {
     });
   }
 
-  // B) SportsEvent Schema för matcher (med säker Milan/Inter-filtrering)
+  // B) SportsEvent Schema för matcher
   try {
     const res = await fetch(`${baseUrl}/api/matches`, { next: { revalidate: 3600 } });
     
@@ -133,41 +145,42 @@ export default async function Page({ params }: Props) {
       const matches = await res.json();
       
       const teamMatches = matches.filter((match: any) => {
-  const homeName = (match.homeTeam?.name || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/ø/g, "o");
-  const awayName = (match.awayTeam?.name || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/ø/g, "o");
-  const slug = teamSlug.toLowerCase().trim();
+        const homeName = (match.homeTeam?.name || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/ø/g, "o");
+        const awayName = (match.awayTeam?.name || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/ø/g, "o");
+        
+        const slug = cleanSlug.toLowerCase().trim();
 
-  if (slug === "milan" || slug === "ac-milan") {
-    if (homeName.includes("inter") || awayName.includes("inter")) return false;
-    return homeName.includes("milan") || awayName.includes("milan");
-  }
+        if (slug === "milan" || slug === "ac-milan") {
+          if (homeName.includes("inter") || awayName.includes("inter")) return false;
+          return homeName.includes("milan") || awayName.includes("milan");
+        }
 
-  if (slug === "inter" || slug === "inter-milan") {
-    return homeName.includes("inter") || awayName.includes("inter");
-  }
+        if (slug === "inter" || slug === "inter-milan") {
+          return homeName.includes("inter") || awayName.includes("inter");
+        }
 
-  if (slug === "union-sg") {
-    return homeName.includes("union") || awayName.includes("union");
-  }
+        if (slug === "union-sg") {
+          return homeName.includes("union") || awayName.includes("union");
+        }
 
-  const realName = (team.name || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/ø/g, "o");
-  const targetName = slug.replace(/-/g, " ");
+        const realName = (team.name || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/ø/g, "o");
+        const targetName = slug.replace(/-/g, " ");
 
-  return homeName.includes(realName) || awayName.includes(realName) || 
-         homeName.includes(targetName) || awayName.includes(targetName);
-});
+        return homeName.includes(realName) || awayName.includes(realName) || 
+               homeName.includes(targetName) || awayName.includes(targetName);
+      });
 
       teamMatches.forEach((match: any) => {
         graphItems.push({
@@ -195,7 +208,7 @@ export default async function Page({ params }: Props) {
             "lowPrice": match.priceFrom,
             "priceCurrency": "SEK",
             "offerCount": match.offers?.length || 1,
-            "url": `${baseUrl}/lag/${teamSlug}`
+            "url": `${baseUrl}/lag/${canonicalSlug}`
           } : undefined,
         });
       });
@@ -204,7 +217,6 @@ export default async function Page({ params }: Props) {
     console.error("Misslyckades att hämta matcher för schema:", error);
   }
 
-  // Samla allt i en gemensam Schema.org Graph
   const schemaJson = graphItems.length > 0 ? {
     "@context": "https://schema.org",
     "@graph": graphItems
@@ -218,7 +230,7 @@ export default async function Page({ params }: Props) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaJson) }}
         />
       )}
-      <TeamClient teamSlug={teamSlug} />
+      <TeamClient teamSlug={cleanSlug} />
     </>
   );
 }
