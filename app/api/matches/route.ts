@@ -4,6 +4,7 @@ import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFe
 import { fetchAwinOffers, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
 import { getOlkaDeepLink } from "@/lib/olkaLinks";
 import { fetchSportsEvents365Matches } from "@/lib/sportsEvents365Feed";
+import { fetchLiveFootballTicketsMatches } from '@/lib/liveFootballTicketsFeed';
 import { getManualOffersForMatch } from "@/lib/manualOffers";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
@@ -200,14 +201,16 @@ async function getMatchesData() {
     return !isDutch;
   });
 
-  const [p1Rows, ticomboRows, awinRows, se365Result] = (await Promise.all([
+  const [p1Rows, ticomboRows, awinRows, se365Result, lftResult] = (await Promise.all([
   fetchP1FeedRows().catch(() => []),
   fetchTicomboParsedRows().catch(() => []),
   fetchAwinOffers().catch(() => []),
   fetchSportsEvents365Matches().catch(() => null),
- ])) as [any[], any[], any[], any];
+  fetchLiveFootballTicketsMatches().catch(() => null),
+  ])) as [any[], any[], any[], any, any];
 
- const se365Matches = se365Result?.success && Array.isArray(se365Result.matches) ? se365Result.matches : [];
+  const se365Matches = se365Result?.success && Array.isArray(se365Result.matches) ? se365Result.matches : [];
+  const lftMatches = lftResult?.success && Array.isArray(lftResult.matches) ? lftResult.matches : [];
 
   const EUR_TO_SEK = 11.25;
 
@@ -416,6 +419,49 @@ if (se365Match && se365Match.minPrice > 0) {
           });
         }
       }
+
+      // Helper för att tvätta lagnamn (tar bort FC, CF, BSC etc. för säkrare matchning)
+const cleanTeamName = (str: string) => {
+  return str
+    .toLowerCase()
+    .replace(/\bfc\b|\bcf\b|\bbsc\b|\bafc\b/g, '')
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+};
+
+// 4. LiveFootballTickets Feed
+const lftData = lftMatches.find((e: any) => {
+  const matchHome = cleanTeamName(homeName);
+  const matchAway = cleanTeamName(awayName);
+  const apiHome = cleanTeamName(e.homeTeam || '');
+  const apiAway = cleanTeamName(e.awayTeam || '');
+
+  const homeMatches = apiHome.includes(matchHome) || matchHome.includes(apiHome);
+  const awayMatches = apiAway.includes(matchAway) || matchAway.includes(apiAway);
+
+  return homeMatches && awayMatches;
+});
+
+if (lftData && lftData.minPrice > 0) {
+  const rate = lftData.currency === 'GBP' ? 13.5 : 11.25;
+  const priceSEK = Math.round(lftData.minPrice * rate);
+
+  const matchUrl = lftData.url && lftData.url.length > 0 
+    ? lftData.url 
+    : getSearchUrl("LiveFootballTickets", homeName, awayName);
+
+  offers.push({
+    id: `o-${matchId}-lft`,
+    merchantName: "LiveFootballTickets",
+    rating: 4.8,
+    reviewsCount: 2150,
+    section: "Bästa tillgängliga läktare",
+    category: "Standard / VIP",
+    priceSEK: priceSEK,
+    url: matchUrl,
+    type: "ticket",
+  });
+}
 
       // TicketNetwork - Endast biljetter som TILLHÖR TicketNetwork
       const tnMatches = awinTickets.filter(

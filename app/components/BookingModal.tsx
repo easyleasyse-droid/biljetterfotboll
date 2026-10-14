@@ -37,7 +37,13 @@ export default function BookingModal({ match, offer, quantity, onClose }: Bookin
   // Dynamisk hantering av affiliate-URL baserat på vald partner/merchant
   let destinationUrl = (offer as any).url || "";
 
-  if (offer.merchantName === "Sports Events 365") {
+  if (offer.merchantName === "LiveFootballTickets") {
+    if ((offer as any).url) {
+      destinationUrl = (offer as any).url;
+    } else {
+      destinationUrl = `https://www.livefootballtickets.com/search.html?q=${encodeURIComponent(`${match.homeTeam.name}${match.awayTeam.name}`)}&affid=biljetterfotboll`;
+    }
+  } else if (offer.merchantName === "Sports Events 365") {
     // Om offer.url finns från feeden, använd den direkt! Annars fallback till generella länken.
     if ((offer as any).url) {
       destinationUrl = (offer as any).url;
