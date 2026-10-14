@@ -429,38 +429,36 @@ const cleanTeamName = (str: string) => {
     .trim();
 };
 
-// 4. LiveFootballTickets Feed
-const lftData = lftMatches.find((e: any) => {
-  const matchHome = cleanTeamName(homeName);
-  const matchAway = cleanTeamName(awayName);
-  const apiHome = cleanTeamName(e.homeTeam || '');
-  const apiAway = cleanTeamName(e.awayTeam || '');
+// 4. LiveFootballTickets Feed (säkrad med eget try/catch)
+try {
+  const lftData = lftMatches.find((e: any) => {
+    const matchHome = cleanTeamName(homeName);
+    const matchAway = cleanTeamName(awayName);
+    const apiHome = cleanTeamName(e.homeTeam || '');
+    const apiAway = cleanTeamName(e.awayTeam || '');
 
-  const homeMatches = apiHome.includes(matchHome) || matchHome.includes(apiHome);
-  const awayMatches = apiAway.includes(matchAway) || matchAway.includes(apiAway);
-
-  return homeMatches && awayMatches;
-});
-
-if (lftData && lftData.minPrice > 0) {
-  const rate = lftData.currency === 'GBP' ? 13.5 : 11.25;
-  const priceSEK = Math.round(lftData.minPrice * rate);
-
-  const matchUrl = lftData.url && lftData.url.length > 0 
-    ? lftData.url 
-    : getSearchUrl("LiveFootballTickets", homeName, awayName);
-
-  offers.push({
-    id: `o-${matchId}-lft`,
-    merchantName: "LiveFootballTickets",
-    rating: 4.8,
-    reviewsCount: 2150,
-    section: "Bästa tillgängliga läktare",
-    category: "Standard / VIP",
-    priceSEK: priceSEK,
-    url: matchUrl,
-    type: "ticket",
+    return (apiHome.includes(matchHome) || matchHome.includes(apiHome)) &&
+           (apiAway.includes(matchAway) || matchAway.includes(apiAway));
   });
+
+  if (lftData && lftData.minPrice > 0) {
+    const rate = lftData.currency === 'GBP' ? 13.5 : 11.25;
+    const priceSEK = Math.round(lftData.minPrice * rate);
+
+    offers.push({
+      id: `o-${matchId}-lft`,
+      merchantName: "LiveFootballTickets",
+      rating: 4.8,
+      reviewsCount: 2150,
+      section: "Bästa tillgängliga läktare",
+      category: "Standard / VIP",
+      priceSEK: priceSEK,
+      url: lftData.url || getSearchUrl("LiveFootballTickets", homeName, awayName),
+      type: "ticket",
+    });
+  }
+} catch (lftErr) {
+  console.error("Fel vid LFT-matchning:", lftErr);
 }
 
       // TicketNetwork - Endast biljetter som TILLHÖR TicketNetwork
