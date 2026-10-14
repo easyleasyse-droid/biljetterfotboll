@@ -33,17 +33,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ]
 
-  // Dynamiska ligasidor
+  // Dynamiska ligasidor (med -biljetter suffix)
   const leaguePages: MetadataRoute.Sitemap = Object.keys(LEAGUES_DATA).map((slug) => ({
-    url: `${baseUrl}/liga/${slug}`,
+    url: `${baseUrl}/liga/${slug}-biljetter`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.9,
   }))
 
-  // Dynamiska lagsidor
+  // Dynamiska lagsidor (med -biljetter suffix)
   const teamPages: MetadataRoute.Sitemap = Object.keys(TEAMS_SEO_DATA).map((slug) => ({
-    url: `${baseUrl}/lag/${slug}`,
+    url: `${baseUrl}/lag/${slug}-biljetter`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
