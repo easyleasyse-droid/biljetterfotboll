@@ -10,7 +10,6 @@ import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
 
 // Blixtsnabb laddning: Vercel cachar resultatet i 1 timme (ISR)
 export const revalidate = 3600;
-export const dynamic = 'force-dynamic';
 
 const formatTeamName = (key: string) => {
   if (!key) return "";
