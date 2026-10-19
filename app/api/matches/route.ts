@@ -6,7 +6,7 @@ import { getOlkaDeepLink } from "@/lib/olkaLinks";
 import { fetchSportsEvents365Matches } from "@/lib/sportsEvents365Feed";
 import { getManualOffersForMatch } from "@/lib/manualOffers";
 import { TEAMS_SEO_DATA } from "../../data/teams";
-import { UPCOMING_MATCHES } from "../../data/upcomingMatches";
+import { getSyncedUpcomingMatches } from "@/lib/getMatches";
 
 // Blixtsnabb laddning: Vercel cachar resultatet i 1 timme (ISR)
 export const revalidate = 3600;
@@ -185,7 +185,8 @@ const cleanTeamStrForSE365 = (str: string) => {
 async function getMatchesData() {
   const today = new Date().toISOString().split("T")[0];
 
-  const upcomingMatches = UPCOMING_MATCHES.filter((m) => {
+  const rawMatches = await getSyncedUpcomingMatches();
+  const upcomingMatches = rawMatches.filter((m) => {
     if (m.date < today) return false;
 
     const leagueStr = String((m as any).league || "").toLowerCase();

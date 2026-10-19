@@ -16,7 +16,7 @@ export async function fetchLiveFootballTicketsMatches() {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'x-api-key': API_KEY,
+        'x-api-key': 'ODfbclUip42knt613rBHh9zzcSVWTUG2K0ullGr',
       },
       next: { revalidate: 3600 },
     });

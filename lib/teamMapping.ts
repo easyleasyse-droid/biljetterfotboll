@@ -1,0 +1,131 @@
+export const teamMapping: Record<string, string> = {
+  // === PREMIER LEAGUE (PL) ===
+  "AFC Bournemouth": "bournemouth",
+  "Arsenal FC": "arsenal",
+  "Aston Villa FC": "aston-villa",
+  "Brentford FC": "brentford",
+  "Brighton & Hove Albion FC": "brighton",
+  "Chelsea FC": "chelsea",
+  "Coventry City FC": "coventry",
+  "Crystal Palace FC": "crystal-palace",
+  "Everton FC": "everton",
+  "Fulham FC": "fulham",
+  "Hull City AFC": "hull-city",
+  "Ipswich Town FC": "ipswich",
+  "Leeds United FC": "leeds",
+  "Liverpool FC": "liverpool",
+  "Manchester City FC": "manchester-city",
+  "Manchester United FC": "manchester-united",
+  "Newcastle United FC": "newcastle",
+  "Nottingham Forest FC": "nottingham",
+  "Sunderland AFC": "sunderland",
+  "Tottenham Hotspur FC": "tottenham",
+
+  // === LA LIGA / PRIMERA DIVISION (PD) ===
+  "Athletic Club": "athletic-bilbao",
+  "CA Osasuna": "osasuna",
+  "Club Atlético de Madrid": "atletico-madrid",
+  "Deportivo Alavés": "alaves",
+  "Elche CF": "elche",
+  "FC Barcelona": "barcelona",
+  "Getafe CF": "getafe",
+  "Levante UD": "levante",
+  "Málaga CF": "malaga",
+  "Rayo Vallecano de Madrid": "rayo",
+  "RC Celta de Vigo": "celta-vigo",
+  "RC Deportivo La Coruña": "deportivo",
+  "RCD Espanyol de Barcelona": "espanyol",
+  "Real Betis Balompié": "real-betis",
+  "Real Madrid CF": "real-madrid",
+  "Real Racing Club de Santander": "racing-santander",
+  "Real Sociedad de Fútbol": "real-sociedad",
+  "Sevilla FC": "sevilla",
+  "Valencia CF": "valencia",
+  "Villarreal CF": "villarreal",
+
+  // === SERIE A (SA) ===
+  "AC Milan": "milan",
+  "AC Monza": "monza",
+  "ACF Fiorentina": "fiorentina",
+  "AS Roma": "roma",
+  "Atalanta BC": "atalanta",
+  "Bologna FC 1909": "bologna",
+  "Cagliari Calcio": "cagliari",
+  "Como 1907": "como",
+  "FC Internazionale Milano": "inter",
+  "Frosinone Calcio": "frosinone",
+  "Genoa CFC": "genoa",
+  "Juventus FC": "juventus",
+  "Parma Calcio 1913": "parma",
+  "SS Lazio": "lazio",
+  "SSC Napoli": "napoli",
+  "Torino FC": "torino",
+  "Udinese Calcio": "udinese",
+  "US Lecce": "lecce",
+  "US Sassuolo Calcio": "sassuolo",
+  "Venezia FC": "venezia",
+
+// Bundesliga (BL1)
+"FC Bayern München": "bayern-munchen",
+"Bayern München": "bayern-munchen",
+"Borussia Dortmund": "borussia-dortmund",
+"Bayer 04 Leverkusen": "bayer-leverkusen",
+"RB Leipzig": "rb-leipzig",
+"VfB Stuttgart": "stuttgart",
+"Eintracht Frankfurt": "eintracht-frankfurt",
+"SV Werder Bremen": "werder-bremen",
+"Borussia Mönchengladbach": "borussia-monchengladbach",
+"VfL Wolfsburg": "wolfsburg",
+"1. FC Union Berlin": "union-berlin",
+"SC Freiburg": "freiburg",
+"TSG 1899 Hoffenheim": "hoffenheim",
+"1. FSV Mainz 05": "mainz",
+"FC Augsburg": "augsburg",
+"1. FC Heidenheim 1846": "heidenheim",
+"FC St. Pauli 1910": "st-pauli",
+"Holstein Kiel": "holstein-kiel",
+"VfL Bochum 1848": "vfl-bochum",
+"Hamburger SV": "hamburger-sv",
+"Schalke 04": "schalke",
+"FC Schalke 04": "schalke",
+"1. FC Köln": "koln",
+
+// Ligue 1 (FL1)
+"Paris Saint-Germain FC": "psg",
+"Paris Saint-Germain": "psg",
+"Olympique de Marseille": "marseille",
+"Olympique Lyonnais": "lyon",
+"AS Monaco FC": "monaco",
+"AS Monaco": "monaco",
+"LOSC Lille": "lille",
+"OGC Nice": "nice",
+"RC Lens": "lens",
+"Stade Rennais FC 1901": "rennes",
+"Stade Rennais FC": "rennes",
+"Stade Brestois 29": "brest",
+"RC Strasbourg Alsace": "strasbourg",
+"Toulouse FC": "toulouse",
+"FC Nantes": "nantes",
+"AJ Auxerre": "auxerre",
+"Angers SCO": "angers",
+"Le Havre AC": "le-havre",
+"FC Lorient": "lorient",
+"Paris FC": "paris-fc",
+"AS Saint-Étienne": "saint-etienne",
+"Stade de Reims": "reims",
+"Montpellier HSC": "montpellier",
+};
+
+// Hjälpfunktion för att hämta din nyckel
+export function getTeamKey(apiTeamName: string): string {
+  if (teamMapping[apiTeamName]) {
+    return teamMapping[apiTeamName];
+  }
+
+  // Fallback om något okänt lag dyker upp i framtiden
+  return apiTeamName
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}

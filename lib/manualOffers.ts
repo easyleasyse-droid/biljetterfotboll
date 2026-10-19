@@ -513,7 +513,46 @@ export const MANUAL_OFFERS: ManualOffer[] = [
     productType: "flyg",
     bookingUrl: "https://clk.tradedoubler.com/click?p=355835&a=3495104&url=https://www.olkaexpress.se/events/soccer/2026-12-05-tottenham-hotspur-arsenal?eventPackage=flight",
   },
-
+  {
+    homeKey: "barcelona",
+    awayKey: "real-madrid",
+    date: "2026-10-25",
+    providerName: "SportsTravel Online",
+    priceSEK: 18352, // Uppdatera med aktuellt från-pris
+    ticketType: "Endast biljett",
+    productType: "biljett",
+    bookingUrl: "https://visit.sportstravelonline.se/click?p=408463&a=3495104&url=https://sportstravelonline.se/fotboll/la-liga/barcelona/fc-barcelona-vs-real-madrid-2026-10-25--3c0cb0aab0da499db5bc153ceacc73fc_gnr",
+  },
+  {
+    homeKey: "liverpool",
+    awayKey: "arsenal",
+    date: "2026-11-01",
+    providerName: "SportsTravel Online",
+    priceSEK: 6909, // Justera till det faktiska priset från sidan om det behövs
+    ticketType: "Endast biljett",
+    productType: "biljett",
+    bookingUrl: "https://visit.sportstravelonline.se/click?p=408463&a=3495104&url=https://sportstravelonline.se/fotboll/premier-league/liverpool/liverpool-fc-vs-arsenal-fc-2026-11-01--ad619bffd63d47bc8ac5b703a1090a85_gnr",
+  },
+  {
+    homeKey: "milan",
+    awayKey: "inter",
+    date: "2026-10-31",
+    providerName: "SportsTravel Online",
+    priceSEK: 3314, // Justera till det faktiska från-priset på sidan
+    ticketType: "Endast biljett",
+    productType: "biljett",
+    bookingUrl: "https://visit.sportstravelonline.se/click?p=408463&a=3495104&url=https://sportstravelonline.se/fotboll/serie-a/ac-milan/ac-milan-vs-internazionale-2026-10-31--7fb23cc71b09445193279dfe91875729_gnr",
+  },
+  {
+    homeKey: "arsenal",
+    awayKey: "manchester-city",
+    date: "2026-11-29",
+    providerName: "SportsTravel Online",
+    priceSEK: 13512, // Justera till rätt från-pris från sidan
+    ticketType: "Endast biljett",
+    productType: "biljett",
+    bookingUrl: "https://visit.sportstravelonline.se/click?p=408463&a=3495104&url=https://sportstravelonline.se/fotboll/premier-league/arsenal/arsenal-fc-vs-manchester-city-2026-11-29--effd4e6f11d445289a260088c701c18b_gnr",
+  },
 ];
 
 
