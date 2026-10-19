@@ -1,6 +1,6 @@
-const API_USERNAME = process.env.SE365_USERNAME || 'biljetterfotboll';
-const API_PASSWORD = process.env.SE365_PASSWORD || '6cvxxdbM5F0x';
-const API_KEY = process.env.SE365_API_KEY || 'ef0704884bb49a77a39e981ba7be5fb0';
+const API_USERNAME = process.env.SE365_USERNAME;
+const API_PASSWORD = process.env.SE365_PASSWORD;
+const API_KEY = process.env.SE365_API_KEY;
 export const SE365_AFFILIATE_ID = '5jutr9xaq8h3j';
 
 const BASE_URL = 'https://api-v2.sportsevents365.com';

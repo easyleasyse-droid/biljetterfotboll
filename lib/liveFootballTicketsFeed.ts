@@ -1,5 +1,8 @@
-const API_KEY = process.env.LIVEFOOTBALLTICKETS_API_KEY || 'ODfbclUip42knt613rBHh9zzsVVWTUG2K0ullGr';
-export const AFFILIATE_ID = 'biljetterfotboll';
+import { NextResponse } from "next/server";
+
+// Ta bort den hårdkodade strängen helt! Lita enbart på process.env
+const API_KEY = process.env.LIVEFOOTBALLTICKETS_API_KEY;
+const AFFILIATE_ID = 'biljetterfotboll';
 const API_URL = 'https://c22diwgyre.execute-api.eu-west-1.amazonaws.com/prod/v1/feeds/ccafa2e3-39a7-4f29-b44e-33cb5a9dd79e?applicationId=3';
 
 export function buildAffiliateUrl(targetUrl: string): string {
@@ -12,11 +15,17 @@ export function buildAffiliateUrl(targetUrl: string): string {
 
 export async function fetchLiveFootballTicketsMatches() {
   try {
+    // Valfritt men bra: kontrollera att nyckeln finns
+    if (!API_KEY) {
+      console.error("LIVEFOOTBALLTICKETS_API_KEY saknas i miljövariablerna!");
+      return { success: false, matches: [] };
+    }
+
     const response = await fetch(API_URL, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'x-api-key': 'ODfbclUip42knt613rBHh9zzcSVWTUG2K0ullGr',
+        'x-api-key': API_KEY, // Använd variabeln här istället för strängen!
       },
       next: { revalidate: 3600 },
     });
