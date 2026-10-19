@@ -183,9 +183,9 @@ const cleanTeamStrForSE365 = (str: string) => {
 };
 
 async function getMatchesData() {
-  // Om vi befinner oss i Vercels byggfas, returnera direkt för att undvika timeout och 2MB-krasch
+  // Hoppa över tunga externa anrop under bygget för att undvika 60s timeout & 2MB limit
   if (process.env.NEXT_PHASE === 'phase-production-build') {
-    return []; // Eller en tom/enkel lista under själva bygget
+    return await getSyncedUpcomingMatches();
   }
   const today = new Date().toISOString().split("T")[0];
 
