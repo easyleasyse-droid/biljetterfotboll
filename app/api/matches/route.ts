@@ -183,25 +183,23 @@ const cleanTeamStrForSE365 = (str: string) => {
 };
 
 async function getMatchesData() {
-  // Hoppa över tunga externa anrop under bygget för att undvika 60s timeout & 2MB limit
-  if (process.env.NEXT_PHASE === 'phase-production-build') {
-    return await getSyncedUpcomingMatches();
-  }
   const today = new Date().toISOString().split("T")[0];
-
+  
+  // Hämta matcherna direkt
   const rawMatches = await getSyncedUpcomingMatches();
+
   const upcomingMatches = rawMatches.filter((m) => {
     if (m.date < today) return false;
-
+    
     const leagueStr = String((m as any).league || "").toLowerCase();
-    const homeStr = String(m.homeKey || "").toLowerCase();
-    const awayStr = String(m.awayKey || "").toLowerCase();
-
-    const dutchKeywords = ["eredivisie", "ajax", "psv", "feyenoord", "az alkmaar", "utrecht", "twente", "heerenveen", "holland", "nederlands"];
-    const isDutch = dutchKeywords.some(keyword =>
+    const homeStr = String((m as any).homeKey || "").toLowerCase();
+    const awayStr = String((m as any).awayKey || "").toLowerCase();
+    
+    const dutchKeywords = ["eredivisie", "ajax", "psv", "feyenoord", "az alkmaar", "utrecht", "twente", "heerenveen", "holland", "ned"];
+    const isDutch = dutchKeywords.some(keyword => 
       leagueStr.includes(keyword) || homeStr.includes(keyword) || awayStr.includes(keyword)
     );
-
+    
     return !isDutch;
   });
 
