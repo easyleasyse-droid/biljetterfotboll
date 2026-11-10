@@ -13,7 +13,10 @@ function cleanTeamName(name: string): string {
   let cleaned = name
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/ø/g, 'o')
+    .replace(/æ/g, 'ae')
+    .replace(/å/g, 'a');
 
   const synonyms: Record<string, string> = {
     'psg': 'paris saint germain',
@@ -25,6 +28,9 @@ function cleanTeamName(name: string): string {
     'ath bilbao': 'athletic bilbao',
     'atletico de madrid': 'atletico madrid',
     'atletico madrid': 'atletico madrid',
+    'bodo glimt': 'bodo glimt',
+    'bodo/glimt': 'bodo glimt',
+    'fk bodo glimt': 'bodo glimt',
   };
 
   if (synonyms[cleaned.trim()]) {
@@ -37,6 +43,7 @@ function cleanTeamName(name: string): string {
     .replace(/\s+/g, " ")
     .trim();
 }
+
 
 function parseCsvLineStrict(text: string): string[] {
   const result: string[] = [];

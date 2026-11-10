@@ -54,7 +54,7 @@ export const LEAGUES_DATA: Record<string, LeagueSEOData> = {
     description: "Tyskland bjuder på några av Europas mest välfyllda arenor och fantastisk stämning.",
     aboutTickets: "Biljetter i Tyskland är ofta populära tack vare den höga publiktillströmningen.",
     ticketTips: "Se till att köpa officiella biljetter; tyska klubbar är mycket strikta med andrahandsmarknaden.",
-    teams: ["bayern-munchen", "borussia-dortmund", "bayer-leverkusen", "eintracht-frankfurt", "stuttgart", "union-berlin", "schalke", "hamburger-sv", "freiburg", "augsburg", "hoffenheim", "koln", "leipzig", "werder-bremen", "monchengladbach,", "elversberg", "paderborn"]
+    teams: ["bayern-munchen", "borussia-dortmund", "bayer-leverkusen", "eintracht-frankfurt", "stuttgart", "union-berlin", "schalke", "hamburger-sv", "freiburg", "augsburg", "hoffenheim", "koln", "leipzig", "werder-bremen", "mainz", "monchengladbach", "elversberg", "paderborn"]
   },
   "eredivisie": {
     name: "Eredivisie",
