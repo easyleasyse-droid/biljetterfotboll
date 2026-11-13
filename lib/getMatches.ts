@@ -54,7 +54,7 @@ export async function getSyncedUpcomingMatches() {
     }
 
     // Uppdatera dina UPCOMING_MATCHES med riktiga datum/tider
-    return UPCOMING_MATCHES.map((match) => {
+    return UPCOMING_MATCHES.map((match: any) => {
       const lookupKey = `${match.homeKey}-${match.awayKey}`;
       const apiMatchData = apiMap.get(lookupKey);
 
