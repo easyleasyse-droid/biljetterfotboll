@@ -188,7 +188,7 @@ async function getMatchesData() {
   // Hämta matcherna direkt
   const rawMatches = await getSyncedUpcomingMatches();
 
-  const upcomingMatches = rawMatches.filter((m) => {
+  const upcomingMatches = rawMatches.filter((m: any) => {
     if (m.date < today) return false;
     
     const leagueStr = String((m as any).league || "").toLowerCase();
@@ -214,7 +214,7 @@ async function getMatchesData() {
 
   const EUR_TO_SEK = 11.25;
 
-  const matches = upcomingMatches.map((m, index) => {
+  const matches = upcomingMatches.map((m: any, index: any) => {
     const matchId = `m-${index + 1}`;
 
     const homeInfo = (TEAMS_SEO_DATA as any)?.[m.homeKey];
