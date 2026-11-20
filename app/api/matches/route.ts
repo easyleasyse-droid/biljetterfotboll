@@ -9,7 +9,7 @@ import { TEAMS_SEO_DATA } from "../../data/teams";
 import { getSyncedUpcomingMatches } from "@/lib/getMatches";
 
 // Blixtsnabb laddning: Vercel cachar resultatet i 1 timme (ISR)
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const formatTeamName = (key: string) => {
   if (!key) return "";
@@ -606,7 +606,11 @@ if (se365Match && se365Match.minPrice > 0) {
 export async function GET() {
   try {
     const matches = await getMatchesData();
-    return NextResponse.json(matches);
+    return NextResponse.json(matches, {
+      headers: {
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600",
+      },
+    });
   } catch (error: any) {
     console.error("Fel i matches/route.ts:", error);
     return NextResponse.json({ error: "Kunde inte läsa in matcher" }, { status: 500 });

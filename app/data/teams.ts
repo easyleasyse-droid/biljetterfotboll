@@ -301,34 +301,7 @@ export const TEAMS_SEO_DATA: Record<string, any> = {
       }
     ]
   },
-  "malmo-ff": {
-    name: "Malmö FF",
-    stadiumName: "Eleda Stadion",
-    logo: "/logos/malmo-ff.png",
-    stadiumDescription: "Eleda Stadion (även känd som Nya Stadion), belägen på det anrika Stadionområdet i Malmö, invigdes 2009 och är en av Nordens absolut främsta och mest stämningsfulla fotbollsarenor med en kapacitet på 22 500 åskådare vid allsvenska matcher (varav 18 000 sittplatser och 4 500 ståplatser). Arenan är en renodlad fotbollsarena utan löparbanor, vilket innebär att läktarna är byggda tätt inpå innerplanen för att maximera närhetskänslan. Det arkitektoniska och stämningsmässiga navet är den mäktiga 'Norra Läktaren' – en gigantisk ståplatssektion i två etage där Malmös hängivna supportrar skapar en kokande, sydeuropeisk atmosfär och spektakulära tifo-arrangemang som blivit kända över hela Europa under klubbens äventyr i Champions League och Europa League.",
-    location: "Malmö, Sverige",
-    league: "Allsvenskan",
-    aboutTickets: "Köp biljetter till Sveriges mest framgångsrika klubb i modern tid. Se Malmö FF slåss om SM-guldet i Allsvenskan eller upplev magiska Europakvällar på Eleda Stadion.",
-    heroImage: "/stadiums/eleda-stadion-hero.jpg",
-    contentImage: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=600&auto=format&fit=crop",
-    stadiumLayoutImage: "/stadiums/eleda-stadion-hero.jpg",
-    googleMapsEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2254.735235546252!2d12.985449273413988!3d55.58434726410427!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4653a15dc4a3b723%3A0x633519894e6dc637!2sEleda%20Stadion!5e0!3m2!1ssv!2sse!4v1710000000008!5m2!1ssv!2sse",
-    howToBuy: "Till ordinarie allsvenska seriematcher säljs biljetter enkelt direkt via Malmö FF:s officiella biljettsystem (axs). Men till de glödheta Skånederbyna, guldmatcher eller vid de prestigefyllda matcherna i Europa League och Champions League blir arenan snabbt helt slutsåld till klubbens över 10 000 säsongskortsinnehavare och medlemmar. För supportrar som reser långväga och vill säkra sina sittplatser i god tid samlar vi säkra, verifierade paketlösningar och resealternativ som garanterar officiella sittplatser på långsidorna.",
-    sectionsAndPrices: "Arenan är uppdelad i Norra Läktaren (hemmaståplats, bäst tryck och mest prisvärt), Södra Läktaren (sittplats samt en sektion för bortafans), Östra Läktaren och Västra Läktaren (långsidorna). Västra Läktaren rymmer VIP-boxar och spelargången och ligger högst i pris. För familjer är de sydvästra sektionerna på sittplats utmärkta val med bra sikt och en lugnare miljö. Priserna på Eleda Stadion är mycket rimliga i jämförelse med europeiska toppligor, vilket gör ett besök till en extremt prisvärd fotbollsupplevelse.",
-    packages: "För supportrar som reser till Malmö utifrån landet eller från norra Sverige finns det mycket smidiga hotellpaket. Dessa paket inkluderar en garanterad, officiell sittplatsbiljett på långsidan (Östra eller Västra läktaren) kombinerat med en eller två nätters övernattning på ett högklassigt hotell i centrala Malmö (t.ex. runt Clarion Hotel Live eller vid Centralstationen). Det ger dig en perfekt fotbollshelg med chans att avnjuta Malmös rika restaurangliv och ta en smidig promenad eller buss ut till stadionområdet på matchdagen.",
-    history: "Malmö Fotbollförening grundades 1910 och har under mer än ett sekel etablerat sig som Sveriges mest framgångsrika fotbollsklubb, med flest SM-guld och segrar i Svenska Cupen i historien. Klubben är dessutom historisk i hela Norden som den enda skandinaviska förening som lyckats nå en final i Europacupen för mästarlag (nuvarande Champions League), vilket skedde 1979 under ledning av den legendariske engelske tränaren Bob Houghton, där man dock föll med 1-0 mot Nottingham Forest på Olympiastadion i München. Under ledning av starka profiler som Eric Persson ('Hövdingen') lades grunden till den professionella vinnarkultur och den starka lokala förankring i staden som gör att MFF än idag dominerar svensk fotboll och regelbundet kvalificerar sig för de stora europeiska gruppspelen.",
-    faqs: [
-      {
-        question: "Hur tar jag mig lättast till Eleda Stadion?",
-        answer: "Stadion ligger centralt i Malmö. Du tar dig hit på under 10 minuter från Malmö Central eller Triangeln genom att ta stadsbuss linje 3 (mot Ringlinjen) eller linje 8 (mot Hyllie) och gå av vid hållplats 'Stadion'."
-      },
-      {
-        question: "Vad gäller för biljetter till MFF:s Europamatcher?",
-        answer: "Efterfrågan på Europamatcher är extremt hög. Medlemmar och årskortsinnehavare har förtur, så för tillresande rekommenderas att boka garanterade paket i god tid."
-      }
-    ]
-  },
-
+ 
   "valencia": {
     name: "Valencia CF",
     stadiumName: "Mestalla",
