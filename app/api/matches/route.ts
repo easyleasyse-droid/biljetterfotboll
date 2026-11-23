@@ -7,12 +7,10 @@ import { getManualOffersForMatch } from "@/lib/manualOffers";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { getSyncedUpcomingMatches } from "@/lib/getMatches";
 
-// Behåller dynamiskt bygge så Vercel aldrig kraschar på 2MB-gränsen
 export const dynamic = "force-dynamic";
 
-// Enkel minnescache på servern + maxgräns på 4 sek per feed
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 timme
-const FEED_TIMEOUT_MS = 4000; // Max 4 sek per feed
+const CACHE_TTL_MS = 60 * 60 * 1000;
+const FEED_TIMEOUT_MS = 4000;
 
 const memoryCache: {
   p1?: { data: any[]; expires: number };
@@ -145,11 +143,11 @@ const cleanTeamStrForSE365 = (str: string) => {
     .trim();
 };
 
-async function getMatchesData() {
+async function getMatchesData(limit = 0) {
   const today = new Date().toISOString().split("T")[0];
   const rawMatches = await getSyncedUpcomingMatches();
 
-  const upcomingMatches = rawMatches.filter((m: any) => {
+  let upcomingMatches = rawMatches.filter((m: any) => {
     if (m.date < today) return false;
 
     const leagueStr = String((m as any).league || "").toLowerCase();
@@ -164,7 +162,10 @@ async function getMatchesData() {
     return !isDutch;
   });
 
-  // Hämtar parallellt med cache + max 4 sek timeout per feed
+  if (limit > 0) {
+    upcomingMatches = upcomingMatches.slice(0, limit);
+  }
+
   const [p1Rows, ticomboRows, awinRows, se365Result] = await Promise.all([
     getCachedFeed("p1", fetchP1FeedRows, []),
     getCachedFeed("ticombo", fetchTicomboParsedRows, []),
@@ -185,7 +186,6 @@ async function getMatchesData() {
     const basePrice = 1100 + (index * 120) % 750;
     const offers: any[] = [];
 
-    // --- Manual Offers ---
     const manualOffers = getManualOffersForMatch(m.homeKey, m.awayKey, m.date);
     manualOffers.forEach((manual) => {
       let mappedType = 'ticket';
@@ -212,7 +212,6 @@ async function getMatchesData() {
       });
     });
 
-    // 1. P1 Travel Feed
     const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date) || findP1TicketInRows(p1Rows, m.homeKey, m.awayKey, m.date);
     if (p1Data && p1Data.price > 0) {
       const p1PriceSEK = Math.round(p1Data.price * EUR_TO_SEK);
@@ -245,7 +244,6 @@ async function getMatchesData() {
       });
     }
 
-    // 2. Ticombo Feed
     const ticomboData = findTicomboTicketInRows(ticomboRows, homeName, awayName, m.date) || findTicomboTicketInRows(ticomboRows, m.homeKey, m.awayKey, m.date);
     if (ticomboData && ticomboData.price > 0) {
       const ticomboPriceSEK = ticomboData.currency === 'EUR'
@@ -273,7 +271,6 @@ async function getMatchesData() {
       });
     }
 
-    // Matcha mot Sports Events 365
     const se365Match = Array.isArray(se365Matches) ? se365Matches.find((se: any) => {
       const seHome = cleanTeamStrForSE365(se.homeTeam || '');
       const seAway = cleanTeamStrForSE365(se.awayTeam || '');
@@ -310,7 +307,6 @@ async function getMatchesData() {
       });
     }
 
-    // 3. Awin Feed
     const awinTickets = findAwinTicketsForMatchSync(awinRows, homeName, awayName, {
       targetDate: new Date(m.date),
     });
@@ -404,7 +400,6 @@ async function getMatchesData() {
       }
     }
 
-    // OLKA Express fallback
     const olkaUrl = getSearchUrl("OLKA Express", m.homeKey, m.awayKey, undefined, m.date);
     const lowestOtherPrice = offers.length > 0 ? Math.min(...offers.map(o => o.priceSEK).filter(p => p > 0)) : 1290;
 
@@ -423,7 +418,6 @@ async function getMatchesData() {
       type: "ticket",
     });
 
-    // 4. Övriga partners utan livefeed
     const lftTargetUrl = "https://www.livefootballtickets.com/";
     const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
 
@@ -544,9 +538,12 @@ async function getMatchesData() {
   return matches;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const matches = await getMatchesData();
+    const { searchParams } = new URL(request.url);
+    const limitParam = Number(searchParams.get("limit") || "0");
+    const matches = await getMatchesData(limitParam);
+
     return NextResponse.json(matches, {
       headers: {
         "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",

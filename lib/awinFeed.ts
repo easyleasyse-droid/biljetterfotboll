@@ -1,6 +1,5 @@
 import zlib from 'zlib';
 import { promisify } from 'util';
-import { unstable_cache } from 'next/cache';
 
 const gunzip = promisify(zlib.gunzip);
 
@@ -8,6 +7,7 @@ export interface AwinTicketRow {
   merchantName: string;
   merchantId: string;
   productName: string;
+  normalizedTitle?: string;
   eventDate: string | null;
   priceSEK: number;
   rawPrice: number;
@@ -15,7 +15,7 @@ export interface AwinTicketRow {
   url: string;
 }
 
-type RawAwinRow = Omit<AwinTicketRow, 'priceSEK'>;
+type RawAwinRow = Omit<AwinTicketRow, 'priceSEK' | 'normalizedTitle'>;
 
 interface FeedConfig {
   label: string;
@@ -68,7 +68,7 @@ function parseCSVLine(line: string): string[] {
 
 function parsePrice(raw: string | undefined | null): number {
   if (!raw) return NaN;
-  let s = raw.replace(/[^\d.,-]/g, '').trim();
+  const s = raw.replace(/[^\d.,-]/g, '').trim();
   if (!s) return NaN;
 
   const lastComma = s.lastIndexOf(',');
@@ -128,7 +128,7 @@ async function getRatesPerSEK(): Promise<Record<string, number>> {
   }
 
   try {
-    const res = await fetchWithTimeout('https://open.er-api.com/v6/latest/SEK', 5000);
+    const res = await fetchWithTimeout('https://open.er-api.com/v6/latest/SEK', 4000);
     if (res.ok) {
       const data = await res.json();
       if (data && data.result === 'success' && data.rates) {
@@ -149,8 +149,6 @@ function convertToSEK(amount: number, currency: string, ratesPerSEK: Record<stri
   return Math.round(amount / rate);
 }
 
-const KNOWN_CURRENCIES = new Set(['SEK', 'GBP', 'EUR', 'USD']);
-
 const JUNK_PRODUCT_KEYWORDS = [
   'child',
   'junior',
@@ -165,15 +163,26 @@ const JUNK_PRODUCT_KEYWORDS = [
   'dam',
 ];
 
+function normalizeTeamString(input: string): string {
+  return input
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 async function fetchSingleFeed(feed: FeedConfig): Promise<RawAwinRow[]> {
+  if (!feed.url) return [];
+
   try {
-    const res = await fetchWithTimeout(feed.url, 20000);
+    const res = await fetchWithTimeout(feed.url, 8000);
     if (!res.ok) return [];
 
     const buffer = Buffer.from(await res.arrayBuffer());
     let csvText = '';
 
-    // SÄKER HANTERING AV GZIP (vissa Awin-feeds skickar uncompressed trots gzip-flagga)
     try {
       const unzipped = await gunzip(buffer);
       csvText = unzipped.toString('utf-8');
@@ -188,13 +197,8 @@ async function fetchSingleFeed(feed: FeedConfig): Promise<RawAwinRow[]> {
     const idxDeepLink = headers.indexOf('aw_deep_link');
     const idxMerchantDeep = headers.indexOf('merchant_deep_link');
     const idxProductName = headers.indexOf('product_name');
-    const idxDescription = headers.indexOf('description');
     const idxSearchPrice = headers.indexOf('search_price');
     const idxDisplayPrice = headers.indexOf('display_price');
-    const idxStorePrice = headers.indexOf('store_price');
-    const idxMerchant = headers.indexOf('merchant_name');
-    const idxMerchantId = headers.indexOf('merchant_id');
-    const idxCurrency = headers.indexOf('currency');
 
     const rows: RawAwinRow[] = [];
 
@@ -203,37 +207,32 @@ async function fetchSingleFeed(feed: FeedConfig): Promise<RawAwinRow[]> {
       if (!line) continue;
 
       const cols = parseCSVLine(line);
-
       const productName = cols[idxProductName] || '';
-    if (!productName) continue;
+      if (!productName) continue;
 
-    const lowerName = productName.toLowerCase();
-    if (JUNK_PRODUCT_KEYWORDS.some((kw) => lowerName.includes(kw))) continue;
+      const lowerName = productName.toLowerCase();
+      if (JUNK_PRODUCT_KEYWORDS.some((kw) => lowerName.includes(kw))) continue;
 
-    // HÄR SÄTTER DU NAMNET OCH VALUTAN FRÅN DIN FEED-CONFIG:
-    const merchantName = feed.label;
-    const currency = feed.defaultCurrency;
+      const deepLink = cols[idxDeepLink] || cols[idxMerchantDeep] || '#';
+      const searchP = parsePrice(cols[idxSearchPrice]);
+      const displayP = parsePrice(cols[idxDisplayPrice]);
 
-    const deepLink = cols[idxDeepLink] || cols[idxMerchantDeep] || '#';
-    const searchP = parsePrice(cols[idxSearchPrice]);
-    const displayP = parsePrice(cols[idxDisplayPrice]);
+      let price = NaN;
+      if (Number.isFinite(searchP) && searchP > 0) price = searchP;
+      else if (Number.isFinite(displayP) && displayP > 0) price = displayP;
 
-    let price = NaN;
-    if (Number.isFinite(searchP) && searchP > 0) price = searchP;
-    else if (Number.isFinite(displayP) && displayP > 0) price = displayP;
+      if (!Number.isFinite(price) || price <= 0) continue;
 
-    if (!Number.isFinite(price) || price <= 0) continue;
-
-    rows.push({
-      merchantName,
-      merchantId: '',
-      productName,
-      eventDate: null,
-      rawPrice: price,
-      currency,
-      url: deepLink,
-    });
-}
+      rows.push({
+        merchantName: feed.label,
+        merchantId: feed.merchantId,
+        productName,
+        eventDate: null,
+        rawPrice: price,
+        currency: feed.defaultCurrency,
+        url: deepLink,
+      });
+    }
 
     return rows;
   } catch (err) {
@@ -249,16 +248,19 @@ async function fetchAwinRowsUncached(): Promise<AwinTicketRow[]> {
   ]);
 
   const allRawRows = feedResults.flat();
-
   const rows: AwinTicketRow[] = [];
+
   for (const raw of allRawRows) {
     const priceSEK = convertToSEK(raw.rawPrice, raw.currency, ratesPerSEK);
     if (priceSEK === null) continue;
 
+    const trimmedName = raw.productName.slice(0, 120);
+
     rows.push({
       merchantName: raw.merchantName.trim(),
       merchantId: raw.merchantId,
-      productName: raw.productName.slice(0, 120), // Korta ner titeln för att spara minne
+      productName: trimmedName,
+      normalizedTitle: normalizeTeamString(trimmedName),
       eventDate: raw.eventDate,
       rawPrice: raw.rawPrice,
       currency: raw.currency,
@@ -270,30 +272,35 @@ async function fetchAwinRowsUncached(): Promise<AwinTicketRow[]> {
   return rows;
 }
 
-const getAwinRowsFromSharedCache = unstable_cache(
-  fetchAwinRowsUncached,
-  ['awin-feed-rows-v2'],
-  { revalidate: 900 }
-);
-
 let cachedAwinRows: AwinTicketRow[] | null = null;
 let lastFetchTime = 0;
-const CACHE_DURATION_MS = 60 * 1000;
+let inflightPromise: Promise<AwinTicketRow[]> | null = null;
+const CACHE_DURATION_MS = 15 * 60 * 1000;
 
 export async function getAwinData(): Promise<AwinTicketRow[]> {
   const now = Date.now();
-  if (cachedAwinRows && now - lastFetchTime < CACHE_DURATION_MS) {
+  if (cachedAwinRows && cachedAwinRows.length > 0 && now - lastFetchTime < CACHE_DURATION_MS) {
     return cachedAwinRows;
   }
 
-  const rows = await getAwinRowsFromSharedCache();
-
-  if (rows.length > 0) {
-    cachedAwinRows = rows;
-    lastFetchTime = now;
+  if (inflightPromise) {
+    return inflightPromise;
   }
 
-  return cachedAwinRows || [];
+  inflightPromise = fetchAwinRowsUncached()
+    .then((rows) => {
+      if (rows.length > 0) {
+        cachedAwinRows = rows;
+        lastFetchTime = Date.now();
+        return rows;
+      }
+      return cachedAwinRows || [];
+    })
+    .finally(() => {
+      inflightPromise = null;
+    });
+
+  return inflightPromise;
 }
 
 export async function fetchAwinOffers() {
@@ -321,16 +328,6 @@ const TEAM_ALIAS_GROUPS: string[][] = [
   ['borussia dortmund', 'dortmund', 'bvb'],
   ['juventus', 'juve'],
 ];
-
-function normalizeTeamString(input: string): string {
-  return input
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9 ]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 function stripClubSuffixes(normalized: string): string {
   const tokens = normalized.split(' ').filter(Boolean);
@@ -362,51 +359,6 @@ function getTeamKeywords(teamName: string): string[] {
 interface KeywordMatch {
   index: number;
   end: number;
-}
-
-const MONTHS: Record<string, number> = {
-  jan: 0, january: 0,
-  feb: 1, february: 1,
-  mar: 2, march: 2,
-  apr: 3, april: 3,
-  may: 4,
-  jun: 5, june: 5,
-  jul: 6, july: 6,
-  aug: 7, august: 7,
-  sep: 8, sept: 8, september: 8,
-  oct: 9, october: 9,
-  nov: 10, november: 10,
-  dec: 11, december: 11,
-};
-
-function extractDateFromText(text: string): Date | null {
-  if (!text) return null;
-
-  const iso = text.match(/\b(\d{4})-(\d{2})-(\d{2})\b/);
-  if (iso) {
-    const date = new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
-    if (!isNaN(date.getTime())) return date;
-  }
-
-  const dayMonthYear = text.match(/\b(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3,9})\.?\s+(\d{4})\b/);
-  if (dayMonthYear) {
-    const monthKey = dayMonthYear[2].toLowerCase();
-    if (monthKey in MONTHS) {
-      const date = new Date(Number(dayMonthYear[3]), MONTHS[monthKey], Number(dayMonthYear[1]));
-      if (!isNaN(date.getTime())) return date;
-    }
-  }
-
-  const monthDayYear = text.match(/\b([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})\b/);
-  if (monthDayYear) {
-    const monthKey = monthDayYear[1].toLowerCase();
-    if (monthKey in MONTHS) {
-      const date = new Date(Number(monthDayYear[3]), MONTHS[monthKey], Number(monthDayYear[2]));
-      if (!isNaN(date.getTime())) return date;
-    }
-  }
-
-  return null;
 }
 
 function findKeywordMatch(title: string, keywords: string[]): KeywordMatch | null {
@@ -441,17 +393,15 @@ export function findAwinTicketsForMatchSync(
   if (homeKeywords.length === 0 || awayKeywords.length === 0) return [];
 
   const candidates = rows.filter((row) => {
-    const title = normalizeTeamString(row.productName);
+    const title = row.normalizedTitle || normalizeTeamString(row.productName);
 
     const homeMatch = findKeywordMatch(title, homeKeywords);
     const awayMatch = findKeywordMatch(title, awayKeywords);
 
     if (!homeMatch || !awayMatch) return false;
 
-    // Träffarna får inte överlappa
     if (homeMatch.index < awayMatch.end && awayMatch.index < homeMatch.end) return false;
 
-    // TILLÅT BÅDA ORDNINGARNA (Både Home vs Away och Away vs Home)
     return true;
   });
 
@@ -460,12 +410,11 @@ export function findAwinTicketsForMatchSync(
 
   const toleranceMs = (options?.dateToleranceDays ?? 3) * 24 * 60 * 60 * 1000;
 
-  const withParsedDate = candidates.map((row) => ({
-    row,
-    date: row.eventDate ? new Date(row.eventDate) : null,
-  }));
-
-  return withParsedDate
+  return candidates
+    .map((row) => ({
+      row,
+      date: row.eventDate ? new Date(row.eventDate) : null,
+    }))
     .filter(({ date }) => !date || Math.abs(date.getTime() - targetDate.getTime()) <= toleranceMs)
     .sort((a, b) => {
       if (a.date && b.date) {

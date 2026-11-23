@@ -74,14 +74,26 @@ export default function HomePage() {
   const [visibleCount, setVisibleCount] = useState<number>(15);
 
   useEffect(() => {
-    fetch("/api/matches")
+    let active = true;
+
+    fetch("/api/matches?limit=25")
       .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setMatchesData(enrichMatches(data));
+      .then((fastData) => {
+        if (active && Array.isArray(fastData) && fastData.length > 0) {
+          setMatchesData(enrichMatches(fastData));
+        }
+        return fetch("/api/matches").then((res) => res.json());
+      })
+      .then((fullData) => {
+        if (active && Array.isArray(fullData) && fullData.length > 0) {
+          setMatchesData(enrichMatches(fullData));
         }
       })
       .catch((err) => console.error(err));
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const teamSlugs = TEAMS_SEO_DATA ? Object.keys(TEAMS_SEO_DATA) : [];

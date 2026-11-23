@@ -3,32 +3,47 @@ import { getTeamKey } from "./teamMapping";
 
 const LEAGUES = ["PL", "PD", "SA", "BL1", "FL1"];
 
+async function fetchLeagueMatches(code: string, apiKey: string) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000);
+
+  try {
+    const res = await fetch(
+      `https://api.football-data.org/v4/competitions/${code}/matches?status=SCHEDULED,TIMED`,
+      {
+        headers: { "X-Auth-Token": apiKey },
+        next: { revalidate: 3600 },
+        signal: controller.signal,
+      }
+    );
+
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data.matches) ? data.matches : [];
+  } catch {
+    return [];
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function getSyncedUpcomingMatches() {
   const apiKey = process.env.FOOTBALL_DATA_API_KEY;
-  
+
   if (!apiKey) {
     return UPCOMING_MATCHES;
   }
 
   try {
-    let allApiMatches: any[] = [];
+    const results = await Promise.all(
+      LEAGUES.map((code) => fetchLeagueMatches(code, apiKey))
+    );
+    const allApiMatches = results.flat();
 
-    // Hämta spelschema direkt från Football-Data.org för dina ligor
-    for (const code of LEAGUES) {
-      const res = await fetch(`https://api.football-data.org/v4/competitions/${code}/matches?status=SCHEDULED,TIMED`, {
-        headers: { "X-Auth-Token": apiKey },
-        next: { revalidate: 3600 }, // Cacha i 1 timme
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.matches) {
-          allApiMatches.push(...data.matches);
-        }
-      }
+    if (allApiMatches.length === 0) {
+      return UPCOMING_MATCHES;
     }
 
-    // Skapa en lookup-tabell för matcherna
     const apiMap = new Map<string, { date: string; time: string; isConfirmed: boolean }>();
 
     for (const match of allApiMatches) {
@@ -53,7 +68,6 @@ export async function getSyncedUpcomingMatches() {
       });
     }
 
-    // Uppdatera dina UPCOMING_MATCHES med riktiga datum/tider
     return UPCOMING_MATCHES.map((match: any) => {
       const lookupKey = `${match.homeKey}-${match.awayKey}`;
       const apiMatchData = apiMap.get(lookupKey);
