@@ -43,14 +43,16 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
   const cleanTarget = rawTarget.toLowerCase().replace(/[-_\s]/g, "");
 
   const filterAndProcessMatches = (matchList: any[]) => {
+    const today = new Date().toISOString().split("T")[0];
     const enriched = enrichMatches(matchList);
     return enriched.filter((m: any) => {
+      if (m.date && m.date < today) return false;
       const matchLeague = (m.league || "").toLowerCase().replace(/[-_\s]/g, "");
       return matchLeague === cleanTarget || matchLeague.includes(cleanTarget) || cleanTarget.includes(matchLeague);
     });
   };
 
-  // Sätt statiska matcher direkt från start så att det inte blir tomt
+  // Sätt statiska kommande matcher direkt från start utan passerade datum
   const [matches, setMatches] = useState<any[]>(() => filterAndProcessMatches(UPCOMING_MATCHES));
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
@@ -60,19 +62,21 @@ export default function LeagueClient({ leagueSlug }: { leagueSlug: string }) {
 
   useEffect(() => {
     if (!leagueSlug && !leagueData) return;
+    let active = true;
 
-    // Hämta färska priser i bakgrunden utan att blockera gränssnittet
-    fetch("/api/matches")
+    const leagueQuery = encodeURIComponent(leagueData?.name || leagueSlug);
+    fetch(`/api/matches?league=${leagueQuery}`)
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          const filteredLive = filterAndProcessMatches(data);
-          if (filteredLive.length > 0) {
-            setMatches(filteredLive);
-          }
+        if (active && Array.isArray(data) && data.length > 0) {
+          setMatches(enrichMatches(data));
         }
       })
       .catch((err) => console.error("Kunde inte hämta live-priser till ligan:", err));
+
+    return () => {
+      active = false;
+    };
   }, [leagueSlug, leagueData]);
 
   if (!leagueData) {

@@ -143,23 +143,24 @@ const cleanTeamStrForSE365 = (str: string) => {
     .trim();
 };
 
-async function getMatchesData(limit = 0) {
+async function getMatchesData(limit = 0, leagueFilter = "") {
   const today = new Date().toISOString().split("T")[0];
   const rawMatches = await getSyncedUpcomingMatches();
+  const cleanLeagueTarget = leagueFilter.toLowerCase().replace(/[-_\s]/g, "");
 
   let upcomingMatches = rawMatches.filter((m: any) => {
     if (m.date < today) return false;
 
-    const leagueStr = String((m as any).league || "").toLowerCase();
-    const homeStr = String((m as any).homeKey || "").toLowerCase();
-    const awayStr = String((m as any).awayKey || "").toLowerCase();
+    if (cleanLeagueTarget) {
+      const matchLeague = String((m as any).league || "").toLowerCase().replace(/[-_\s]/g, "");
+      return (
+        matchLeague === cleanLeagueTarget ||
+        matchLeague.includes(cleanLeagueTarget) ||
+        cleanLeagueTarget.includes(matchLeague)
+      );
+    }
 
-    const dutchKeywords = ["eredivisie", "ajax", "psv", "feyenoord", "az alkmaar", "utrecht", "twente", "heerenveen", "holland", "ned"];
-    const isDutch = dutchKeywords.some(keyword =>
-      leagueStr.includes(keyword) || homeStr.includes(keyword) || awayStr.includes(keyword)
-    );
-
-    return !isDutch;
+    return true;
   });
 
   const TOP_CLUBS = [
@@ -560,11 +561,13 @@ async function getMatchesData(limit = 0) {
   return matches;
 }
 
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const limitParam = Number(searchParams.get("limit") || "0");
-    const matches = await getMatchesData(limitParam);
+    const leagueParam = searchParams.get("league") || "";
+    const matches = await getMatchesData(limitParam, leagueParam);
 
     return NextResponse.json(matches, {
       headers: {
