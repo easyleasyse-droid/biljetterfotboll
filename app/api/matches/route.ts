@@ -2,14 +2,49 @@ import { NextResponse } from "next/server";
 import { fetchP1FeedRows, findP1TicketInRows } from "@/lib/p1Feed";
 import { fetchTicomboParsedRows, findTicomboTicketInRows } from '@/lib/ticomboFeed';
 import { fetchAwinOffers, findAwinTicketsForMatchSync } from "@/lib/awinFeed";
-import { getOlkaDeepLink } from "@/lib/olkaLinks";
 import { fetchSportsEvents365Matches } from "@/lib/sportsEvents365Feed";
 import { getManualOffersForMatch } from "@/lib/manualOffers";
 import { TEAMS_SEO_DATA } from "../../data/teams";
 import { getSyncedUpcomingMatches } from "@/lib/getMatches";
 
-// Blixtsnabb laddning: Vercel cachar resultatet i 1 timme (ISR)
+// Behåller dynamiskt bygge så Vercel aldrig kraschar på 2MB-gränsen
 export const dynamic = "force-dynamic";
+
+// Enkel minnescache på servern + maxgräns på 4 sek per feed
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 timme
+const FEED_TIMEOUT_MS = 4000; // Max 4 sek per feed
+
+const memoryCache: {
+  p1?: { data: any[]; expires: number };
+  ticombo?: { data: any[]; expires: number };
+  awin?: { data: any[]; expires: number };
+  se365?: { data: any; expires: number };
+} = {};
+
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise.catch(() => fallback),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
+async function getCachedFeed<T>(
+  key: keyof typeof memoryCache,
+  fetcher: () => Promise<T>,
+  fallback: T
+): Promise<T> {
+  const now = Date.now();
+  const cached = memoryCache[key];
+  if (cached && cached.expires > now) {
+    return cached.data as T;
+  }
+
+  const fresh = await withTimeout(fetcher(), FEED_TIMEOUT_MS, (cached?.data as T) ?? fallback);
+  if (fresh && (Array.isArray(fresh) ? fresh.length > 0 : true)) {
+    memoryCache[key] = { data: fresh as any, expires: now + CACHE_TTL_MS };
+  }
+  return fresh;
+}
 
 const formatTeamName = (key: string) => {
   if (!key) return "";
@@ -19,68 +54,12 @@ const formatTeamName = (key: string) => {
     .join(" ");
 };
 
-// 1. Mapping-tabell för OLKA Express exakta lag-slugs
-const OLKA_TEAM_SLUGS: Record<string, string> = {
-  // Premier League
-  "Liverpool": "liverpool-fc",
-  "Manchester City": "manchester-city",
-  "Arsenal": "arsenal-fc",
-  "Chelsea": "chelsea-fc",
-  "Manchester United": "manchester-united",
-  "Tottenham": "tottenham-hotspur",
-  "Tottenham Hotspur": "tottenham-hotspur",
-  "Newcastle": "newcastle-united",
-  "Newcastle United": "newcastle-united",
-  "Aston Villa": "aston-villa",
-  "West Ham": "west-ham-united",
-  "West Ham United": "west-ham-united",
-
-  // Serie A
-  "AC Milan": "ac-milan",
-  "Milan": "ac-milan",
-  "Inter": "inter",
-  "Inter Milan": "inter",
-  "Juventus": "juventus",
-  "AS Roma": "as-roma",
-  "Roma": "as-roma",
-  "SS Lazio": "ss-lazio",
-  "Lazio": "ss-lazio",
-  "SSC Napoli": "ssc-napoli",
-  "Napoli": "ssc-napoli",
-
-  // La Liga
-  "Real Madrid": "real-madrid",
-  "FC Barcelona": "fc-barcelona",
-  "Barcelona": "fc-barcelona",
-  "Atletico Madrid": "atletico-madrid",
-  "Atlético Madrid": "atletico-madrid",
-  "Real Betis": "real-betis",
-  "Sevilla": "sevilla-fc",
-  "Real Sociedad": "real-sociedad"
-};
-
-const getOlkaSlug = (teamName: string): string => {
-  if (!teamName) return "";
-  const cleanName = teamName.trim();
-  
-  if (OLKA_TEAM_SLUGS[cleanName]) {
-    return OLKA_TEAM_SLUGS[cleanName];
-  }
-  
-  return cleanName
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-};
-
 const getOlkaUrl = (homeTeam: string, awayTeam: string, matchDate?: string): string => {
   const formatSlug = (name: string) =>
     name
       .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Tar bort å, ä, ö
+      .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9 ]/g, "")
       .trim()
       .replace(/\s+/g, "-");
@@ -96,13 +75,11 @@ const getOlkaUrl = (homeTeam: string, awayTeam: string, matchDate?: string): str
   const homeSlug = buildOlkaSlug(homeTeam);
   const awaySlug = buildOlkaSlug(awayTeam);
 
-  // Om datum finns med skapar vi den exakta djuplänken till matchen
   const targetUrl = matchDate
     ? `https://olka.se/event/soccer/${matchDate}-${homeSlug}-${awaySlug}?eventPackage=ticket`
     : `https://olka.se/`;
 
-  // TradeDoubler-spårning med din korrekta url-parameter
- return `https://clk.tradedoubler.com/click?p=355835&a=3495104&g=0&url=${encodeURIComponent(targetUrl)}`;
+  return `https://clk.tradedoubler.com/click?p=355835&a=3495104&g=0&url=${encodeURIComponent(targetUrl)}`;
 };
 
 const getSearchUrl = (
@@ -119,15 +96,15 @@ const getSearchUrl = (
   const combinedQuery = encodeURIComponent(`${cleanHome} ${cleanAway}`);
 
   const domainMap: Record<string, string> = {
-  "StubHub": "https://www.stubhub.se/",
-  "Ticombo": `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent('https://www.ticombo.com/en/sports-tickets/football')}`,
-  "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(cleanHome)}`)}`,
-  "Sports Events 365": `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`,
-  "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${combinedQuery}`)}`,
-  "Football Ticket Net": `https://www.footballticketnet.com/search?q=${combinedQuery}`,
-  "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=12028&awinaffid=3043299&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${combinedQuery}`)}`,
-  "OLKA Express": matchDate ? getOlkaUrl(homeTeam, awayTeam, matchDate) : `https://www.olkaexpress.se/`,
-};
+    "StubHub": "https://www.stubhub.se/",
+    "Ticombo": `https://ticombo.prf.hn/click/camref:1100l5Rouq/destination:${encodeURIComponent('https://www.ticombo.com/en/sports-tickets/football')}`,
+    "P1 Travel": `https://p1travel.prf.hn/click/camref:1100l5RoWA/destination:${encodeURIComponent(`https://www.p1travel.com/en/search?q=${encodeURIComponent(cleanHome)}`)}`,
+    "Sports Events 365": `https://www.sportsevents365.com/?a_aid=5jutr9xaq8h3j`,
+    "Gigsberg": `https://www.awin1.com/cread.php?awinmid=122390&awinaffid=3043299&ued=${encodeURIComponent(`https://www.gigsberg.com/search?q=${combinedQuery}`)}`,
+    "Football Ticket Net": `https://www.footballticketnet.com/search?q=${combinedQuery}`,
+    "TicketNetwork": `https://www.awin1.com/cread.php?awinmid=12028&awinaffid=3043299&ued=${encodeURIComponent(`https://www.ticketnetwork.com/search?q=${combinedQuery}`)}`,
+    "OLKA Express": matchDate ? getOlkaUrl(homeTeam, awayTeam, matchDate) : `https://www.olkaexpress.se/`,
+  };
 
   return domainMap[merchantName] || `https://www.google.com/search?q=${combinedQuery}`;
 };
@@ -137,20 +114,6 @@ const getChampionsTravelUrl = (homeTeam: string): string => {
   return `https://www.championstravel.co.uk/search?q=${encodeURIComponent(cleanHome)}`;
 };
 
-// RENSNING FÖR P1 OCH TICOMBO
-const cleanTeamStr = (str: string) => {
-  if (!str) return '';
-  return str
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Tar bort å, ä, ö, é osv.
-    .replace(/-/g, ' ')              // Gör "bayern-munchen" till "bayern munchen"
-    .replace(/\b(fc|cf|afc|ac|sc|sv|vfb|rb|club)\b/g, '') // Tar bort förkortningar som FC/CF
-    .replace(/\s+/g, ' ')            // Tar bort dubbla mellanslag
-    .trim();
-};
-
-// 2. ISOLERAD RENSNING ENBART FÖR SPORTS EVENTS 365
 const cleanTeamStrForSE365 = (str: string) => {
   if (!str) return '';
   let cleaned = str.toLowerCase();
@@ -184,78 +147,72 @@ const cleanTeamStrForSE365 = (str: string) => {
 
 async function getMatchesData() {
   const today = new Date().toISOString().split("T")[0];
-  
-  // Hämta matcherna direkt
   const rawMatches = await getSyncedUpcomingMatches();
 
   const upcomingMatches = rawMatches.filter((m: any) => {
     if (m.date < today) return false;
-    
+
     const leagueStr = String((m as any).league || "").toLowerCase();
     const homeStr = String((m as any).homeKey || "").toLowerCase();
     const awayStr = String((m as any).awayKey || "").toLowerCase();
-    
+
     const dutchKeywords = ["eredivisie", "ajax", "psv", "feyenoord", "az alkmaar", "utrecht", "twente", "heerenveen", "holland", "ned"];
-    const isDutch = dutchKeywords.some(keyword => 
+    const isDutch = dutchKeywords.some(keyword =>
       leagueStr.includes(keyword) || homeStr.includes(keyword) || awayStr.includes(keyword)
     );
-    
+
     return !isDutch;
   });
 
-  const [p1Rows, ticomboRows, awinRows, se365Result] = (await Promise.all([
-  fetchP1FeedRows().catch(() => []),
-  fetchTicomboParsedRows().catch(() => []),
-  fetchAwinOffers().catch(() => []),
-  fetchSportsEvents365Matches().catch(() => null),
-])) as [any[], any[], any[], any];
+  // Hämtar parallellt med cache + max 4 sek timeout per feed
+  const [p1Rows, ticomboRows, awinRows, se365Result] = await Promise.all([
+    getCachedFeed("p1", fetchP1FeedRows, []),
+    getCachedFeed("ticombo", fetchTicomboParsedRows, []),
+    getCachedFeed("awin", fetchAwinOffers, []),
+    getCachedFeed("se365", fetchSportsEvents365Matches, null),
+  ]);
 
   const se365Matches = se365Result?.success && Array.isArray(se365Result.matches) ? se365Result.matches : [];
-
   const EUR_TO_SEK = 11.25;
 
   const matches = upcomingMatches.map((m: any, index: any) => {
     const matchId = `m-${index + 1}`;
-
     const homeInfo = (TEAMS_SEO_DATA as any)?.[m.homeKey];
     const awayInfo = (TEAMS_SEO_DATA as any)?.[m.awayKey];
 
     const homeName = homeInfo?.name || formatTeamName(m.homeKey);
     const awayName = awayInfo?.name || formatTeamName(m.awayKey);
-
     const basePrice = 1100 + (index * 120) % 750;
-
     const offers: any[] = [];
 
     // --- Manual Offers ---
     const manualOffers = getManualOffersForMatch(m.homeKey, m.awayKey, m.date);
-  manualOffers.forEach((manual) => {
-    let mappedType = 'ticket';
-    if (manual.productType === 'hotell') mappedType = 'hotel';
-    if (manual.productType === 'flyg') mappedType = 'flight';
+    manualOffers.forEach((manual) => {
+      let mappedType = 'ticket';
+      if (manual.productType === 'hotell') mappedType = 'hotel';
+      if (manual.productType === 'flyg') mappedType = 'flight';
 
-    offers.push({
-      id: `o-${m.matchId}-olka-${Math.random()}`,
-      merchantName: manual.providerName,
-      name: manual.providerName,
-      rating: 4.8, // Om du vill ha med betygstjärnan
-      reviewsCount: 120, // Valfritt antal omdömen
-      section: "Officiell Partner", // Eller vad som passar
-      category: "Standard / VIP",
-      priceSEK: manual.priceSEK,
-      availableQuantity: 4,
-      deliveryType: "E-biljett (Direkt)", // Ger den snygga e-biljett-ikonen
-      isVerified: true,                   // Ger den gröna 100% garanterad-symbolen
-      ticketType: manual.ticketType,
-      productType: mappedType,
-      type: mappedType,
-      url: manual.bookingUrl,
-      bookingUrl: manual.bookingUrl,
+      offers.push({
+        id: `o-${m.matchId}-olka-${Math.random()}`,
+        merchantName: manual.providerName,
+        name: manual.providerName,
+        rating: 4.8,
+        reviewsCount: 120,
+        section: "Officiell Partner",
+        category: "Standard / VIP",
+        priceSEK: manual.priceSEK,
+        availableQuantity: 4,
+        deliveryType: "E-biljett (Direkt)",
+        isVerified: true,
+        ticketType: manual.ticketType,
+        productType: mappedType,
+        type: mappedType,
+        url: manual.bookingUrl,
+        bookingUrl: manual.bookingUrl,
+      });
     });
-  });
-    // ---------------------------
 
-    // 1. P1 Travel Feed (Visas bara om träff finns)
+    // 1. P1 Travel Feed
     const p1Data = findP1TicketInRows(p1Rows, homeName, awayName, m.date) || findP1TicketInRows(p1Rows, m.homeKey, m.awayKey, m.date);
     if (p1Data && p1Data.price > 0) {
       const p1PriceSEK = Math.round(p1Data.price * EUR_TO_SEK);
@@ -288,7 +245,7 @@ async function getMatchesData() {
       });
     }
 
-    // 2. Ticombo Feed (Visas bara om träff finns)
+    // 2. Ticombo Feed
     const ticomboData = findTicomboTicketInRows(ticomboRows, homeName, awayName, m.date) || findTicomboTicketInRows(ticomboRows, m.homeKey, m.awayKey, m.date);
     if (ticomboData && ticomboData.price > 0) {
       const ticomboPriceSEK = ticomboData.currency === 'EUR'
@@ -316,51 +273,49 @@ async function getMatchesData() {
       });
     }
 
-// Matcha mot Sports Events 365
-const se365Match = Array.isArray(se365Matches) ? se365Matches.find((se: any) => {
-    const seHome = cleanTeamStrForSE365(se.homeTeam || '');
-    const seAway = cleanTeamStrForSE365(se.awayTeam || '');
+    // Matcha mot Sports Events 365
+    const se365Match = Array.isArray(se365Matches) ? se365Matches.find((se: any) => {
+      const seHome = cleanTeamStrForSE365(se.homeTeam || '');
+      const seAway = cleanTeamStrForSE365(se.awayTeam || '');
 
-    const hKey = cleanTeamStrForSE365(m.homeKey || '');
-    const aKey = cleanTeamStrForSE365(m.awayKey || '');
-    const hName = cleanTeamStrForSE365(homeName || '');
-    const aName = cleanTeamStrForSE365(awayName || '');
+      const hKey = cleanTeamStrForSE365(m.homeKey || '');
+      const aKey = cleanTeamStrForSE365(m.awayKey || '');
+      const hName = cleanTeamStrForSE365(homeName || '');
+      const aName = cleanTeamStrForSE365(awayName || '');
 
-  const homeMatches = seHome.includes(hKey) || hKey.includes(seHome) || seHome.includes(hName) || hName.includes(seHome);
-  const awayMatches = seAway.includes(aKey) || aKey.includes(seAway) || seAway.includes(aName) || aName.includes(seAway);
+      const homeMatches = seHome.includes(hKey) || hKey.includes(seHome) || seHome.includes(hName) || hName.includes(seHome);
+      const awayMatches = seAway.includes(aKey) || aKey.includes(seAway) || seAway.includes(aName) || aName.includes(seAway);
 
-  return homeMatches && awayMatches;
-}) : null;
+      return homeMatches && awayMatches;
+    }) : null;
 
-if (se365Match && se365Match.minPrice > 0) {
-  const priceSEK = se365Match.currency === 'EUR'
-    ? Math.round(se365Match.minPrice * EUR_TO_SEK)
-    : Math.round(se365Match.minPrice);
+    if (se365Match && se365Match.minPrice > 0) {
+      const priceSEK = se365Match.currency === 'EUR'
+        ? Math.round(se365Match.minPrice * EUR_TO_SEK)
+        : Math.round(se365Match.minPrice);
 
-  offers.push({
-    id: se365Match.id || `o-${matchId}-se365`,
-    merchantName: "Sports Events 365",
-    rating: 4.6,
-    reviewsCount: 1240,
-    section: "Verifierad Biljett",
-    category: "Standard / VIP",
-    priceSEK: priceSEK,
-    availableQuantity: 4,
-    deliveryType: "E-biljett (Direkt)",
-    isVerified: true,
-    // Använd KUNNA direktlänken från API:et
-    url: se365Match.url,
-    type: "ticket"
-  });
-}
+      offers.push({
+        id: se365Match.id || `o-${matchId}-se365`,
+        merchantName: "Sports Events 365",
+        rating: 4.6,
+        reviewsCount: 1240,
+        section: "Verifierad Biljett",
+        category: "Standard / VIP",
+        priceSEK: priceSEK,
+        availableQuantity: 4,
+        deliveryType: "E-biljett (Direkt)",
+        isVerified: true,
+        url: se365Match.url,
+        type: "ticket"
+      });
+    }
 
-    // 3. Awin Feed (Strikt filtrerat per merchant)
+    // 3. Awin Feed
     const awinTickets = findAwinTicketsForMatchSync(awinRows, homeName, awayName, {
       targetDate: new Date(m.date),
     });
 
     if (Array.isArray(awinTickets) && awinTickets.length > 0) {
-      // Gigsberg - Endast biljetter som TILLHÖR Gigsberg
       const gigsbergMatches = awinTickets.filter(
         (t) =>
           t.merchantName.toLowerCase().includes("gigsberg") ||
@@ -389,7 +344,6 @@ if (se365Match && se365Match.minPrice > 0) {
         }
       }
 
-      // Football Ticket Net - Endast biljetter som TILLHÖR Football Ticket Net
       const ftnMatches = awinTickets.filter(
         (t) =>
           t.merchantName.toLowerCase().includes("football") ||
@@ -420,8 +374,6 @@ if (se365Match && se365Match.minPrice > 0) {
         }
       }
 
-
-      // TicketNetwork - Endast biljetter som TILLHÖR TicketNetwork
       const tnMatches = awinTickets.filter(
         (t) =>
           t.merchantName.toLowerCase().includes("ticketnetwork") ||
@@ -452,32 +404,30 @@ if (se365Match && se365Match.minPrice > 0) {
       }
     }
 
-    // Generera deeplink till OLKA för hemmalaget
-      const olkaUrl = getSearchUrl("OLKA Express", m.homeKey, m.awayKey, undefined, m.date);
-      const lowestOtherPrice = offers.length > 0 ? Math.min(...offers.map(o => o.priceSEK).filter(p => p > 0)) : 1290;
+    // OLKA Express fallback
+    const olkaUrl = getSearchUrl("OLKA Express", m.homeKey, m.awayKey, undefined, m.date);
+    const lowestOtherPrice = offers.length > 0 ? Math.min(...offers.map(o => o.priceSEK).filter(p => p > 0)) : 1290;
 
-      offers.push({
-        id: `${matchId}-olka`,
-        merchantName: "OLKA Express",
-        rating: 4.8,
-        reviewsCount: 850,
-        section: "Officiell partner",
-        category: "Standard / VIP",
-        priceSEK: lowestOtherPrice,
-        availableQuantity: 5,
-        deliveryType: "E-biljett",
-        isVerified: true,
-        url: olkaUrl,
-        type: "ticket",
-      });
+    offers.push({
+      id: `${matchId}-olka`,
+      merchantName: "OLKA Express",
+      rating: 4.8,
+      reviewsCount: 850,
+      section: "Officiell partner",
+      category: "Standard / VIP",
+      priceSEK: lowestOtherPrice,
+      availableQuantity: 5,
+      deliveryType: "E-biljett",
+      isVerified: true,
+      url: olkaUrl,
+      type: "ticket",
+    });
 
-
-    // 4. Övriga partners utan livefeed (Sök-fallback)
+    // 4. Övriga partners utan livefeed
     const lftTargetUrl = "https://www.livefootballtickets.com/";
     const lftAwinUrl = `https://www.awin1.com/cread.php?awinmid=119227&awinaffid=3043299&ued=${encodeURIComponent(lftTargetUrl)}`;
 
     offers.push(
-    
       {
         id: `o-${matchId}-lft`,
         merchantName: "LiveFootballTickets",
@@ -538,37 +488,28 @@ if (se365Match && se365Match.minPrice > 0) {
 
     const validPrices = offers.map((o) => o.priceSEK).filter((p) => p > 0);
     const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : basePrice;
-
     const manualOffersForThisMatch = getManualOffersForMatch(m.homeKey, m.awayKey, m.date);
-    
-    // 1. Leverantörer vi vill blockera helt (skräppriser)
+
     const blockedProviders = [
-      "viagogo", 
-      "champions travel", 
-      "livefootballtickets", 
+      "viagogo",
+      "champions travel",
+      "livefootballtickets",
       "stubhub"
     ];
 
     let filteredOffers = offers.filter(o => {
       const name = (o.merchantName || o.providerName || "").toLowerCase();
-      
-      // Blockera skräppriser från svarta listan
       if (blockedProviders.some(blocked => name.includes(blocked))) {
         return false;
       }
-      
-      // Om namnet är olka, kontrollera om vi har manuella priser
       if (name.includes("olka")) {
         if (manualOffersForThisMatch && manualOffersForThisMatch.length > 0) {
-          // Släpp bara igenom om det matchar det manuella (annars rensas det automatiska bort)
           return manualOffersForThisMatch.some(mo => mo.bookingUrl === o.url || mo.bookingUrl === o.bookingUrl);
         }
       }
-      
       return true;
     });
 
-    // 2. Sortera efter lägsta pris först
     filteredOffers.sort((a, b) => (a.priceSEK || 0) - (b.priceSEK || 0));
 
     return {
@@ -608,7 +549,7 @@ export async function GET() {
     const matches = await getMatchesData();
     return NextResponse.json(matches, {
       headers: {
-        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600",
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
       },
     });
   } catch (error: any) {
