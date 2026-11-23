@@ -162,6 +162,28 @@ async function getMatchesData(limit = 0) {
     return !isDutch;
   });
 
+  const TOP_CLUBS = [
+    "real-madrid", "barcelona", "atletico", "bayern", "psg", "paris",
+    "inter", "milan", "juventus", "liverpool", "arsenal",
+    "manchester-city", "man-city", "chelsea", "tottenham", "dortmund"
+  ];
+
+  upcomingMatches.sort((a: any, b: any) => {
+    const score = (m: any) => {
+      let s = 0;
+      if (m.featured) s += 100;
+      if (m.league === "Champions League") s += 50;
+      const h = (m.homeKey || "").toLowerCase();
+      const aw = (m.awayKey || "").toLowerCase();
+      if (TOP_CLUBS.some((c) => h.includes(c))) s += 25;
+      if (TOP_CLUBS.some((c) => aw.includes(c))) s += 25;
+      return s;
+    };
+    const diff = score(b) - score(a);
+    if (diff !== 0) return diff;
+    return `${a.date} ${a.time || "23:59"}`.localeCompare(`${b.date} ${b.time || "23:59"}`);
+  });
+
   if (limit > 0) {
     upcomingMatches = upcomingMatches.slice(0, limit);
   }
